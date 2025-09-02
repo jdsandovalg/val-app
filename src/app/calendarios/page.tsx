@@ -1,5 +1,6 @@
 "use client";
 import { createClient } from '@/utils/supabase/client';
+import React from 'react';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
@@ -216,7 +217,7 @@ export default function CalendariosPage() {
     }
   };
 
-  const getEstado = useCallback((row: Contribucion): { texto: string; icon: JSX.Element | null; color: string } => {
+  const getEstado = useCallback((row: Contribucion): { texto: string; icon: React.ReactNode | null; color: string } => {
     if (row.realizado === 'S') {
       return { texto: 'Pagado', color: 'text-green-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-green-600"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
     }
