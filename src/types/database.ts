@@ -78,10 +78,10 @@ export interface Database {
       }
     }
     Views: {
-      // Define tus vistas aquí si las tienes
+      [key: string]: never
     }
     Functions: {
-      // Define tus funciones aquí si las tienes
+      [key: string]: never
     }
   }
 }
@@ -89,4 +89,3 @@ export interface Database {
 // Tipos extraídos para un uso más sencillo en la aplicación
 export type Usuario = Database['public']['Tables']['usuarios']['Row'];
 export type ContribucionPorCasa = Database['public']['Tables']['contribucionesporcasa']['Row'];
-

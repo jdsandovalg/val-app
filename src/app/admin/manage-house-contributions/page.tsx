@@ -193,7 +193,7 @@ export default function ManageHouseContributionsPage() {
       setUsuarios(usuariosData);
       setContribuciones(contribucionesData);
     } catch (err: unknown) {
-      console.error('Error en fetchData:', err);
+      console.error('Error en fetchData:', err); // Mantener para depuración en desarrollo
       if (err instanceof Error) {
         setError(`Error al cargar datos: ${err.message}`);
       } else {
@@ -221,10 +221,8 @@ export default function ManageHouseContributionsPage() {
   const handleSave = async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null);
     try {
-      // Clonamos el objeto para no mutar el original y eliminamos las propiedades que no se guardan en la tabla.
-      const dataToSave = { ...recordData };
-      delete dataToSave.usuarios;
-      delete dataToSave.contribuciones;
+      const { usuarios: _u, contribuciones: _c, ...dataToSave } = recordData;
+
       const finalData = {
         ...dataToSave,
         pagado: dataToSave.pagado != null && String(dataToSave.pagado).trim() !== '' ? parseFloat(String(dataToSave.pagado)) : null,
@@ -342,30 +340,30 @@ export default function ManageHouseContributionsPage() {
 
     const sortableItems: ContribucionPorCasaExt[] = [...filteredItems];
     if (sortConfig !== null) {
-      sortableItems.sort((a: ContribucionPorCasaExt, b: ContribucionPorCasaExt) => {
-        let aValue: string | number | null | undefined | boolean;
-        let bValue: string | number | null | undefined | boolean;
+      sortableItems.sort((a, b) => {
+        let aValue: string | number | null | undefined;
+        let bValue: string | number | null | undefined;
 
         switch (sortConfig.key) {
           case 'usuarios':
-            aValue = a.usuarios?.responsable?.toLowerCase();
-            bValue = b.usuarios?.responsable?.toLowerCase();
+            aValue = a.usuarios?.responsable?.toLowerCase() ?? '';
+            bValue = b.usuarios?.responsable?.toLowerCase() ?? '';
             break;
           case 'contribuciones':
-            aValue = a.contribuciones?.descripcion?.toLowerCase();
-            bValue = b.contribuciones?.descripcion?.toLowerCase();
+            aValue = a.contribuciones?.descripcion?.toLowerCase() ?? '';
+            bValue = b.contribuciones?.descripcion?.toLowerCase() ?? '';
             break;
           case 'pagado':
             aValue = a.pagado ?? -Infinity; // Treat null as the smallest value
             bValue = b.pagado ?? -Infinity;
             break;
           default:
-            aValue = a[sortConfig.key as 'fecha' | 'realizado'];
-            bValue = b[sortConfig.key as 'fecha' | 'realizado'];
+            aValue = a[sortConfig.key as keyof ContribucionPorCasa];
+            bValue = b[sortConfig.key as keyof ContribucionPorCasa];
         }
 
-        const valA = aValue ?? '';
-        const valB = bValue ?? '';
+        const valA = aValue === null || aValue === undefined ? '' : aValue;
+        const valB = bValue === null || bValue === undefined ? '' : bValue;
 
         if (valA < valB) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -588,7 +586,7 @@ export default function ManageHouseContributionsPage() {
         <div className="text-center py-10 bg-white shadow-md rounded-lg">
           <p className="text-gray-500">No hay aportaciones para mostrar.</p>
           <p className="text-sm text-gray-400 mt-2">
-            Puedes agregar una nueva aportación usando el botón &quot;+ Agregar Nuevo&quot;.
+            Puedes agregar una nueva aportación usando el botón '+ Agregar Nuevo'.
           </p>
         </div>
       ) : (
