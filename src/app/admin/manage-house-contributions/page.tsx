@@ -221,7 +221,10 @@ export default function ManageHouseContributionsPage() {
   const handleSave = async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null);
     try {
-      const { usuarios: _u, contribuciones: _c, ...dataToSave } = recordData;
+      // Clonamos el objeto para no mutar el original y eliminamos las propiedades que no se guardan en la tabla.
+      const dataToSave = { ...recordData };
+      delete dataToSave.usuarios;
+      delete dataToSave.contribuciones;
 
       const finalData = {
         ...dataToSave,
