@@ -1,4 +1,5 @@
 import { type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 
 interface ContributionPayment {
   id_contribucion: string;
@@ -10,7 +11,7 @@ interface UserInfo {
 }
 
 export async function saveContributionPayment(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   contribution: ContributionPayment,
   user: UserInfo,
   amount: number,
