@@ -225,7 +225,6 @@ export default function ManageHouseContributionsPage() {
       const dataToSave = { ...recordData };
       delete dataToSave.usuarios;
       delete dataToSave.contribuciones;
-
       const finalData = {
         ...dataToSave,
         pagado: dataToSave.pagado != null && String(dataToSave.pagado).trim() !== '' ? parseFloat(String(dataToSave.pagado)) : null,
