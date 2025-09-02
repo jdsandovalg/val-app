@@ -45,7 +45,7 @@ function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () =>
         <div className="relative flex items-center justify-center" style={{ minHeight: '200px', minWidth: '300px', width: '80vw', height: '80vh' }}>
           {isLoading && <div className="text-gray-600">Cargando imagen...</div>}
           {error && <div className="text-red-600 p-4 text-center whitespace-pre-wrap">{error}</div>}
-          <Image src={src} alt="Comprobante de pago" className={`object-contain ${isLoading || error ? 'hidden' : ''}`} fill={true} onLoad={handleImageLoad} onError={handleImageError} />
+          <Image src={src} alt="Comprobante de pago" className={`object-contain ${isLoading || error ? 'hidden' : ''}`} fill={true} onLoad={handleImageLoad} onError={handleImageError} sizes="80vw" />
           <button
             onClick={onClose}
             className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -102,7 +102,6 @@ export default function CalendariosPage() {
   .from('v_usuarios_contribuciones')
   .select('id_contribucion, descripcion, fecha, realizado, dias_restantes, url_comprobante')
   .eq('id', idCasa);
-      console.log('Supabase calendarios result:', { data, error });
       if (error) {
         setError(`Error al cargar los calendarios: ${error.message}`);
       } else if (!data || !Array.isArray(data)) {

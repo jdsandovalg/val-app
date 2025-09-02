@@ -4,10 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { createClient } from '@/utils/supabase/client';
-import type {
-  Usuario,
-  ContribucionPorCasa,
-} from '@/types/database';
+import type { Usuario, ContribucionPorCasa } from '@/types/database';
 import { useRouter } from 'next/navigation';
 
 // Tipo extendido para incluir los datos de las tablas relacionadas
@@ -178,13 +175,6 @@ export default function ManageHouseContributionsPage() {
       if (usuariosRes.error) throw usuariosRes.error;
       if (contribucionesRes.error) throw contribucionesRes.error;
 
-      // --- INICIO: Código para depuración ---
-      console.log('Datos de contribuciones recibidos:', contribucionesRes.data);
-      if (!contribucionesRes.data || contribucionesRes.data.length === 0) {
-        console.warn('Advertencia: La tabla `contribuciones` está vacía o no se pudo acceder. Revisa los datos y las políticas de RLS en Supabase.');
-      }
-      // --- FIN: Código para depuración ---
-
       const recordsData = recordsRes.data || [];
       const usuariosData = usuariosRes.data || [];
       const contribucionesData = contribucionesRes.data || [];
@@ -203,7 +193,7 @@ export default function ManageHouseContributionsPage() {
       setUsuarios(usuariosData);
       setContribuciones(contribucionesData);
     } catch (err: unknown) {
-      console.error(err);
+      console.error('Error en fetchData:', err);
       if (err instanceof Error) {
         setError(`Error al cargar datos: ${err.message}`);
       } else {
@@ -261,7 +251,7 @@ export default function ManageHouseContributionsPage() {
 
       alert('¡Registro guardado exitosamente!');
     } catch (err: unknown) {
-      console.error('Error al guardar:', err);
+      console.error('Error en handleSave:', err);
       let message = 'desconocido';
       if (err && typeof err === 'object' && 'message' in err) {
         message = (err as { message: string }).message;
@@ -348,11 +338,11 @@ export default function ManageHouseContributionsPage() {
       );
     }
 
-    const sortableItems = [...filteredItems];
+    const sortableItems: ContribucionPorCasaExt[] = [...filteredItems];
     if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        let aValue: string | number | null | undefined;
-        let bValue: string | number | null | undefined;
+      sortableItems.sort((a: ContribucionPorCasaExt, b: ContribucionPorCasaExt) => {
+        let aValue: string | number | null | undefined | boolean;
+        let bValue: string | number | null | undefined | boolean;
 
         switch (sortConfig.key) {
           case 'usuarios':
@@ -508,7 +498,7 @@ export default function ManageHouseContributionsPage() {
         alert(`${recordsToInsert.length} registros insertados correctamente.`);
         fetchData();
       } catch (err: unknown) {
-        console.error(err);
+        console.error('Error en handleFileUpload:', err);
         if (err instanceof Error) {
           setError(`Error al procesar el archivo CSV: ${err.message}`);
         } else {
@@ -596,7 +586,7 @@ export default function ManageHouseContributionsPage() {
         <div className="text-center py-10 bg-white shadow-md rounded-lg">
           <p className="text-gray-500">No hay aportaciones para mostrar.</p>
           <p className="text-sm text-gray-400 mt-2">
-            Puedes agregar una nueva aportación usando el botón "+ Agregar Nuevo".
+            Puedes agregar una nueva aportación usando el botón &quot;+ Agregar Nuevo&quot;.
           </p>
         </div>
       ) : (
