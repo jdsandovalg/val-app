@@ -307,7 +307,7 @@ export default function CalendariosPage() {
       filteredAndSortedContribuciones.forEach(contrib => {
         const contribData = [
           contrib.id_contribucion,
-          contrib.descripcion,
+          contrib.descripcion ?? '',
           contrib.fecha,
           contrib.realizado === 'S' ? 'Sí' : 'No',
           contrib.estado,
