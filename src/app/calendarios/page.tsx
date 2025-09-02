@@ -92,7 +92,9 @@ export default function CalendariosPage() {
           const user = JSON.parse(stored);
           idCasa = user.id;
           setUsuario(user);
-        } catch {}
+        } catch (e) {
+          console.error("Error al parsear el usuario desde localStorage:", e);
+        }
       }
       if (!idCasa) {
         setError('No se encontró el usuario en localStorage');
