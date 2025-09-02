@@ -7,6 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Image from 'next/image';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
+import { saveContributionPayment } from '@/utils/supabase/actions';
 
 type Contribucion = {
   id_contribucion: string;
@@ -173,40 +174,7 @@ export default function CalendariosPage() {
     if (!selectedContribution || !usuario) return;
 
     try {
-      // 1. Subir la imagen a Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${usuario.id}-${selectedContribution.id_contribucion}-${selectedContribution.fecha}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('imagenespagos') // Nombre correcto del bucket
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw new Error(`Error al subir el archivo: ${uploadError.message}`);
-      }
-
-      // 2. Obtener la URL pública del archivo subido
-      // Se construye la URL manualmente para asegurar el formato correcto.
-      const { data: { publicUrl } } = supabase.storage
-          .from('imagenespagos')
-          .getPublicUrl(filePath);
-
-      // 3. Actualizar el registro en la base de datos
-      const { error: updateError } = await supabase
-        .from('contribucionesporcasa')
-        .update({
-          realizado: 'S',
-          pagado: amount,
-          fechapago: new Date().toISOString(),
-          url_comprobante: publicUrl,
-        })
-        .eq('id_casa', usuario.id)
-        .eq('id_contribucion', selectedContribution.id_contribucion)
-        .eq('fecha', selectedContribution.fecha);
-
-      if (updateError) throw updateError;
-
+      await saveContributionPayment(supabase, selectedContribution, usuario, amount, file);
       alert('¡Pago registrado exitosamente!');
       handleClosePaymentModal();
       fetchContribuciones(); // Recargar los datos

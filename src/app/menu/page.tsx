@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import PaymentModal from '@/components/modals/PaymentModal';
+import { saveContributionPayment } from '@/utils/supabase/actions';
 import Image from 'next/image';
 
 type ProximoCompromiso = {
@@ -138,30 +139,7 @@ export default function MenuPage() {
     if (!proximoCompromiso || !usuario) return;
 
     try {
-      // 1. Subir la imagen a Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${usuario.id}-${proximoCompromiso.id_contribucion}-${proximoCompromiso.fecha}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('imagenespagos')
-        .upload(filePath, file);
-
-      if (uploadError) throw new Error(`Error al subir el archivo: ${uploadError.message}`);
-
-      // 2. Se construye la URL manualmente para asegurar el formato correcto.
-      const { data: { publicUrl } } = supabase.storage.from('imagenespagos').getPublicUrl(filePath);
-
-      // 3. Actualizar el registro en la base de datos
-      const { error: updateError } = await supabase.from('contribucionesporcasa').update({
-        realizado: 'S',
-        pagado: amount,
-        fechapago: new Date().toISOString(),
-        url_comprobante: publicUrl,
-      }).eq('id_casa', usuario.id).eq('id_contribucion', proximoCompromiso.id_contribucion).eq('fecha', proximoCompromiso.fecha);
-
-      if (updateError) throw updateError;
-
+      await saveContributionPayment(supabase, proximoCompromiso, usuario, amount, file);
       alert('¡Pago registrado exitosamente!');
       handleClosePaymentModal();
       setProximoCompromiso(null); // Ocultar la notificación después de pagar
