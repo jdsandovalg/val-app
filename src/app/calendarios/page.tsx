@@ -152,8 +152,10 @@ export default function CalendariosPage() {
     // Esto asegura que tanto los registros antiguos como los nuevos funcionen.
     let fullUrl = url;
     if (!url.startsWith('http')) {
-      const supabaseUrl = supabase.storage.url.replace('/storage/v1', '');
-      fullUrl = `${supabaseUrl}/storage/v1/object/public/${url}`;
+      // La propiedad `supabase.storage.url` es protegida.
+      // La forma correcta de obtener la URL es usando el método público `getPublicUrl`.
+      const { data } = supabase.storage.from('imagenespagos').getPublicUrl(url);
+      fullUrl = data.publicUrl;
     }
     setViewingImageUrl(fullUrl);
     setIsImageViewerOpen(true);
