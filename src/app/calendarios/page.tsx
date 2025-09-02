@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Image from 'next/image';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
 
 type Contribucion = {
@@ -41,10 +42,10 @@ function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () =>
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center p-4" onClick={onClose}>
       <div className="bg-white p-2 rounded-lg shadow-xl max-w-3xl max-h-full" onClick={(e) => e.stopPropagation()}>
-        <div className="relative flex items-center justify-center" style={{ minHeight: '200px', minWidth: '300px' }}>
+        <div className="relative flex items-center justify-center" style={{ minHeight: '200px', minWidth: '300px', width: '80vw', height: '80vh' }}>
           {isLoading && <div className="text-gray-600">Cargando imagen...</div>}
           {error && <div className="text-red-600 p-4 text-center whitespace-pre-wrap">{error}</div>}
-          <img src={src} alt="Comprobante de pago" className={`max-w-full max-h-[85vh] object-contain ${isLoading || error ? 'hidden' : ''}`} onLoad={handleImageLoad} onError={handleImageError} />
+          <Image src={src} alt="Comprobante de pago" className={`object-contain ${isLoading || error ? 'hidden' : ''}`} fill={true} onLoad={handleImageLoad} onError={handleImageError} />
           <button
             onClick={onClose}
             className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -85,12 +86,10 @@ export default function CalendariosPage() {
       // Obtener el id y responsable desde localStorage
       const stored = localStorage.getItem('usuario');
       let idCasa = null;
-      let responsable = '';
       if (stored) {
         try {
           const user = JSON.parse(stored);
           idCasa = user.id;
-          responsable = user.responsable;
           setUsuario(user);
         } catch {}
       }
@@ -207,8 +206,12 @@ export default function CalendariosPage() {
       alert('¡Pago registrado exitosamente!');
       handleClosePaymentModal();
       fetchContribuciones(); // Recargar los datos
-    } catch (error: any) {
-      alert(`Error al registrar el pago: ${error.message}`);
+    } catch (error: unknown) {
+      let message = 'desconocido';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      alert(`Error al registrar el pago: ${message}`);
     }
   };
 

@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
+import PaymentModal from '@/components/modals/PaymentModal';
+import Image from 'next/image';
 
 type ProximoCompromiso = {
   id_contribucion: string;
@@ -164,8 +165,12 @@ export default function MenuPage() {
       alert('¡Pago registrado exitosamente!');
       handleClosePaymentModal();
       setProximoCompromiso(null); // Ocultar la notificación después de pagar
-    } catch (error: any) {
-      alert(`Error al registrar el pago: ${error.message}`);
+    } catch (error: unknown) {
+      let message = 'desconocido';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      alert(`Error al registrar el pago: ${message}`);
     }
   }, [proximoCompromiso, usuario, supabase]);
 
@@ -194,7 +199,7 @@ export default function MenuPage() {
       </div>
       <div className="flex flex-1 items-center justify-center">
         <div className="bg-white p-8 rounded shadow w-80 flex flex-col items-center justify-center" style={{ minHeight: '400px' }}>
-          <img src="/logo.png" alt="Logo Condominio" className="mb-2 w-20 h-20 object-contain" />
+          <Image src="/logo.png" alt="Logo Condominio" width={80} height={80} className="mb-2 object-contain" />
           <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center">Menú Principal</h2>
           {!isClient || !usuario ? (
             <div className="mb-4 text-center text-gray-900 dark:text-gray-100">Cargando...</div>

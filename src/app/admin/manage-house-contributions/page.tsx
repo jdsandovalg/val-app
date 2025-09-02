@@ -6,7 +6,6 @@ import autoTable from 'jspdf-autotable';
 import { createClient } from '@/utils/supabase/client';
 import type {
   Usuario,
-  Contribucion,
   ContribucionPorCasa,
 } from '@/types/database';
 import { useRouter } from 'next/navigation';
@@ -203,9 +202,13 @@ export default function ManageHouseContributionsPage() {
       setRecords(combinedRecords);
       setUsuarios(usuariosData);
       setContribuciones(contribucionesData);
-    } catch (err: any) {
-      setError(`Error al cargar datos: ${err.message}`);
+    } catch (err: unknown) {
       console.error(err);
+      if (err instanceof Error) {
+        setError(`Error al cargar datos: ${err.message}`);
+      } else {
+        setError('Ocurrió un error desconocido al cargar los datos.');
+      }
     } finally {
       setLoading(false);
     }
@@ -228,7 +231,7 @@ export default function ManageHouseContributionsPage() {
   const handleSave = async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null);
     try {
-      const { usuarios, contribuciones, ...dataToSave } = recordData;
+      const { usuarios: _u, contribuciones: _c, ...dataToSave } = recordData;
 
       const finalData = {
         ...dataToSave,
@@ -237,7 +240,7 @@ export default function ManageHouseContributionsPage() {
         id_contribucion: dataToSave.id_contribucion ? String(dataToSave.id_contribucion) : null,
       };
 
-      let rpcError: any = null;
+      let rpcError: { message: string } | null = null;
 
       // Si editingRecord existe, es una ACTUALIZACIÓN. Usamos la llave primaria original para la cláusula WHERE.
       if (editingRecord && editingRecord.id_casa && editingRecord.id_contribucion && editingRecord.fecha) {
@@ -257,9 +260,13 @@ export default function ManageHouseContributionsPage() {
       if (rpcError) throw rpcError;
 
       alert('¡Registro guardado exitosamente!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error al guardar:', err);
-      const errorMessage = `Error al guardar el registro: ${err.message}.\n\nVerifique que tiene permisos para INSERTAR/ACTUALIZAR en la tabla (RLS en Supabase) y que todos los campos obligatorios tienen un valor.`;
+      let message = 'desconocido';
+      if (err && typeof err === 'object' && 'message' in err) {
+        message = (err as { message: string }).message;
+      }
+      const errorMessage = `Error al guardar el registro: ${message}.\n\nVerifique que tiene permisos para INSERTAR/ACTUALIZAR en la tabla (RLS en Supabase) y que todos los campos obligatorios tienen un valor.`;
       setError(errorMessage);
       alert(errorMessage);
     } finally {
@@ -341,34 +348,37 @@ export default function ManageHouseContributionsPage() {
       );
     }
 
-    let sortableItems = [...filteredItems];
+    const sortableItems = [...filteredItems];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
-        let aValue: any;
-        let bValue: any;
+        let aValue: string | number | null | undefined;
+        let bValue: string | number | null | undefined;
 
         switch (sortConfig.key) {
           case 'usuarios':
-            aValue = a.usuarios?.responsable?.toLowerCase() || '';
-            bValue = b.usuarios?.responsable?.toLowerCase() || '';
+            aValue = a.usuarios?.responsable?.toLowerCase();
+            bValue = b.usuarios?.responsable?.toLowerCase();
             break;
           case 'contribuciones':
-            aValue = a.contribuciones?.descripcion?.toLowerCase() || '';
-            bValue = b.contribuciones?.descripcion?.toLowerCase() || '';
+            aValue = a.contribuciones?.descripcion?.toLowerCase();
+            bValue = b.contribuciones?.descripcion?.toLowerCase();
             break;
           case 'pagado':
             aValue = a.pagado ?? -Infinity; // Treat null as the smallest value
             bValue = b.pagado ?? -Infinity;
             break;
           default:
-            aValue = a[sortConfig.key] ?? '';
-            bValue = b[sortConfig.key] ?? '';
+            aValue = a[sortConfig.key as 'fecha' | 'realizado'];
+            bValue = b[sortConfig.key as 'fecha' | 'realizado'];
         }
 
-        if (aValue < bValue) {
+        const valA = aValue ?? '';
+        const valB = bValue ?? '';
+
+        if (valA < valB) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
-        if (aValue > bValue) {
+        if (valA > valB) {
           return sortConfig.direction === 'ascending' ? 1 : -1;
         }
         return 0;
@@ -497,9 +507,13 @@ export default function ManageHouseContributionsPage() {
 
         alert(`${recordsToInsert.length} registros insertados correctamente.`);
         fetchData();
-      } catch (err: any) {
-        setError(`Error al procesar el archivo CSV: ${err.message}`);
+      } catch (err: unknown) {
         console.error(err);
+        if (err instanceof Error) {
+          setError(`Error al procesar el archivo CSV: ${err.message}`);
+        } else {
+          setError('Error desconocido al procesar el archivo CSV.');
+        }
       } finally {
         setIsUploadingCsv(false);
         if (event.target) {

@@ -1,12 +1,12 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto">
         <div className="flex items-center justify-center w-full">
-          <div className="flex items-center justify-center rounded-full mb-6" style={{ width: '180px', height: '180px', overflow: 'hidden', background: 'transparent' }}>
-            <img src="/logo.png" alt="Logo Condominio" className="max-w-full max-h-full object-contain animate-spin-slow" />
+          <div className="relative mb-6" style={{ width: '180px', height: '180px' }}>
+            <Image src="/logo.png" alt="Logo Condominio" layout="fill" objectFit="contain" className="animate-spin-slow" />
           </div>
         </div>
         <h1 className="text-3xl font-bold mb-4 text-center">Bienvenido a Villas de Alcalá</h1>
