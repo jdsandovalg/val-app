@@ -221,7 +221,9 @@ export default function ManageHouseContributionsPage() {
   const handleSave = async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null);
     try {
-      const { usuarios: _u, contribuciones: _c, ...dataToSave } = recordData;
+      const dataToSave = { ...recordData };
+      delete dataToSave.usuarios;
+      delete dataToSave.contribuciones;
 
       const finalData = {
         ...dataToSave,
@@ -586,7 +588,7 @@ export default function ManageHouseContributionsPage() {
         <div className="text-center py-10 bg-white shadow-md rounded-lg">
           <p className="text-gray-500">No hay aportaciones para mostrar.</p>
           <p className="text-sm text-gray-400 mt-2">
-            Puedes agregar una nueva aportación usando el botón '+ Agregar Nuevo'.
+            Puedes agregar una nueva aportación usando el botón &apos;+ Agregar Nuevo&apos;.
           </p>
         </div>
       ) : (
