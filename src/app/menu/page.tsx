@@ -81,26 +81,24 @@ export default function MenuPage() {
   useEffect(() => {
     setIsClient(true);
 
-    const fetchData = async (userId: number) => {
-      const [userRes, commitmentsRes] = await Promise.all([
-        supabase.from('usuarios').select('id, responsable, tipo_usuario').eq('id', userId).single(),
-        supabase.from('v_usuarios_contribuciones').select('id_contribucion, descripcion, dias_restantes, fecha').eq('id', userId).eq('realizado', 'N').order('dias_restantes', { ascending: false })
-      ]);
+    const fetchData = async (user: { id: number; responsable: string; tipo_usuario: string }) => {
+      // Se confía en el objeto de usuario guardado en localStorage tras un login exitoso.
+      // Ya no se vuelve a validar contra la base de datos aquí, esa validación
+      // debe ocurrir en la página de login.
+      setUsuario(user);
 
-      if (userRes.error || !userRes.data) {
-        console.error("Error fetching user or user not found, logging out.", userRes.error);
-        localStorage.removeItem('usuario');
-        router.push('/');
-        return;
-      }
-      
-      setUsuario(userRes.data);
+      const { data: commitmentsData, error: commitmentsError } = await supabase
+        .from('v_usuarios_contribuciones')
+        .select('id_contribucion, descripcion, dias_restantes, fecha')
+        .eq('id', user.id)
+        .eq('realizado', 'N')
+        .order('dias_restantes', { ascending: false });
 
-      if (commitmentsRes.error) {
-        console.error('Error fetching commitments:', commitmentsRes.error);
+      if (commitmentsError) {
+        console.error('Error fetching commitments:', commitmentsError);
         setProximoCompromiso(null);
-      } else if (commitmentsRes.data && commitmentsRes.data.length > 0) {
-        const proximo = commitmentsRes.data[0];
+      } else if (commitmentsData && commitmentsData.length > 0) {
+        const proximo = commitmentsData[0];
         if (proximo.dias_restantes !== null && proximo.dias_restantes >= -15) {
           setProximoCompromiso(proximo as ProximoCompromiso);
         }
@@ -111,9 +109,12 @@ export default function MenuPage() {
     if (stored) {
       try {
         const user = JSON.parse(stored);
-        if (user && user.id) {
-          fetchData(user.id);
+        // Se verifica que el objeto de usuario completo exista en localStorage.
+        // Esto es crucial y depende de que la página de login guarde el objeto completo.
+        if (user && user.id && user.responsable) {
+          fetchData(user);
         } else {
+          // Si no está el objeto completo, se considera un estado inválido.
           router.push('/');
         }
       } catch (e) {
