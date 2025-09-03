@@ -7,7 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Image from 'next/image';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
-import { saveContributionPaymentSA } from '@/utils/supabase/server-actions';
+import { saveContributionPayment } from '@/utils/supabase/server-actions';
 
 type Contribucion = {
   id_contribucion: string;
