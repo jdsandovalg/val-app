@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from './server';
 
 interface ContributionPayment {
   id_contribucion: string;
