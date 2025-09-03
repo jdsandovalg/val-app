@@ -151,7 +151,7 @@ export default function MenuPage() {
       }
       alert(`Error al registrar el pago: ${message}`);
     }
-  }, [proximoCompromiso, usuario, supabase]);
+  }, [proximoCompromiso, usuario]);
 
   const handleRegresar = () => {
     router.push('/');

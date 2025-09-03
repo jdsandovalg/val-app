@@ -26,7 +26,6 @@ export default function GruposDeTrabajoPage() {
   const router = useRouter();
   const [grupos, setGrupos] = useState<ContribucionAgrupada[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -42,7 +41,6 @@ export default function GruposDeTrabajoPage() {
       return;
     }
     const currentUser: Usuario = JSON.parse(storedUser);
-    setUsuario(currentUser);
 
     try {
       // 2. Ejecutar la consulta a la base de datos
