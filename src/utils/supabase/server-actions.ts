@@ -17,7 +17,7 @@ export async function saveContributionPayment(
   amount: number,
   file: File
 ): Promise<string> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // 1. Subir la imagen a Supabase Storage
   const fileExt = file.name.split('.').pop();
