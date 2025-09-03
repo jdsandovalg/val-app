@@ -1,5 +1,5 @@
 import type { Database } from '@/types/database';
-import { type SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from './client';
 
 interface ContributionPayment {
   id_contribucion: string;
@@ -11,13 +11,13 @@ interface UserInfo {
 }
 
 export async function saveContributionPayment(
-  supabase: SupabaseClient<Database>,
   contribution: ContributionPayment,
   user: UserInfo,
   amount: number,
   file: File
 ): Promise<string> {
   // 1. Subir la imagen a Supabase Storage
+  const supabase = createClient();
   const fileExt = file.name.split('.').pop();
   const fileName = `${user.id}-${contribution.id_contribucion}-${contribution.fecha}-${Date.now()}.${fileExt}`;
   const filePath = `${fileName}`;

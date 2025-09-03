@@ -7,7 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Image from 'next/image';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
-import { saveContributionPayment } from '@/utils/supabase/actions';
+import { saveContributionPaymentSA } from '@/utils/supabase/server-actions';
 
 type Contribucion = {
   id_contribucion: string;
@@ -169,7 +169,7 @@ export default function CalendariosPage() {
     if (!selectedContribution || !usuario) return;
 
     try {
-      await saveContributionPayment(supabase, selectedContribution, usuario, amount, file);
+      await saveContributionPaymentSA(selectedContribution, usuario, amount, file);
       alert('¡Pago registrado exitosamente!');
       handleClosePaymentModal();
       fetchContribuciones(); // Recargar los datos
