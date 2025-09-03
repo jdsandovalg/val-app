@@ -74,7 +74,7 @@ export default function CalendariosPage() {
   const [selectedContribution, setSelectedContribution] = useState<Contribucion | null>(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
-  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({ key: 'dias_restantes', direction: 'ascending' });
+  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({ key: 'fecha', direction: 'ascending' });
   const [filters, setFilters] = useState({
     id_contribucion: '',
     descripcion: '',
@@ -152,15 +152,10 @@ export default function CalendariosPage() {
   const handleOpenImageViewer = (url: string | null | undefined) => {
     if (!url) return;
 
-    // Corregir la URL si solo es una ruta parcial.
-    // Esto asegura que tanto los registros antiguos como los nuevos funcionen.
-    let fullUrl = url;
-    if (!url.startsWith('http')) {
-      // La propiedad `supabase.storage.url` es protegida.
-      // La forma correcta de obtener la URL es usando el método público `getPublicUrl`.
-      const { data } = supabase.storage.from('imagenespagos').getPublicUrl(url);
-      fullUrl = data.publicUrl;
-    }
+    // Generar la URL pública desde la ruta del archivo almacenada en la BD.
+    // Esto asegura que siempre se use el método correcto y es más seguro.
+    const { data } = supabase.storage.from('imagenespagos').getPublicUrl(url);
+    const fullUrl = data.publicUrl;
     setViewingImageUrl(fullUrl);
     setIsImageViewerOpen(true);
   };
@@ -343,7 +338,7 @@ export default function CalendariosPage() {
   <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center p-2 sm:p-8">
       {usuario && (
         <>
-          <h2 className="text-3xl font-extrabold mb-4 text-blue-700 text-center tracking-tight">Calendario de Pagos</h2>
+          <h2 className="text-3xl font-extrabold mb-4 text-blue-700 text-center tracking-tight">Programación de Aportaciones</h2>
           <div className="mb-4 text-xs text-gray-500 text-center w-full">
             <span className="font-semibold text-blue-900">Casa:</span> {usuario.id} &nbsp;|&nbsp; <span className="font-semibold text-blue-900">Responsable:</span> {usuario.responsable}
           </div>

@@ -30,18 +30,14 @@ export async function saveContributionPayment(
     throw new Error(`Error al subir el archivo: ${uploadError.message}`);
   }
 
-  // 2. Obtener la URL pública del archivo subido
-  const { data: { publicUrl } } = supabase.storage.from('imagenespagos').getPublicUrl(filePath);
-
   // 3. Actualizar el registro en la base de datos
   const { error: updateError } = await supabase.from('contribucionesporcasa').update({
     realizado: 'S',
     pagado: amount,
     fechapago: new Date().toISOString(),
-    url_comprobante: publicUrl,
+    url_comprobante: filePath, // Guardar solo la ruta del archivo
   }).eq('id_casa', user.id).eq('id_contribucion', contribution.id_contribucion).eq('fecha', contribution.fecha);
 
   if (updateError) throw updateError;
-
-  return publicUrl;
+  return filePath;
 }
