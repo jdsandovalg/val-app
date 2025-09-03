@@ -16,6 +16,12 @@ export default function Home() {
         <p className="mb-8 text-center text-gray-700">Sistema de gestión de aportaciones y servicios</p>
         <Link href="/login" className="bg-blue-600 text-white px-8 py-3 rounded hover:bg-blue-700 text-lg font-semibold shadow w-full max-w-xs text-center">Ingresar</Link>
       </div>
+      {/* Mostrar la versión del commit de Git si está disponible en Vercel */}
+      {process.env.VERCEL_GIT_COMMIT_SHA && (
+        <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-400">
+          Versión: {process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 7)}
+        </div>
+      )}
     </div>
   );
 }
