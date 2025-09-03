@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto">
         <div className="flex items-center justify-center w-full mb-6">
           <div className="relative" style={{ width: '180px', height: '180px' }}>
