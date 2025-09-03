@@ -169,7 +169,7 @@ export default function CalendariosPage() {
     if (!selectedContribution || !usuario) return;
 
     try {
-      await saveContributionPaymentSA(selectedContribution, usuario, amount, file);
+      await saveContributionPayment(selectedContribution, usuario, amount, file);
       alert('¡Pago registrado exitosamente!');
       handleClosePaymentModal();
       fetchContribuciones(); // Recargar los datos
