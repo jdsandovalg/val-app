@@ -11,7 +11,7 @@ interface UserInfo {
   id: number;
 }
 
-export async function saveContributionPaymentSA(
+export async function saveContributionPayment(
   contribution: ContributionPayment,
   user: UserInfo,
   amount: number,

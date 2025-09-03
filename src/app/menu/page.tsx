@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import PaymentModal from '@/components/modals/PaymentModal';
-import { saveContributionPayment } from '@/utils/supabase/actions';
+import { saveContributionPayment } from '@/utils/supabase/server-actions';
 import Image from 'next/image';
 
 type ProximoCompromiso = {
@@ -140,7 +140,7 @@ export default function MenuPage() {
     if (!proximoCompromiso || !usuario) return;
 
     try {
-      await saveContributionPayment(supabase, proximoCompromiso, usuario, amount, file);
+      await saveContributionPayment(proximoCompromiso, usuario, amount, file);
       alert('¡Pago registrado exitosamente!');
       handleClosePaymentModal();
       setProximoCompromiso(null); // Ocultar la notificación después de pagar
