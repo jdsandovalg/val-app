@@ -33,9 +33,9 @@ function ProximoCompromisoNotification({ compromiso, onPayClick }: { compromiso:
     message = `Próximo compromiso: "${compromiso.descripcion}" vence en ${diasAbs} día(s).`;
   }
 
-  const bgColor = isOverdueOrToday ? 'bg-red-100 border-red-500' : 'bg-green-100 border-green-500';
-  const textColor = isOverdueOrToday ? 'text-red-800' : 'text-green-800';
-  const iconColor = isOverdueOrToday ? 'text-red-500' : 'text-green-500';
+  const bgColor = isOverdueOrToday ? 'bg-yellow-100 border-yellow-500' : 'bg-green-100 border-green-500';
+  const textColor = isOverdueOrToday ? 'text-yellow-800' : 'text-green-800';
+  const iconColor = isOverdueOrToday ? 'text-yellow-500' : 'text-green-500';
 
   const Icon = isOverdueOrToday ? (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${iconColor}`}>
@@ -52,7 +52,7 @@ function ProximoCompromisoNotification({ compromiso, onPayClick }: { compromiso:
       <div className="flex items-start">
         <div className="flex-shrink-0 pt-0.5">{Icon}</div>
         <div className="ml-3">
-          <p className={`text-sm font-medium ${textColor}`}>{message}</p>
+          <p className={`font-medium ${isOverdueOrToday ? 'text-xs' : 'text-sm'} ${textColor}`}>{message}</p>
           <p className={`text-xs mt-1 ${textColor} opacity-80`}>Fecha de vencimiento: {compromiso.fecha}</p>
         </div>
       </div>
@@ -60,9 +60,9 @@ function ProximoCompromisoNotification({ compromiso, onPayClick }: { compromiso:
         <div className="mt-3 flex justify-end">
           <button
             onClick={onPayClick}
-            className="bg-blue-500 text-white font-bold py-1 px-3 rounded-md text-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="bg-blue-500 text-white font-bold py-1 px-2 rounded-md text-xs hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            Pagar
+            Reportar Pago
           </button>
         </div>
       )}

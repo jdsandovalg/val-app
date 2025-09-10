@@ -389,7 +389,7 @@ export default function CalendariosPage() {
                       </td>
                       <td className="border px-2 py-2 sm:px-4 sm:py-3 text-center">
                         {row.realizado === 'N' && (
-                          <button onClick={() => handleOpenPaymentModal(row)} className="bg-green-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-green-600">Pagar</button>
+                          <button onClick={() => handleOpenPaymentModal(row)} className="bg-green-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-green-600">Reportar Pago</button>
                         )}
                         {row.realizado === 'S' && row.url_comprobante && (
                           <button onClick={() => handleOpenImageViewer(row.url_comprobante)} className="bg-blue-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-blue-600">Ver Comprobante</button>
