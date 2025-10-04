@@ -2,134 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario, ContribucionPorCasa } from '@/types/database';
 import { useRouter } from 'next/navigation';
-
-// Tipo extendido para incluir los datos de las tablas relacionadas
-type ContribucionPorCasaExt = ContribucionPorCasa & {
-  usuarios: Pick<Usuario, 'id' | 'responsable'> | null;
-  contribuciones: {
-    id_contribucion: string;
-    descripcion: string | null;
-  } | null;
-};
-
-type SortableKeys = keyof Pick<ContribucionPorCasaExt, 'usuarios' | 'contribuciones' | 'fecha' | 'pagado' | 'realizado'>;
-
-// --- Componente Modal para Añadir/Editar ---
-function ContributionModal({
-  isOpen,
-  onClose,
-  onSave,
-  record,
-  usuarios,
-  contribuciones,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (data: Partial<ContribucionPorCasaExt>) => Promise<void>;
-  record: Partial<ContribucionPorCasaExt> | null;
-  usuarios: Pick<Usuario, 'id' | 'responsable'>[];
-  contribuciones: { id_contribucion: string; descripcion: string | null }[];
-}) {
-  const [formData, setFormData] = useState<Partial<ContribucionPorCasaExt>>({});
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setFormData(
-      record || {
-        fecha: new Date().toISOString().split('T')[0],
-        pagado: null,
-        realizado: 'N', // Usar 'N' como valor por defecto para consistencia
-      }
-    );
-  }, [record]);
-
-  if (!isOpen) return null;
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-    const isCheckbox = type === 'checkbox';
-
-    if (isCheckbox && name === 'realizado') {
-      // Manejo específico para el checkbox 'realizado' para que guarde 'S' o 'N'
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked ? 'S' : 'N' }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value,
-      }));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    await onSave(formData);
-    setLoading(false);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">
-          {record && record.id_casa ? 'Editar' : 'Agregar'} Aportación
-        </h2>
-        <form onSubmit={handleSubmit}>
-          {/* Select Casa */}
-          <div className="mb-4">
-            <label htmlFor="casa_id" className="block text-sm font-medium text-gray-700">Casa</label>
-            <select name="id_casa" id="id_casa" value={formData.id_casa || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-              <option value="" disabled>Seleccione una casa</option>
-              {usuarios.map(u => <option key={u.id} value={u.id}>Casa #{u.id} - {u.responsable}</option>)}
-            </select>
-          </div>
-
-          {/* Select Contribución */}
-          <div className="mb-4">
-            <label htmlFor="id_contribucion" className="block text-sm font-medium text-gray-700">Tipo de Contribución</label>
-            <select name="id_contribucion" id="id_contribucion" value={formData.id_contribucion || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-              <option value="" disabled>Seleccione una contribución</option>
-              {contribuciones.map((c) => (
-                <option key={c.id_contribucion} value={c.id_contribucion}>{c.descripcion}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="fecha" className="block text-sm font-medium text-gray-700">Fecha</label>
-            <input type="date" name="fecha" id="fecha" value={formData.fecha || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="pagado" className="block text-sm font-medium text-gray-700">Monto Pagado</label>
-            <input type="number" name="pagado" id="pagado" value={formData.pagado ?? ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="0.00" step="0.01" />
-          </div>
-          <div className="flex items-center mb-6">
-            <div className="flex items-center">
-              <input id="realizado" name="realizado" type="checkbox" checked={formData.realizado === 'S'} onChange={handleChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-              <label htmlFor="realizado" className="ml-2 block text-sm text-gray-900">Realizado</label>
-            </div>
-          </div>
-
-          {/* Acciones */}
-          <div className="flex justify-end gap-4">
-            <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded hover:bg-gray-300">Cancelar</button>
-            <button type="submit" disabled={loading} className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400">
-              {loading ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
+import ContributionModal from './components/ContributionModal';
+import ContributionTable from './components/ContributionTable';
+import ContributionCard from './components/ContributionCard';
+import useContributionsData from './hooks/useContributionsData';
 
 // --- Componente Principal de la Página ---
 export default function ManageHouseContributionsPage() {
@@ -139,13 +18,15 @@ export default function ManageHouseContributionsPage() {
   const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
   const [usuarios, setUsuarios] = useState<Pick<Usuario, 'id' | 'responsable'>[]>([]);
   const [contribuciones, setContribuciones] = useState<
-    { id_contribucion: string; descripcion: string | null }[]
+    { id_contribucion: string; descripcion: string | null; color_del_borde: string | null; }[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Partial<ContribucionPorCasaExt> | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUploadingCsv, setIsUploadingCsv] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({
     key: 'fecha',
     direction: 'descending',
@@ -167,8 +48,8 @@ export default function ManageHouseContributionsPage() {
       //    que puede fallar si las claves foráneas no están configuradas como se espera.
       const [recordsRes, usuariosRes, contribucionesRes] = await Promise.all([
         supabase.from('contribucionesporcasa').select('*').order('fecha', { ascending: false }),
-        supabase.from('usuarios').select('id, responsable'),
-        supabase.from('contribuciones').select('id_contribucion, descripcion'),
+        supabase.from('usuarios').select('id, responsable'), // Asumiendo que esta tabla no cambia
+        supabase.from('contribuciones').select('id_contribucion, descripcion, color_del_borde'),
       ]);
 
       if (recordsRes.error) throw recordsRes.error;
@@ -298,7 +179,7 @@ export default function ManageHouseContributionsPage() {
     setSortConfig({ key, direction });
   };
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
   };
@@ -316,14 +197,21 @@ export default function ManageHouseContributionsPage() {
     }
     if (filters.contribucion) {
       filteredItems = filteredItems.filter(record =>
-        (record.contribuciones?.descripcion ?? `ID: ${record.id_contribucion}`)
+        (record.contribuciones?.descripcion ?? `ID: ${record.id_contribucion}`) // Usar la descripción
           .toLowerCase()
-          .includes(filters.contribucion.toLowerCase())
+          .includes(filters.contribucion.toLowerCase()) // Búsqueda parcial (LIKE)
       );
     }
     if (filters.fecha) {
-      filteredItems = filteredItems.filter(record =>
-        record.fecha?.includes(filters.fecha)
+      const filterLowerCase = filters.fecha.toLowerCase();
+      filteredItems = filteredItems.filter(record => {
+        if (!record.fecha) return false;
+        // Formatear la fecha a un string más amigable para la búsqueda (ej: "15 de enero de 2024")
+        const date = new Date(`${record.fecha}T00:00:00`); // Asegurar que se interprete como fecha local
+        const formattedDate = date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+        // Permitir búsqueda por el formato original o por el nombre del mes
+        return record.fecha.includes(filterLowerCase) || formattedDate.toLowerCase().includes(filterLowerCase);
+      }
       );
     }
     if (filters.pagado) {
@@ -444,11 +332,11 @@ export default function ManageHouseContributionsPage() {
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    setIsUploadingCsv(true);
+    
+    setIsUploadingCsv(true)
     setError(null);
-
-    const reader = new FileReader();
+    
+      const reader = new FileReader();
     reader.onload = async (e) => {
       try {
         const text = e.target?.result as string;
@@ -523,23 +411,65 @@ export default function ManageHouseContributionsPage() {
   }, [supabase, fetchData]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-      <div className="mb-4">
-        <button
-          type="button"
-          onClick={handleRegresar}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex items-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-          Regresar
-        </button>
-      </div>
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+        <div className="flex justify-between items-center mb-6">
+          {/* Botón de Regresar */}
+          <button
+            type="button"
+            onClick={handleRegresar}
+            className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            aria-label="Regresar al menú"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
 
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Gestionar Aportaciones por Casa</h1>
-        <div className="flex items-center gap-4">
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 text-center">Gestionar Aportaciones</h1>
+
+          {/* Contenedor de Acciones */}
+          <div className="relative flex items-center gap-2">
+            {/* Botón de Filtros (solo para móvil) */}
+            <button
+              onClick={() => setIsFilterModalOpen(true)}
+              className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 md:hidden"
+              aria-label="Abrir filtros"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+              </svg>
+            </button>
+
+            {/* Botón de Menú de Acciones */}
+            <button
+              onClick={() => setIsMenuOpen(prev => !prev)}
+              className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+              </svg>
+            </button>
+
+            {/* Menú Desplegable */}
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                <div className="py-1">
+                  <button onClick={() => { handleOpenModal(null); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={isUploadingCsv} >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    Agregar Nuevo
+                  </button>
+                  <button onClick={() => { fileInputRef.current?.click(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                    {isUploadingCsv ? 'Procesando...' : 'Cargar CSV'}
+                  </button>
+                  <button onClick={() => { handleGeneratePDF(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                    Reporte PDF
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <input
             type="file"
             ref={fileInputRef}
@@ -547,38 +477,7 @@ export default function ManageHouseContributionsPage() {
             className="hidden"
             accept=".csv"
           />
-          <button
-            onClick={handleGeneratePDF}
-            className="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-700 flex items-center shadow-sm"
-            disabled={loading || isUploadingCsv}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-            </svg>
-            Reporte PDF
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-purple-500 text-white font-bold py-2 px-4 rounded hover:bg-purple-700 flex items-center shadow-sm"
-            disabled={loading || isUploadingCsv}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-            </svg>
-            {isUploadingCsv ? 'Procesando...' : 'Cargar CSV'}
-          </button>
-          <button
-            onClick={() => handleOpenModal(null)}
-            className="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700 flex items-center shadow-sm"
-            disabled={isUploadingCsv}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Agregar Nuevo
-          </button>
         </div>
-      </div>
 
       {loading && <p>Cargando datos de la tabla...</p>}
       {isUploadingCsv && <p className="text-purple-600">Procesando archivo CSV, por favor espere...</p>}
@@ -593,79 +492,32 @@ export default function ManageHouseContributionsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-white shadow-md rounded-lg overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('usuarios')} className="flex items-center gap-1">
-                      Casa
-                      {sortConfig?.key === 'usuarios' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
-                    </button>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('contribuciones')} className="flex items-center gap-1">
-                      Contribución
-                      {sortConfig?.key === 'contribuciones' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
-                    </button>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('fecha')} className="flex items-center gap-1">
-                      Fecha
-                      {sortConfig?.key === 'fecha' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
-                    </button>
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('pagado')} className="flex items-center gap-1 w-full justify-end">
-                      Monto Pagado
-                      {sortConfig?.key === 'pagado' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
-                    </button>
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('realizado')} className="flex items-center gap-1 w-full justify-center">
-                      Realizado
-                      {sortConfig?.key === 'realizado' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
-                    </button>
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                </tr>
-                {/* Fila de Filtros */}
-                <tr>
-                  <th className="px-4 py-2"><input name="casa" onChange={handleFilterChange} placeholder="Filtrar casa..." className="text-xs p-1 border rounded w-full font-normal" /></th>
-                  <th className="px-4 py-2"><input name="contribucion" onChange={handleFilterChange} placeholder="Filtrar contribución..." className="text-xs p-1 border rounded w-full font-normal" /></th>
-                  <th className="px-4 py-2"><input name="fecha" onChange={handleFilterChange} placeholder="Filtrar fecha..." className="text-xs p-1 border rounded w-full font-normal" /></th>
-                  <th className="px-4 py-2"><input name="pagado" onChange={handleFilterChange} placeholder="Filtrar monto..." className="text-xs p-1 border rounded w-full font-normal" /></th>
-                  <th className="px-4 py-2"><input name="realizado" onChange={handleFilterChange} placeholder="Filtrar estado..." className="text-xs p-1 border rounded w-full font-normal" /></th>
-                  <th className="px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAndSortedRecords.map((record) => (
-                  <tr key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {record.usuarios
-                        ? `Casa #${record.usuarios.id} - ${record.usuarios.responsable}`
-                        : `Casa ID: ${record.id_casa} (No encontrado)`}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {record.contribuciones?.descripcion ?? `ID: ${record.id_contribucion} (No encontrada)`}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{record.fecha}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                      {record.pagado != null
-                        ? `$${Number(record.pagado).toFixed(2)}`
-                        : 'No pagado'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{record.realizado === 'S' ? '✅' : '❌'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleOpenModal(record)} className="text-indigo-600 hover:text-indigo-900 mr-4">Editar</button>
-                      <button onClick={() => handleDelete(record)} className="text-red-600 hover:text-red-900">Eliminar</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Vista de Tabla para pantallas medianas y grandes (md y superior) */}
+          <div className="hidden md:block">
+            <ContributionTable
+              records={filteredAndSortedRecords}
+              contribuciones={contribuciones}
+              sortConfig={sortConfig}
+              filters={filters}
+              handleSort={handleSort}
+              handleFilterChange={handleFilterChange}
+              handleDelete={handleDelete}
+              handleOpenModal={handleOpenModal}
+            />
           </div>
+
+          {/* Vista de Tarjetas para pantallas pequeñas (hasta md) */}
+          <div className="block md:hidden">
+            {filteredAndSortedRecords.map((record) => (
+              <ContributionCard
+                key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`}
+                record={record}
+                onDelete={handleDelete}
+                onOpenModal={handleOpenModal}
+              />
+            ))}
+          </div>
+
           {records.length > 0 && filteredAndSortedRecords.length === 0 && (
             <div className="text-center py-10 bg-white shadow-md rounded-lg mt-4">
               <p className="text-gray-500">No se encontraron registros que coincidan con los filtros.</p>
@@ -682,6 +534,30 @@ export default function ManageHouseContributionsPage() {
         usuarios={usuarios}
         contribuciones={contribuciones}
       />
-    </div>
+
+      {/* Modal de Filtros para Móvil */}
+      {isFilterModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h2 className="text-xl font-bold mb-4">Filtrar Registros</h2>
+            <div className="space-y-4">
+              <input name="casa" value={filters.casa} onChange={handleFilterChange} placeholder="Filtrar por casa..." className="w-full p-2 border rounded" />
+              <input name="contribucion" value={filters.contribucion} onChange={handleFilterChange} placeholder="Filtrar por contribución..." className="w-full p-2 border rounded" />
+              <input name="fecha" value={filters.fecha} onChange={handleFilterChange} placeholder="Filtrar por fecha (YYYY-MM-DD)..." className="w-full p-2 border rounded" />
+              <input name="pagado" value={filters.pagado} onChange={handleFilterChange} placeholder="Filtrar por monto..." className="w-full p-2 border rounded" />
+              <input name="realizado" value={filters.realizado} onChange={handleFilterChange} placeholder="Filtrar por estado (sí/no)..." className="w-full p-2 border rounded" />
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setIsFilterModalOpen(false)}
+                className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
   );
 }

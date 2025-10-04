@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [id, setId] = useState('');
@@ -54,6 +55,9 @@ export default function LoginPage() {
       </div>
       <div className="flex flex-1 items-center justify-center">
         <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow w-80">
+          <div className="flex justify-center mb-4">
+            <Image src="/logo.png" alt="Logo Condominio" width={80} height={80} className="object-contain" />
+          </div>
           <h2 className="text-2xl font-bold mb-6 text-center">Ingreso al sistema</h2>
           <div className="mb-4">
             <label className="block mb-1 text-gray-900 dark:text-gray-100">Número de casa</label>
