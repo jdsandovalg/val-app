@@ -1,27 +1,25 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import jsPDF from 'jspdf';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import type { Usuario, ContribucionPorCasa } from '@/types/database';
+import type { ContribucionPorCasa } from '@/types/database';
+import type { ContribucionPorCasaExt, SortableKeys } from '@/types';
 import { useRouter } from 'next/navigation';
 import ContributionModal from './components/ContributionModal';
 import ContributionTable from './components/ContributionTable';
 import ContributionCard from './components/ContributionCard';
 import useContributionsData from './hooks/useContributionsData';
 
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 // --- Componente Principal de la Página ---
 export default function ManageHouseContributionsPage() {
   const supabase = createClient();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
-  const [usuarios, setUsuarios] = useState<Pick<Usuario, 'id' | 'responsable'>[]>([]);
-  const [contribuciones, setContribuciones] = useState<
-    { id_contribucion: string; descripcion: string | null; color_del_borde: string | null; }[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { records, usuarios, contribuciones, loading, error: fetchError, fetchData } = useContributionsData();
+  const [error, setError] = useState<string | null>(null); // Estado local para errores de UI
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Partial<ContribucionPorCasaExt> | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,56 +37,6 @@ export default function ManageHouseContributionsPage() {
     realizado: '',
   });
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // 1. Se obtienen los datos de cada tabla por separado para mayor robustez.
-      //    Esto evita depender de la inferencia automática de joins de Supabase,
-      //    que puede fallar si las claves foráneas no están configuradas como se espera.
-      const [recordsRes, usuariosRes, contribucionesRes] = await Promise.all([
-        supabase.from('contribucionesporcasa').select('*').order('fecha', { ascending: false }),
-        supabase.from('usuarios').select('id, responsable'), // Asumiendo que esta tabla no cambia
-        supabase.from('contribuciones').select('id_contribucion, descripcion, color_del_borde'),
-      ]);
-
-      if (recordsRes.error) throw recordsRes.error;
-      if (usuariosRes.error) throw usuariosRes.error;
-      if (contribucionesRes.error) throw contribucionesRes.error;
-
-      const recordsData = recordsRes.data || [];
-      const usuariosData = usuariosRes.data || [];
-      const contribucionesData = contribucionesRes.data || [];
-
-      // 2. Se combinan los datos manualmente en el frontend.
-      const usuariosMap = new Map(usuariosData.map(u => [u.id, u]));
-      const contribucionesMap = new Map(contribucionesData.map(c => [c.id_contribucion, c]));
-
-      const combinedRecords = recordsData.map(record => ({
-        ...record,
-        usuarios: usuariosMap.get(record.id_casa) || null,
-        contribuciones: contribucionesMap.get(record.id_contribucion) || null,
-      }));
-
-      setRecords(combinedRecords);
-      setUsuarios(usuariosData);
-      setContribuciones(contribucionesData);
-    } catch (err: unknown) {
-      console.error('Error en fetchData:', err); // Mantener para depuración en desarrollo
-      if (err instanceof Error) {
-        setError(`Error al cargar datos: ${err.message}`);
-      } else {
-        setError('Ocurrió un error desconocido al cargar los datos.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]); // supabase client es estable y no causará re-renders.
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   const handleOpenModal = (record: Partial<ContribucionPorCasaExt> | null = null) => {
     setEditingRecord(record);
     setIsModalOpen(true);
@@ -100,7 +48,7 @@ export default function ManageHouseContributionsPage() {
   };
 
   const handleSave = async (recordData: Partial<ContribucionPorCasaExt>) => {
-    setError(null);
+    setError(null); // Limpiar errores de UI
     try {
       const dataToSave = { ...recordData };
       delete dataToSave.usuarios;
@@ -481,9 +429,10 @@ export default function ManageHouseContributionsPage() {
 
       {loading && <p>Cargando datos de la tabla...</p>}
       {isUploadingCsv && <p className="text-purple-600">Procesando archivo CSV, por favor espere...</p>}
-      {error && <p className="text-red-500 bg-red-100 p-3 rounded">Error: {error}</p>}
+      {fetchError && <p className="text-red-500 bg-red-100 p-3 rounded">Error de carga: {fetchError}</p>}
+      {error && <p className="text-red-500 bg-red-100 p-3 rounded">Error de operación: {error}</p>}
 
-      {!loading && !error && records.length === 0 ? (
+      {!loading && !fetchError && records.length === 0 ? (
         <div className="text-center py-10 bg-white shadow-md rounded-lg">
           <p className="text-gray-500">No hay aportaciones para mostrar.</p>
           <p className="text-sm text-gray-400 mt-2">
@@ -496,7 +445,6 @@ export default function ManageHouseContributionsPage() {
           <div className="hidden md:block">
             <ContributionTable
               records={filteredAndSortedRecords}
-              contribuciones={contribuciones}
               sortConfig={sortConfig}
               filters={filters}
               handleSort={handleSort}
