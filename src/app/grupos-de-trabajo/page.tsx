@@ -27,8 +27,14 @@ export default function GruposDeTrabajoPage() {
   const [grupos, setGrupos] = useState<ContribucionAgrupada[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const fetchData = useCallback(async () => {
+    if (!isClient) return; // No ejecutar en el servidor
     setLoading(true);
     setError(null);
 
@@ -114,7 +120,7 @@ export default function GruposDeTrabajoPage() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, router]);
+  }, [supabase, router, isClient]);
 
   useEffect(() => {
     fetchData();
@@ -130,20 +136,40 @@ export default function GruposDeTrabajoPage() {
     return 'bg-yellow-100 text-yellow-800';
   };
 
+  const getEstadoBorderClass = (realizado: string, dias: number) => {
+    if (realizado === 'S') return 'border-green-500';
+    if (dias >= 0) return 'border-red-500';
+    return 'border-yellow-500';
+  };
+
+  const getGroupBorderColor = (groupId: number | null) => {
+    const colors = [
+      'border-blue-500',
+      'border-green-500',
+      'border-purple-500',
+      'border-yellow-500',
+      'border-pink-500',
+      'border-teal-500',
+    ];
+    return colors[(groupId || 0) % colors.length] || 'border-gray-500';
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Grupos de Trabajo</h1>
         <button
           type="button"
           onClick={handleRegresarMenu}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2 shadow-sm"
+          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          aria-label="Regresar al menú"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
-          Regresar
         </button>
+        <h1 className="text-xl sm:text-3xl font-bold text-gray-800 text-center">Grupos de Trabajo</h1>
+        {/* Espaciador para mantener el título centrado */}
+        <div className="w-10 h-10"></div>
       </div>
 
       {loading && <p className="text-center text-gray-500">Cargando grupos...</p>}
@@ -151,14 +177,14 @@ export default function GruposDeTrabajoPage() {
 
       <div className="space-y-6">
         {grupos.map((contribucion) => (
-          <div key={contribucion.descripcion} className="bg-white p-4 rounded-lg shadow-md">
+          <div key={contribucion.descripcion} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-bold text-blue-800 border-b pb-2 mb-4">{contribucion.descripcion}</h2>
             <div className="space-y-4">
               {contribucion.grupos.map((grupo, grupoIndex) => (
-                <div key={`${grupo.id_grupo}-${grupoIndex}`} className="border border-gray-200 rounded-lg p-3">
+                <div key={`${grupo.id_grupo}-${grupoIndex}`} className={`border-l-4 ${getGroupBorderColor(grupo.id_grupo)} bg-gray-50 rounded-r-lg p-3`}>
                   <h3 className="text-lg font-semibold text-gray-700 mb-3">Grupo #{grupo.id_grupo}</h3>
                   {grupo.fechas.map((fechaInfo, fechaIndex) => (
-                    <div key={`${fechaInfo.fecha}-${fechaIndex}`} className="pl-4 border-l-2 border-blue-200 mb-4 last:mb-0">
+                    <div key={`${fechaInfo.fecha}-${fechaIndex}`} className={`pl-4 border-l-2 ${getEstadoBorderClass(fechaInfo.realizado, fechaInfo.dias_restantes)} mb-4 last:mb-0`}>
                       <div className="flex justify-between items-center mb-2">
                         <p className="text-md font-semibold text-gray-600">Fecha Límite: {fechaInfo.fecha}</p>
                         <span className={`px-3 py-1 text-xs font-bold rounded-full ${getEstadoClass(fechaInfo.realizado, fechaInfo.dias_restantes)}`}>

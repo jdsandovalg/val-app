@@ -21,9 +21,10 @@ Este documento detalla las mejoras propuestas para el proyecto Val App, según l
  
 ## II. Mejoras de Rendimiento
 
-1. **Optimizar la generación de PDF:**
-   - Utilizar una función serverless o un hilo de trabajador independiente para la generación de PDF.
-   - Justificación: Evita bloquear el hilo principal y garantiza una experiencia de usuario más fluida.
+1. **[Pendiente de Analizar] Optimizar la generación de PDF:**
+   - **Objetivo:** Utilizar una función serverless o un hilo de trabajador independiente para la generación de PDF.
+   - **Justificación:** Evita bloquear el hilo principal y garantiza una experiencia de usuario más fluida.
+   - **Nota:** La implementación inicial en el servidor fue revertida debido a problemas de compilación y ejecución. Se necesita un nuevo enfoque para esta tarea.
 
 2. **Investigar los tiempos de carga prolongados:**
    - Examinar las consultas a Supabase para garantizar que se utilice el mejor índice posible y que solo se descarguen las columnas necesarias.

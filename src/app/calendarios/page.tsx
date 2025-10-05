@@ -7,6 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Image from 'next/image';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
+import ContributionCalendarCard from './components/ContributionCalendarCard';
 import { saveContributionPayment } from '@/utils/supabase/server-actions';
 
 type Contribucion = {
@@ -15,6 +16,7 @@ type Contribucion = {
   fecha: string;
   realizado: string; // 'S' o 'N'
   dias_restantes?: number;
+  color_del_borde?: string | null;
   url_comprobante?: string | null;
 };
 
@@ -82,8 +84,14 @@ export default function CalendariosPage() {
     realizado: '',
     estado: '',
   });
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const fetchContribuciones = useCallback(async () => {
+      if (!isClient) return;
       setLoading(true);
       // Obtener el id y responsable desde localStorage
       const stored = localStorage.getItem('usuario');
@@ -104,7 +112,7 @@ export default function CalendariosPage() {
       }
       const { data, error } = await supabase
   .from('v_usuarios_contribuciones')
-  .select('id_contribucion, descripcion, fecha, realizado, dias_restantes, url_comprobante')
+  .select('id_contribucion, descripcion, fecha, realizado, dias_restantes, url_comprobante, color_del_borde')
   .eq('id', idCasa);
       if (error) {
         setError(`Error al cargar los calendarios: ${error.message}`);
@@ -115,7 +123,7 @@ export default function CalendariosPage() {
         setContribuciones((data as Contribucion[]) || []);
       }
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, isClient]);
 
   useEffect(() => {
     fetchContribuciones();
@@ -317,22 +325,22 @@ export default function CalendariosPage() {
         <button
           type="button"
           onClick={handleRegresarMenu}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex items-center gap-2"
+          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          aria-label="Regresar al menú"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
-          Regresar
         </button>
         <button
           type="button"
           onClick={handleGeneratePDF}
-          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex items-center gap-2"
+          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          aria-label="Generar Reporte PDF"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
-          Reporte PDF
         </button>
       </div>
   <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center p-2 sm:p-8">
@@ -347,7 +355,25 @@ export default function CalendariosPage() {
   {/* Título eliminado para evitar duplicado */}
         {loading && <div>Cargando...</div>}
         {error && <div className="text-red-500">{error}</div>}
-        <div className="overflow-x-auto w-full -mx-2 sm:mx-0">
+        {/* Vista de Tarjetas para móvil */}
+        <div className="w-full md:hidden">
+          {filteredAndSortedContribuciones.map((row) => (
+            <ContributionCalendarCard
+              key={`${row.id_contribucion}-${row.fecha}`}
+              id_contribucion={row.id_contribucion}
+              descripcion={row.descripcion}
+              fecha={row.fecha}
+              estado={getEstado(row)}
+              realizado={row.realizado}
+              url_comprobante={row.url_comprobante}
+              color_del_borde={row.color_del_borde}
+              onPay={() => handleOpenPaymentModal(row)}
+              onViewProof={() => handleOpenImageViewer(row.url_comprobante)}
+            />
+          ))}
+        </div>
+        {/* Vista de Tabla para escritorio */}
+        <div className="hidden md:block overflow-x-auto w-full -mx-2 sm:mx-0">
           <table className="min-w-full border rounded-lg shadow text-xs sm:text-sm">
             <thead>
               <tr className="bg-blue-900 text-white">
