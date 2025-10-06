@@ -91,43 +91,42 @@ export default function CalendariosPage() {
   }, []);
 
   const fetchContribuciones = useCallback(async () => {
-      if (!isClient) return;
+      if (!isClient) return; // No hacer nada si no estamos en el cliente
       setLoading(true);
-      // Obtener el id y responsable desde localStorage
       const stored = localStorage.getItem('usuario');
-      let idCasa = null;
       if (stored) {
         try {
           const user = JSON.parse(stored);
-          idCasa = user.id;
-          setUsuario(user);
+          if (user && user.id) {
+            setUsuario(user);
+            const { data, error } = await supabase
+              .from('v_usuarios_contribuciones')
+              .select('id_contribucion, descripcion, fecha, realizado, dias_restantes, url_comprobante, color_del_borde')
+              .eq('id', user.id);
+
+            if (error) {
+              setError(`Error al cargar los calendarios: ${error.message}`);
+            } else {
+              setContribuciones((data as Contribucion[]) || []);
+            }
+          } else {
+            router.push('/'); // Redirigir si el usuario no es válido
+          }
         } catch (e) {
           console.error("Error al parsear el usuario desde localStorage:", e);
+          router.push('/'); // Redirigir si hay error
         }
-      }
-      if (!idCasa) {
-        setError('No se encontró el usuario en localStorage');
-        setLoading(false);
-        return;
-      }
-      const { data, error } = await supabase
-  .from('v_usuarios_contribuciones')
-  .select('id_contribucion, descripcion, fecha, realizado, dias_restantes, url_comprobante, color_del_borde')
-  .eq('id', idCasa);
-      if (error) {
-        setError(`Error al cargar los calendarios: ${error.message}`);
-      } else if (!data || !Array.isArray(data)) {
-        setError('No se recibieron datos válidos de Supabase');
-        setContribuciones([]);
       } else {
-        setContribuciones((data as Contribucion[]) || []);
+        router.push('/'); // Redirigir si no hay usuario
       }
-    setLoading(false);
-  }, [supabase, isClient]);
+      setLoading(false);
+  }, [supabase, isClient, router]);
 
   useEffect(() => {
-    fetchContribuciones();
-  }, [fetchContribuciones]);
+    if (isClient) { // Solo ejecutar si estamos en el cliente
+      fetchContribuciones();
+    }
+  }, [isClient, fetchContribuciones]);
 
   // Botón para regresar al menú principal
   const handleRegresarMenu = () => {
@@ -343,7 +342,7 @@ export default function CalendariosPage() {
           </svg>
         </button>
       </div>
-  <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center p-2 sm:p-8">
+      <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center p-2 sm:p-8">
       {usuario && (
         <>
           <h2 className="text-3xl font-extrabold mb-4 text-blue-700 text-center tracking-tight">Programación de Aportaciones</h2>
@@ -352,8 +351,11 @@ export default function CalendariosPage() {
           </div>
         </>
       )}
-  {/* Título eliminado para evitar duplicado */}
-        {loading && <div>Cargando...</div>}
+        {loading && (
+          <div className="text-center py-10">
+            <p className="text-gray-500">Cargando...</p>
+          </div>
+        )}
         {error && <div className="text-red-500">{error}</div>}
         {/* Vista de Tarjetas para móvil */}
         <div className="w-full md:hidden">

@@ -78,13 +78,12 @@ export default function MenuPage() {
   const router = useRouter();
   const supabase = createClient();
 
+  // Este efecto se ejecuta solo una vez en el cliente para cargar los datos del usuario.
   useEffect(() => {
     setIsClient(true);
 
-    const fetchData = async (user: { id: number; responsable: string; tipo_usuario: string }) => {
-      // Se confía en el objeto de usuario guardado en localStorage tras un login exitoso.
-      // Ya no se vuelve a validar contra la base de datos aquí, esa validación
-      // debe ocurrir en la página de login.
+    const loadData = async (user: { id: number; responsable: string; tipo_usuario: string }) => {
+      // Establece el usuario y luego busca sus compromisos.
       setUsuario(user);
 
       const { data: commitmentsData, error: commitmentsError } = await supabase
@@ -110,9 +109,8 @@ export default function MenuPage() {
       try {
         const user = JSON.parse(stored);
         // Se verifica que el objeto de usuario completo exista en localStorage.
-        // Esto es crucial y depende de que la página de login guarde el objeto completo.
         if (user && user.id && user.responsable) {
-          fetchData(user);
+          loadData(user);
         } else {
           // Si no está el objeto completo, se considera un estado inválido.
           router.push('/');
@@ -124,7 +122,7 @@ export default function MenuPage() {
     } else {
       router.push('/');
     }
-  }, [router, supabase]);
+  }, [isClient, router, supabase]);
 
   const handleOpenPaymentModal = () => {
     if (proximoCompromiso) {
@@ -162,73 +160,76 @@ export default function MenuPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100">
-      {/* Botón regresar arriba a la izquierda */}
-      <div className="flex justify-start mt-4 ml-4">
-        <button
-          type="button"
-          onClick={handleRegresar}
-          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          aria-label="Regresar a la pantalla principal"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-        </button>
-      </div>
-      <div className="flex flex-1 items-center justify-center">
-        <div className="bg-white p-8 rounded shadow w-80 flex flex-col items-center justify-center" style={{ minHeight: '400px' }}>
-          <Image src="/logo.png" alt="Logo Condominio" width={80} height={80} className="mb-2 object-contain" />
-          <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center">Menú Principal</h2>
-          {!isClient || !usuario ? (
-            <div className="mb-4 text-center text-gray-900 dark:text-gray-100">Cargando...</div>
-          ) : (
-            <>
-              <div className="mb-4 text-center text-gray-900 dark:text-gray-100">
-                <div><span className="font-semibold">Casa:</span> {usuario.id} {usuario.tipo_usuario ? <span className="text-xs text-gray-600 dark:text-gray-300">({usuario.tipo_usuario})</span> : null}</div>
-                <div><span className="font-semibold">Responsable:</span> {usuario.responsable}</div>
-              </div>
-              <Link href="/calendarios" className="w-full flex flex-col items-center gap-1 bg-blue-600 text-white py-3 px-4 rounded hover:bg-blue-700 mb-4 justify-center">
-                <span className="flex flex-col items-center w-full">
-                  {/* Icono de calendario */}
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 mb-1">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
-                  </svg>
-                  <span className="text-sm sm:text-base font-semibold text-center w-full">Programación de aportaciones</span>
-                </span>
-              </Link>
-              <Link href="/grupos-de-trabajo" className="w-full flex flex-col items-center gap-1 bg-cyan-600 text-white py-3 px-4 rounded hover:bg-cyan-700 mb-4 justify-center">
-                <span className="flex flex-col items-center w-full">
-                  {/* Icono de grupos */}
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 mb-1">
-                    {/* Icono de organigrama/equipo */}
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.127c-.331.183-.581.495-.644.87l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.995s-.145-.755-.437-.995l-1.004-.827a1.125 1.125 0 01-.26-1.431l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.127.332-.183.582-.495.644-.87l.213-1.281z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="text-sm sm:text-base font-semibold text-center w-full">Grupos de Trabajo</span>
-                </span>
-              </Link>
-              {usuario.tipo_usuario === 'ADM' && (
-                <Link href="/admin/manage-house-contributions" className="w-full flex flex-col items-center gap-1 bg-green-600 text-white py-3 px-4 rounded hover:bg-green-700 mb-4 justify-center">
-                  <span className="flex flex-col items-center w-full">
-                    {/* Icono de lista */}
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 mb-1">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    <span className="text-sm sm:text-base font-semibold text-center w-full">Gestionar Aportaciones por Casa</span>
-                  </span>
-                </Link>
-              )}
-              <div className="w-full mt-2">
-                <ProximoCompromisoNotification compromiso={proximoCompromiso} onPayClick={handleOpenPaymentModal} />
-              </div>
-              <div className="flex w-full gap-2 mt-auto pt-4">
-                <button onClick={handleSalir} className="flex-1 bg-red-500 text-white py-2 px-2 rounded hover:bg-red-600 text-sm">Salir</button>
-              </div>
-            </>
+    <div className="flex min-h-screen flex-col bg-gray-50">
+      {/* --- Cabecera con Información del Usuario --- */}
+      {isClient && usuario && (
+        <header className="bg-white shadow-sm p-2 border-b border-gray-200">
+          <div className="w-full max-w-md mx-auto flex justify-between items-center">
+            <div>
+              <p className="text-xs text-gray-500">
+                Casa: <span className="font-bold text-gray-800">{usuario.id}</span>
+                {usuario.tipo_usuario ? <span className="ml-2 text-xs text-gray-500">({usuario.tipo_usuario})</span> : null}
+              </p>
+              <p className="text-lg font-semibold text-gray-800">{usuario.responsable}</p>
+            </div>
+            <Image src="/logo.png" alt="Logo del Condominio" width={40} height={40} className="object-contain" />
+          </div>
+        </header>
+      )}
+
+      {/* --- Contenido Principal --- */}
+      <main className="flex-1 w-full max-w-md mx-auto p-4 sm:p-6 pb-24"> {/* Padding-bottom para la barra de nav */}
+        {!isClient || !usuario ? (
+            <div className="text-center text-gray-500">Cargando...</div>
+          ) : null}
+        {/* Aquí se podría agregar más contenido en el futuro, como un dashboard */}
+      </main>
+
+      {/* --- Barra de Navegación Inferior --- */}
+      {isClient && usuario && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-gray-100 border-t border-gray-300 shadow-top flex justify-around">
+          <Link href="/calendarios" className="flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-blue-600 p-2 w-full text-center transition-colors duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
+            </svg>
+            <span className="text-xs">Aportaciones</span>
+          </Link>
+          <Link href="/grupos-de-trabajo" className="flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-cyan-600 p-2 w-full text-center transition-colors duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.127c-.331.183-.581.495-.644.87l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.995s-.145-.755-.437-.995l-1.004-.827a1.125 1.125 0 01-.26-1.431l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.127.332-.183.582-.495.644-.87l.213-1.281z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs">Grupos</span>
+          </Link>
+          {usuario && usuario.tipo_usuario === 'ADM' && (
+            <Link href="/admin/manage-house-contributions" className="flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-green-600 p-2 w-full text-center transition-colors duration-200">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+              </svg>
+              <span className="text-xs">Admin</span>
+            </Link>
           )}
-        </div>
-      </div>
+          {/* --- Botón de Notificaciones --- */}
+          <button onClick={handleOpenPaymentModal} className="relative flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-yellow-600 p-2 w-full text-center transition-colors duration-200" disabled={!proximoCompromiso}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+            </svg>
+            <span className="text-xs">Alertas</span>
+            {proximoCompromiso && (
+              <span className="absolute top-1 right-4 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                1
+              </span>
+            )}
+          </button>
+          <button onClick={handleSalir} className="flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-red-600 p-2 w-full text-center transition-colors duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+            </svg>
+            <span className="text-xs">Salir</span>
+          </button>
+        </nav>
+      )}
+
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={handleClosePaymentModal}

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
@@ -50,50 +51,39 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100">
-      {/* Botón regresar arriba a la izquierda */}
-      <div className="flex justify-start mt-4 ml-4">
-        <button
-          type="button"
-          onClick={() => router.push('/')}
-          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          aria-label="Regresar a la pantalla principal"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-        </button>
-      </div>
-      <div className="flex flex-1 items-center justify-center">
-        <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow w-80">
-          <div className="flex justify-center mb-4">
-            <Image src="/logo.png" alt="Logo Condominio" width={80} height={80} className="object-contain" />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-xs">
+        <Link href="/" className="flex justify-center mb-6">
+          <div className="flex justify-center">
+            <Image src="/logo.png" alt="Logo Condominio" width={64} height={64} className="object-contain" />
           </div>
-          <h2 className="text-2xl font-bold mb-6 text-center">Ingreso al sistema</h2>
+        </Link>
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Iniciar Sesión</h1>
+        <form onSubmit={handleLogin} className="space-y-6">
           <div className="mb-4">
-            <label className="block mb-1 text-gray-900 dark:text-gray-100">Número de casa</label>
             <input
               type="text"
               value={id}
               onChange={e => setId(e.target.value)}
-              className="w-full border px-3 py-2 rounded text-gray-900 dark:text-gray-100"
+              placeholder="Número de casa"
+              className="w-full bg-transparent border-b-2 border-gray-300 px-2 py-2 text-gray-800 focus:outline-none focus:border-blue-500 transition-colors"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-1 text-gray-900 dark:text-gray-100">Clave</label>
             <input
               type="password"
               value={clave}
               onChange={e => setClave(e.target.value)}
-              className="w-full border px-3 py-2 rounded text-gray-900 dark:text-gray-100"
+              placeholder="Clave"
+              className="w-full bg-transparent border-b-2 border-gray-300 px-2 py-2 text-gray-800 focus:outline-none focus:border-blue-500 transition-colors"
               required
             />
           </div>
           {error && <div className="text-red-500 mb-4">{error}</div>}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            className="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all duration-300 shadow-lg hover:shadow-xl"
             disabled={loading}
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
