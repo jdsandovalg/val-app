@@ -304,24 +304,23 @@ export default function CalendariosPage() {
 
   return (
     <>
-      <div className="flex justify-end items-center mb-4">
-        <button
-          type="button"
-          onClick={handleGeneratePDF}
-          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          aria-label="Generar Reporte PDF"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-        </button>
-      </div>
       <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center flex-grow">
       {usuario && (
         <>
-          <h1 className="text-2xl font-bold text-gray-800 text-center">Programación de Aportaciones</h1>
-          <div className="mb-4 text-xs text-gray-500 text-center w-full">
-            <span className="font-semibold text-blue-900">Casa:</span> {usuario.id} &nbsp;|&nbsp; <span className="font-semibold text-blue-900">Responsable:</span> {usuario.responsable}
+          <div className="w-full flex justify-between items-center mb-4">
+            {/* Espaciador para mantener el título centrado */}
+            <div className="w-10 h-10"></div>
+            <h1 className="text-2xl font-bold text-gray-800 text-center">Programación de Aportaciones</h1>
+            <button
+              type="button"
+              onClick={handleGeneratePDF}
+              className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              aria-label="Generar Reporte PDF"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+            </button>
           </div>
         </>
       )}
