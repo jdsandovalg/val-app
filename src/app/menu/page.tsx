@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
 import { useRouter, usePathname } from 'next/navigation';
@@ -53,6 +53,7 @@ export default function MenuPage() {
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const adminMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -94,6 +95,20 @@ export default function MenuPage() {
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
+        setIsAdminMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [adminMenuRef]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -156,7 +171,7 @@ export default function MenuPage() {
         </div>
         <div className="flex items-center gap-4">
           {usuario && usuario.tipo_usuario === 'ADM' && (
-            <div className="relative flex items-center">
+            <div ref={adminMenuRef} className="relative flex items-center">
               <button
                 onClick={() => setIsAdminMenuOpen(prev => !prev)}
                 className="text-gray-600 hover:text-green-600"
