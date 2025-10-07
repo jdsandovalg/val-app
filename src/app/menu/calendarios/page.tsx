@@ -68,10 +68,8 @@ function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () =>
 export default function CalendariosPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [contribuciones, setContribuciones] = useState<Contribucion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [usuario, setUsuario] = useState<{ id: number; responsable: string } | null>(null);
+  const [contribuciones, setContribuciones] = useState<Contribucion[]>([]);  
+  const [usuario, setUsuario] = useState<{ id: number; responsable: string } | null>(null);  
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedContribution, setSelectedContribution] = useState<Contribucion | null>(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
@@ -91,47 +89,32 @@ export default function CalendariosPage() {
   }, []);
 
   const fetchContribuciones = useCallback(async () => {
-      if (!isClient) return; // No hacer nada si no estamos en el cliente
-      setLoading(true);
-      const stored = localStorage.getItem('usuario');
-      if (stored) {
-        try {
-          const user = JSON.parse(stored);
-          if (user && user.id) {
-            setUsuario(user);
-            const { data, error } = await supabase
-              .from('v_usuarios_contribuciones')
-              .select('id_contribucion, descripcion, fecha, realizado, dias_restantes, url_comprobante, color_del_borde')
-              .eq('id', user.id);
+    const stored = localStorage.getItem('usuario');
+    if (!stored) {
+      router.push('/');
+      return;
+    }
+    
+    try {
+      const user = JSON.parse(stored);
+      setUsuario(user);
+      const { data, error } = await supabase
+        .from('v_usuarios_contribuciones')
+        .select('id_contribucion, descripcion, fecha, realizado, dias_restantes, url_comprobante, color_del_borde')
+        .eq('id', user.id);
 
-            if (error) {
-              setError(`Error al cargar los calendarios: ${error.message}`);
-            } else {
-              setContribuciones((data as Contribucion[]) || []);
-            }
-          } else {
-            router.push('/'); // Redirigir si el usuario no es válido
-          }
-        } catch (e) {
-          console.error("Error al parsear el usuario desde localStorage:", e);
-          router.push('/'); // Redirigir si hay error
-        }
-      } else {
-        router.push('/'); // Redirigir si no hay usuario
-      }
-      setLoading(false);
-  }, [supabase, isClient, router]);
+      if (error) throw error;
+      setContribuciones((data as Contribucion[]) || []);
+    } catch (e) {
+      console.error("Error al cargar datos de calendario:", e);
+      // Opcional: mostrar un mensaje de error en la UI
+      router.push('/menu'); // En caso de error, volver al menú principal
+    }
+  }, [supabase, router]);
 
   useEffect(() => {
-    if (isClient) { // Solo ejecutar si estamos en el cliente
-      fetchContribuciones();
-    }
+    fetchContribuciones();
   }, [isClient, fetchContribuciones]);
-
-  // Botón para regresar al menú principal
-  const handleRegresarMenu = () => {
-    router.push('/menu');
-  };
 
   const handleSort = (key: SortableKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -318,19 +301,8 @@ export default function CalendariosPage() {
   }, [usuario, filteredAndSortedContribuciones]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100">
-      {/* Botón regresar arriba a la izquierda */}
-      <div className="flex justify-between items-center mt-4 mx-4">
-        <button
-          type="button"
-          onClick={handleRegresarMenu}
-          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          aria-label="Regresar al menú"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-        </button>
+    <>
+      <div className="flex justify-end items-center mb-4">
         <button
           type="button"
           onClick={handleGeneratePDF}
@@ -342,7 +314,7 @@ export default function CalendariosPage() {
           </svg>
         </button>
       </div>
-      <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center p-2 sm:p-8">
+      <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center flex-grow">
       {usuario && (
         <>
           <h2 className="text-3xl font-extrabold mb-4 text-blue-700 text-center tracking-tight">Programación de Aportaciones</h2>
@@ -351,12 +323,6 @@ export default function CalendariosPage() {
           </div>
         </>
       )}
-        {loading && (
-          <div className="text-center py-10">
-            <p className="text-gray-500">Cargando...</p>
-          </div>
-        )}
-        {error && <div className="text-red-500">{error}</div>}
         {/* Vista de Tarjetas para móvil */}
         <div className="w-full md:hidden">
           {filteredAndSortedContribuciones.map((row) => (
@@ -429,7 +395,7 @@ export default function CalendariosPage() {
               ) : (
                 <tr>
                   <td colSpan={5} className="text-center py-10 text-gray-500">
-                    {loading ? 'Cargando...' : 'No se encontraron aportaciones que coincidan con los filtros.'}
+                    No se encontraron aportaciones que coincidan con los filtros.
                   </td>
                 </tr>
               )}
@@ -449,6 +415,6 @@ export default function CalendariosPage() {
           onClose={handleCloseImageViewer}
         />
       )}
-    </div>
+    </>
   );
 }
