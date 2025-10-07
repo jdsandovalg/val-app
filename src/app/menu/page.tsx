@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
 
@@ -14,6 +14,36 @@ type ProximoCompromiso = {
   dias_restantes: number;
 };
 
+const navLinkItems = [
+  {
+    href: '/menu',
+    label: 'Inicio',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      </svg>
+    ),
+  },
+  {
+    href: '/calendarios',
+    label: 'Calendario',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 12.75h.008v.008H12v-.008z" />
+      </svg>
+    ),
+  },
+  {
+    href: '/grupos-de-trabajo',
+    label: 'Grupos',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.566-.16-1.168.359-1.168.359m0 0a3.001 3.001 0 015.196 0m0 0a3.001 3.001 0 01-5.196 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+];
+
 export default function MenuPage() {
   const supabase = createClient();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -22,6 +52,7 @@ export default function MenuPage() {
   const [isClient, setIsClient] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsClient(true);
@@ -123,12 +154,48 @@ export default function MenuPage() {
         <div className="text-lg font-bold text-blue-800">
           {usuario ? `Hola, ${usuario.responsable}` : 'Bienvenido'}
         </div>
-        <button
-          onClick={handleLogout}
-          className="text-sm text-red-600 hover:text-red-800 font-semibold"
-        >
-          Cerrar Sesión
-        </button>
+        <div className="flex items-center gap-4">
+          {usuario && usuario.tipo_usuario === 'ADM' && (
+            <div className="relative flex items-center">
+              <button
+                onClick={() => setIsAdminMenuOpen(prev => !prev)}
+                className="text-gray-600 hover:text-green-600"
+                aria-label="Abrir menú de administración"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008h-.008v-.008z" />
+                </svg>
+              </button>
+              {isAdminMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200">
+                  <div className="py-1">
+                    <Link href="/admin/manage-house-contributions" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3 text-gray-500">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Aportaciones
+                    </Link>
+                    <Link href="/admin/manage-users" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3 text-gray-500">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Usuarios
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            className="text-gray-600 hover:text-red-600"
+            aria-label="Cerrar Sesión"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {/* --- Contenido Principal (vacío para empujar el footer hacia abajo) --- */}
@@ -136,47 +203,19 @@ export default function MenuPage() {
 
       {/* --- Menú de Navegación Inferior --- */}
       <footer className="bg-white shadow-t sticky bottom-0 z-10">
-        <nav className="flex justify-around max-w-4xl mx-auto">
-          <Link href="/menu" className="flex flex-col items-center justify-center text-blue-600 p-2 w-full text-center transition-colors duration-200">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-            </svg>
-            <span className="text-xs">Inicio</span>
-          </Link>
-          <Link href="/calendarios" className="flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-blue-600 p-2 w-full text-center transition-colors duration-200">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 12.75h.008v.008H12v-.008z" />
-            </svg>
-            <span className="text-xs">Calendario</span>
-          </Link>
-          <Link href="/grupos-de-trabajo" className="flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-blue-600 p-2 w-full text-center transition-colors duration-200">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.566-.16-1.168.359-1.168.359m0 0a3.001 3.001 0 015.196 0m0 0a3.001 3.001 0 01-5.196 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-xs">Grupos</span>
-          </Link>
-          {usuario && usuario.tipo_usuario === 'ADM' && (
-            <div className="relative flex-1">
-              <button onClick={() => setIsAdminMenuOpen(prev => !prev)} className="flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-green-600 p-2 w-full text-center transition-colors duration-200">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0h9.75" />
-                </svg>
-                <span className="text-xs">Admin</span>
-              </button>
-              {isAdminMenuOpen && (
-                <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200">
-                  <div className="py-1">
-                    <Link href="/admin/manage-house-contributions" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Gestionar Aportaciones
-                    </Link>
-                    <Link href="/admin/manage-users" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Gestionar Usuarios
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+        <nav className="flex justify-evenly max-w-4xl mx-auto">
+          {navLinkItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link 
+                key={item.href} 
+                href={item.href} 
+                className={`flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 hover:bg-gray-200 hover:text-blue-600 ${isActive ? 'text-blue-600' : 'text-gray-600'}`}>
+                {item.icon}
+                <span className="text-xs">{item.label}</span>
+              </Link>
+            );
+          })}
           {/* --- Botón de Notificaciones --- */}
           <button onClick={handleOpenPaymentModal} className="relative flex flex-col items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-yellow-600 p-2 w-full text-center transition-colors duration-200" disabled={!proximoCompromiso}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
