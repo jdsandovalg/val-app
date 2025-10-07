@@ -62,17 +62,23 @@ export interface Database {
       usuarios: {
         Row: {
           id: number
+          created_at: string
           responsable: string
+          clave: string
           tipo_usuario: string | null // 'ADM' or other
         }
         Insert: {
           id: number
+          created_at?: string
           responsable: string
+          clave: string
           tipo_usuario?: string | null
         }
         Update: {
           id?: number
+          created_at?: string
           responsable?: string
+          clave?: string
           tipo_usuario?: string | null
         }
       }
