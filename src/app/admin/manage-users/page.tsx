@@ -1,19 +1,33 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+/**
+ * @file /src/app/admin/manage-users/page.tsx
+ * @fileoverview Página de administración para la gestión de usuarios (casas).
+ * @description Esta pantalla permite a los administradores realizar operaciones CRUD (Crear, Leer, Actualizar, Eliminar)
+ * sobre los usuarios del sistema. Proporciona una vista de tabla para escritorio y tarjetas para móvil,
+ * con funcionalidades de filtrado y ordenamiento.
+ *
+ * @accesible_desde Menú de "Admin" en el encabezado -> Opción "Usuarios".
+ * @acceso_a_datos Utiliza el hook `useUsersData` para obtener todos los usuarios de la tabla `usuarios`.
+ * El filtrado y la ordenación se realizan en el lado del cliente mediante `useMemo`.
+ */
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import type { Usuario } from '@/types/database';
 import { useRouter } from 'next/navigation';
 import UserModal from './components/UserModal';
 import UserTable from './components/UserTable';
 import UserCard from './components/UserCard';
-import useUsersData from './hooks/useUsersData';
-import { userService } from './services/userService';
+import { createClient } from '@/utils/supabase/client';
 
 type SortableKeys = keyof Usuario;
 
 export default function ManageUsersPage() {
   const router = useRouter();
-  const { users, loading, error: fetchError, fetchData } = useUsersData();
+  const supabase = createClient();
+
+  const [users, setUsers] = useState<Usuario[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const [uiError, setUiError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,6 +46,25 @@ export default function ManageUsersPage() {
     tipo_usuario: '',
   });
 
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setFetchError(null);
+    try {
+      const { data, error } = await supabase.rpc('get_all_users');
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Ocurrió un error desconocido.';
+      setFetchError(`Error al cargar los usuarios: ${message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const handleOpenModal = (user: Partial<Usuario> | null = null) => {
     setEditingUser(user);
     setIsModalOpen(true);
@@ -45,11 +78,27 @@ export default function ManageUsersPage() {
   const handleSave = async (userData: Partial<Usuario>) => {
     setUiError(null);
     try {
-      const dataToSave = {
-        ...userData,
-        id: userData.id ? parseInt(String(userData.id), 10) : undefined,
-      };
-      await userService.saveUser(dataToSave);
+      if (!userData.id || !userData.responsable || !userData.clave) {
+        throw new Error("ID, Responsable y Clave son campos obligatorios.");
+      }
+
+      if (editingUser) { // Actualización
+        const { error } = await supabase.rpc('update_user', {
+          p_id: userData.id,
+          p_responsable: userData.responsable,
+          p_clave: userData.clave,
+          p_tipo_usuario: userData.tipo_usuario || 'PRE'
+        });
+        if (error) throw error;
+      } else { // Creación
+        const { error } = await supabase.rpc('create_user', {
+          p_id: userData.id,
+          p_responsable: userData.responsable,
+          p_clave: userData.clave,
+          p_tipo_usuario: userData.tipo_usuario || 'PRE'
+        });
+        if (error) throw error;
+      }
       alert('¡Usuario guardado exitosamente!');
     } catch (err: unknown) {
       console.error('Error en handleSave:', err);
@@ -68,8 +117,11 @@ export default function ManageUsersPage() {
 
   const handleDelete = async (userToDelete: Usuario) => {
     if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario de la casa ${userToDelete.id}?`)) {
+      setUiError(null);
       try {
-        await userService.deleteUser(userToDelete.id);
+        const { error } = await supabase.rpc('delete_user', { p_id: userToDelete.id });
+        if (error) throw error;
+
         alert('Usuario eliminado exitosamente.');
         fetchData();
       } catch (err: unknown) {
@@ -136,7 +188,7 @@ export default function ManageUsersPage() {
   }, [users, sortConfig, filters]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+    <div className="bg-gray-50 p-4 sm:p-8">
       <div className="flex justify-between items-center mb-6">
         <button
           type="button"
@@ -149,7 +201,7 @@ export default function ManageUsersPage() {
           </svg>
         </button>
 
-        <h1 className="text-xl sm:text-3xl font-bold text-gray-800 text-center">Gestionar Usuarios</h1>
+        <h1 className="text-2xl font-bold text-gray-800 text-center">Gestionar Usuarios</h1>
 
         <div className="relative flex items-center gap-2">
           <button

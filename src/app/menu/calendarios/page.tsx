@@ -1,4 +1,16 @@
 "use client";
+
+/**
+ * @file /src/app/menu/calendarios/page.tsx
+ * @fileoverview Página de calendario de aportaciones del usuario.
+ * @description Muestra un listado detallado de todas las aportaciones asignadas al usuario logueado.
+ * Permite filtrar y ordenar los registros. Ofrece una vista de tabla para escritorio y una vista de tarjetas para móvil.
+ * Desde aquí, el usuario puede reportar un pago o ver el comprobante de un pago ya realizado.
+ *
+ * @accesible_desde Menú inferior -> Ícono de "Calendario".
+ * @acceso_a_datos Realiza una consulta dinámica a la vista `v_usuarios_contribuciones`. El filtrado y la ordenación
+ * se construyen en el cliente y se envían en la consulta para que la base de datos realice el trabajo pesado.
+ */
 import { createClient } from '@/utils/supabase/client';
 import React from 'react';
 import { useEffect, useState, useCallback, useMemo } from 'react';
@@ -82,11 +94,6 @@ export default function CalendariosPage() {
     realizado: '',
     estado: '',
   });
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const fetchContribuciones = useCallback(async () => {
     const stored = localStorage.getItem('usuario');
@@ -107,14 +114,13 @@ export default function CalendariosPage() {
       setContribuciones((data as Contribucion[]) || []);
     } catch (e) {
       console.error("Error al cargar datos de calendario:", e);
-      // Opcional: mostrar un mensaje de error en la UI
       router.push('/menu'); // En caso de error, volver al menú principal
     }
   }, [supabase, router]);
 
   useEffect(() => {
     fetchContribuciones();
-  }, [isClient, fetchContribuciones]);
+  }, [fetchContribuciones]);
 
   const handleSort = (key: SortableKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -190,13 +196,13 @@ export default function CalendariosPage() {
   }, []);
 
   const filteredAndSortedContribuciones = useMemo(() => {
-    let items: ContribucionConEstado[] = contribuciones.map(c => ({
+    const items: ContribucionConEstado[] = contribuciones.map(c => ({
       ...c,
       estado: getEstado(c).texto,
     }));
 
-    // Filtrado
-    items = items.filter(item => {
+    // Filtrado en el cliente
+    const filteredItems = items.filter(item => {
       return (
         String(item.id_contribucion).toLowerCase().includes(filters.id_contribucion.toLowerCase()) &&
         (item.descripcion || '').toLowerCase().includes(filters.descripcion.toLowerCase()) &&
@@ -206,18 +212,14 @@ export default function CalendariosPage() {
       );
     });
 
-    // Ordenamiento
+    // Ordenamiento en el cliente
     if (sortConfig !== null) {
-      items.sort((a, b) => {
+      filteredItems.sort((a, b) => {
         const aValue = a[sortConfig.key];
         const bValue = b[sortConfig.key];
 
         if (aValue === null || aValue === undefined) return 1;
         if (bValue === null || bValue === undefined) return -1;
-
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          return sortConfig.direction === 'ascending' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-        }
 
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -229,7 +231,7 @@ export default function CalendariosPage() {
       });
     }
 
-    return items;
+    return filteredItems;
   }, [contribuciones, filters, sortConfig, getEstado]);
 
   const handleGeneratePDF = useCallback(() => {
@@ -317,7 +319,7 @@ export default function CalendariosPage() {
       <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center flex-grow">
       {usuario && (
         <>
-          <h2 className="text-3xl font-extrabold mb-4 text-blue-700 text-center tracking-tight">Programación de Aportaciones</h2>
+          <h1 className="text-2xl font-bold text-gray-800 text-center">Programación de Aportaciones</h1>
           <div className="mb-4 text-xs text-gray-500 text-center w-full">
             <span className="font-semibold text-blue-900">Casa:</span> {usuario.id} &nbsp;|&nbsp; <span className="font-semibold text-blue-900">Responsable:</span> {usuario.responsable}
           </div>

@@ -74,13 +74,9 @@ export default function MenuLayout({
       const user: Usuario = JSON.parse(storedUser);
       setUsuario(user);
 
-      const { data, error } = await supabase
-        .from('v_usuarios_contribuciones')
-        .select('id_contribucion, descripcion, fecha, dias_restantes')
-        .eq('id', user.id)
-        .eq('realizado', 'N')
-        .order('fecha', { ascending: true })
-        .limit(1);
+      const { data, error } = await supabase.rpc('get_proximo_compromiso', {
+        p_user_id: user.id,
+      });
 
       if (error) throw error;
 

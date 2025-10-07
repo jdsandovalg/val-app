@@ -1,6 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * @file /src/app/menu/grupos-de-trabajo/page.tsx
+ * @fileoverview Página de visualización de grupos de trabajo.
+ * @description Muestra las asignaciones de trabajo (ej. "Mantenimiento Jardines") agrupadas por tipo,
+ * grupo y fecha. Para cada fecha, lista las casas responsables. La lógica de agrupación y filtrado
+ * se delega a la base de datos para un rendimiento óptimo en móviles.
+ *
+ * @accesible_desde Menú inferior -> Ícono de "Grupos".
+ * @acceso_a_datos Llama a la función RPC de Supabase `get_grupos_trabajo_usuario`, pasándole el ID y tipo
+ * del usuario. La base de datos devuelve los datos ya procesados y agrupados en formato JSON.
+ */
+import { useState, useEffect } from 'react';
 import type { Usuario } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -34,75 +45,25 @@ export default function GruposDeTrabajoPage() {
   useEffect(() => {
     if (isClient) {
       const fetchData = async () => {
-        // 1. Obtener el usuario desde localStorage para saber su tipo y su ID de casa
         const storedUser = localStorage.getItem('usuario');
         if (!storedUser) {
           router.push('/');
           return;
         }
         const currentUser: Usuario = JSON.parse(storedUser);
-
+  
         try {
-          // 2. Ejecutar la consulta a la base de datos
-          const { data, error } = await supabase
-            .from('v_usuarios_contribuciones')
-            .select('descripcion, id_grupo, fecha, dias_restantes, realizado, id, nombre')
-            .order('descripcion', { ascending: true })
-            .order('fecha', { ascending: true })
-            .order('id_grupo', { ascending: true });
-
-          // Debug: Mostrar los datos crudos recibidos de Supabase
-          console.log('Datos recibidos de Supabase:', data);
-
+          // Llamar a la función RPC en la base de datos
+          const { data, error } = await supabase.rpc('get_grupos_trabajo_usuario', {
+            p_user_id: currentUser.id,
+            p_user_type: currentUser.tipo_usuario,
+          });
+  
           if (error) throw error;
-
-          const agrupado = data.reduce<Record<string, ContribucionAgrupada>>((acc, row) => {
-            // 3. Si el usuario no es ADM, filtrar para mostrar solo los grupos a los que pertenece.
-            if (currentUser.tipo_usuario !== 'ADM') {
-              const perteneceAlGrupo = data.some(d =>
-                d.descripcion === row.descripcion && d.id_grupo === row.id_grupo && d.id === currentUser.id
-              );
-              if (!perteneceAlGrupo) return acc;
-            }
-
-            if (!row.descripcion || row.id_grupo === null) return acc;
-
-            if (!acc[row.descripcion]) {
-              acc[row.descripcion] = {
-                descripcion: row.descripcion,
-                grupos: [],
-              };
-            }
-
-            let grupo = acc[row.descripcion].grupos.find(g => g.id_grupo === row.id_grupo);
-            if (!grupo) {
-              grupo = {
-                id_grupo: row.id_grupo,
-                fechas: [],
-              };
-              acc[row.descripcion].grupos.push(grupo);
-            }
-
-            let fechaObj = grupo.fechas.find(f => f.fecha === row.fecha);
-            if (!fechaObj) {
-              fechaObj = {
-                fecha: row.fecha,
-                dias_restantes: row.dias_restantes ?? 0,
-                realizado: row.realizado,
-                casas: [],
-              };
-              grupo.fechas.push(fechaObj);
-            }
-
-            if (row.id && row.nombre) {
-              if (!fechaObj.casas.some(c => c.id === row.id)) {
-                fechaObj.casas.push({ id: row.id, nombre: row.nombre });
-              }
-            }
-            return acc;
-          }, {});
-
-          setGrupos(Object.values(agrupado));
+  
+          // La data ya viene procesada desde la base de datos
+          setGrupos(data || []);
+  
         } catch (err: unknown) {
           console.error("Error al cargar los grupos de trabajo:", err);
           router.push('/menu'); // En caso de error, volver al menú principal
@@ -112,69 +73,51 @@ export default function GruposDeTrabajoPage() {
     }
   }, [isClient, router, supabase]);
 
-  const getEstadoClass = (realizado: string, dias: number) => {
-    if (realizado === 'S') return 'bg-green-100 text-green-800';
-    if (dias >= 0) return 'bg-red-100 text-red-800';
-    return 'bg-yellow-100 text-yellow-800';
-  };
-
-  const getEstadoBorderClass = (realizado: string, dias: number) => {
-    if (realizado === 'S') return 'border-green-500';
-    if (dias >= 0) return 'border-red-500';
-    return 'border-yellow-500';
-  };
-
-  const getGroupBorderColor = (groupId: number | null) => {
-    const colors = [
-      'border-blue-500',
-      'border-green-500',
-      'border-purple-500',
-      'border-yellow-500',
-      'border-pink-500',
-      'border-teal-500',
-    ];
-    return colors[(groupId || 0) % colors.length] || 'border-gray-500';
-  };
-
   return (
     <>
       <div className="flex justify-center items-center mb-6">
-        <h1 className="text-xl sm:text-3xl font-bold text-gray-800 text-center">Grupos de Trabajo</h1>
+        <h1 className="text-2xl font-bold text-gray-800 text-center">Grupos de Trabajo</h1>
       </div>
 
       <div className="space-y-6">
-        {grupos.map((contribucion) => (
-          <div key={contribucion.descripcion} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold text-blue-800 border-b pb-2 mb-4">{contribucion.descripcion}</h2>
-            <div className="space-y-4">
-              {contribucion.grupos.map((grupo, grupoIndex) => (
-                <div key={`${grupo.id_grupo}-${grupoIndex}`} className={`border-l-4 ${getGroupBorderColor(grupo.id_grupo)} bg-gray-50 rounded-r-lg p-3`}>
+        {grupos.length > 0 ? (
+          grupos.map((contribucion) => (
+            <div key={contribucion.descripcion} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-bold text-blue-800 border-b pb-2 mb-4">{contribucion.descripcion}</h2>
+              {contribucion.grupos.map((grupo) => (
+                <div key={grupo.id_grupo} className="mb-6 last:mb-0">
                   <h3 className="text-lg font-semibold text-gray-700 mb-3">Grupo #{grupo.id_grupo}</h3>
-                  {grupo.fechas.map((fechaInfo, fechaIndex) => (
-                    <div key={`${fechaInfo.fecha}-${fechaIndex}`} className={`pl-4 border-l-2 ${getEstadoBorderClass(fechaInfo.realizado, fechaInfo.dias_restantes)} mb-4 last:mb-0`}>
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="text-md font-semibold text-gray-600">Fecha Límite: {fechaInfo.fecha}</p>
-                        <span className={`px-3 py-1 text-xs font-bold rounded-full ${getEstadoClass(fechaInfo.realizado, fechaInfo.dias_restantes)}`}>
-                          {fechaInfo.realizado === 'S' ? 'Realizado' : fechaInfo.dias_restantes >= 0 ? `Vencido (${fechaInfo.dias_restantes} días)` : `Pendiente (${Math.abs(fechaInfo.dias_restantes)} días)`}
-                        </span>
-                      </div>
-                      <ul className="space-y-1">
-                        {fechaInfo.casas.map((casa) => (
-                          <li key={casa.id} className="bg-gray-50 p-2 border rounded-md text-sm">
-                            <div className="flex flex-col sm:flex-row sm:items-center">
-                              <span className="font-semibold text-gray-800">Casa {casa.id}:</span>
-                              <span className="text-gray-600 sm:ml-2">{casa.nombre}</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {grupo.fechas.map((fechaInfo) => (
+                      <div key={fechaInfo.fecha} className="border rounded-lg p-3 bg-gray-50">
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="text-sm font-medium text-gray-600">{fechaInfo.fecha}</p>
+                          <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
+                            fechaInfo.realizado === 'S' ? 'bg-green-100 text-green-800' :
+                            fechaInfo.dias_restantes >= 0 ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {fechaInfo.realizado === 'S' ? 'Realizado' : 'Pendiente'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500 space-y-1">
+                          {fechaInfo.casas.map(casa => (
+                            <div key={casa.id} className="flex justify-between">
+                              <span>Casa {casa.id}</span>
+                              <span className="font-medium">{casa.nombre}</span>
                             </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <div className="text-center py-10 text-gray-500">Cargando grupos de trabajo...</div>
+        )}
       </div>
     </>
   );

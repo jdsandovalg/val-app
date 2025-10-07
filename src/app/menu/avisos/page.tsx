@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @file /src/app/menu/avisos/page.tsx
+ * @fileoverview Página de avisos y registro de pagos.
+ * @description Esta pantalla muestra al usuario su próximo compromiso de pago pendiente. Si existe uno,
+ * presenta un formulario para registrar el pago, incluyendo el monto y un comprobante en imagen.
+ * Si el usuario está al día, muestra un mensaje de felicitación.
+ *
+ * @accesible_desde Menú inferior -> Ícono de "Avisos" (campana).
+ * @acceso_a_datos Realiza una consulta a la vista `v_usuarios_contribuciones` para obtener el registro más próximo con `realizado = 'N'`.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
@@ -33,13 +43,9 @@ export default function AvisosPage() {
       const user: Usuario = JSON.parse(storedUser);
       setUsuario(user);
 
-      const { data, error } = await supabase
-        .from('v_usuarios_contribuciones')
-        .select('id_contribucion, descripcion, fecha, dias_restantes')
-        .eq('id', user.id)
-        .eq('realizado', 'N')
-        .order('fecha', { ascending: true })
-        .limit(1);
+      const { data, error } = await supabase.rpc('get_proximo_compromiso', {
+        p_user_id: user.id,
+      });
 
       if (error) throw error;
 
@@ -105,7 +111,7 @@ export default function AvisosPage() {
   if (!proximoCompromiso) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
-        <h1 className="text-2xl font-bold text-gray-800">Avisos</h1>
+        <h1 className="text-2xl font-bold text-gray-800 text-center">Avisos</h1>
         <p className="mt-4 text-gray-600">No tienes compromisos de pago pendientes. ¡Estás al día!</p>
       </div>
     );
@@ -113,7 +119,7 @@ export default function AvisosPage() {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800">Registrar Pago</h1>
+      <h1 className="text-2xl font-bold text-gray-800 text-center">Registrar Pago</h1>
       <p className="mt-2 text-gray-600">
         Estás a punto de registrar el pago para: <span className="font-semibold">{proximoCompromiso.descripcion}</span>
       </p>

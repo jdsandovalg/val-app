@@ -1,6 +1,17 @@
 'use client';
 
-import { useState, useCallback, useRef, useMemo } from 'react';
+/**
+ * @file /src/app/admin/manage-house-contributions/page.tsx
+ * @fileoverview Página de administración para gestionar las aportaciones por casa.
+ * @description Esta pantalla permite a los administradores realizar operaciones CRUD (Crear, Leer, Actualizar, Eliminar)
+ * sobre los registros de aportaciones. Ofrece una vista de tabla para escritorio y tarjetas para móvil,
+ * con funcionalidades de filtrado, ordenamiento, carga masiva por CSV y generación de reportes en PDF.
+ *
+ * @accesible_desde Menú de "Admin" en el encabezado -> Opción "Aportaciones".
+ * @acceso_a_datos Utiliza el hook `useContributionsData` para obtener todos los registros de la vista
+ * `v_usuarios_contribuciones`. El filtrado y la ordenación se realizan en el lado del cliente mediante `useMemo`.
+ */
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { ContribucionPorCasa } from '@/types/database';
 import type { ContribucionPorCasaExt, SortableKeys } from '@/types';
@@ -8,7 +19,6 @@ import { useRouter } from 'next/navigation';
 import ContributionModal from './components/ContributionModal';
 import ContributionTable from './components/ContributionTable';
 import ContributionCard from './components/ContributionCard';
-import useContributionsData from './hooks/useContributionsData';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -18,8 +28,13 @@ export default function ManageHouseContributionsPage() {
   const supabase = createClient();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { records, usuarios, contribuciones, loading, error: fetchError, fetchData } = useContributionsData();
-  const [error, setError] = useState<string | null>(null); // Estado local para errores de UI
+  
+  const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
+  const [usuarios, setUsuarios] = useState<{ id: number; responsable: string; }[]>([]);
+  const [contribuciones, setContribuciones] = useState<{ id_contribucion: string; descripcion: string | null; }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Partial<ContribucionPorCasaExt> | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,6 +53,34 @@ export default function ManageHouseContributionsPage() {
     realizado: '',
   });
 
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setFetchError(null);
+    try {
+      // Usar la nueva función RPC para obtener los datos
+      const { data: recordsData, error: recordsError } = await supabase.rpc('get_all_contributions_admin');
+      if (recordsError) throw recordsError;
+      setRecords(recordsData || []);
+
+      // Obtener datos auxiliares para los modales (esto se puede optimizar más adelante si es necesario)
+      const { data: usersData, error: usersError } = await supabase.from('usuarios').select('id, responsable');
+      if (usersError) throw usersError;
+      setUsuarios(usersData || []);
+
+      const { data: contribsData, error: contribsError } = await supabase.from('contribuciones').select('id_contribucion, descripcion');
+      if (contribsError) throw contribsError;
+      setContribuciones(contribsData || []);
+
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Ocurrió un error desconocido.';
+      setFetchError(`Error al cargar los datos: ${message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
   const handleOpenModal = (record: Partial<ContribucionPorCasaExt> | null = null) => {
     setEditingRecord(record);
     setIsModalOpen(true);
@@ -51,35 +94,37 @@ export default function ManageHouseContributionsPage() {
   const handleSave = async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null); // Limpiar errores de UI
     try {
-      const dataToSave = { ...recordData };
-      delete dataToSave.usuarios;
-      delete dataToSave.contribuciones;
-
-      const finalData = {
-        ...dataToSave,
-        pagado: dataToSave.pagado != null && String(dataToSave.pagado).trim() !== '' ? parseFloat(String(dataToSave.pagado)) : null,
-        id_casa: dataToSave.id_casa ? parseInt(String(dataToSave.id_casa), 10) : null,
-        id_contribucion: dataToSave.id_contribucion ? String(dataToSave.id_contribucion) : null,
-      };
-
-      let rpcError: { message: string } | null = null;
-
-      // Si editingRecord existe, es una ACTUALIZACIÓN. Usamos la llave primaria original para la cláusula WHERE.
+      // Si editingRecord existe, es una ACTUALIZACIÓN.
       if (editingRecord && editingRecord.id_casa && editingRecord.id_contribucion && editingRecord.fecha) {
-        const { error } = await supabase
-          .from('contribucionesporcasa')
-          .update(finalData)
-          .eq('id_casa', editingRecord.id_casa)
-          .eq('id_contribucion', editingRecord.id_contribucion)
-          .eq('fecha', editingRecord.fecha)
-        rpcError = error;
+        const { error } = await supabase.rpc('update_contribution_admin', {
+          p_original_id_casa: editingRecord.id_casa,
+          p_original_id_contribucion: Number(editingRecord.id_contribucion),
+          p_original_fecha: editingRecord.fecha,
+          p_new_id_casa: recordData.id_casa,
+          p_new_id_contribucion: Number(recordData.id_contribucion),
+          p_new_fecha: recordData.fecha,
+          p_pagado: recordData.pagado,
+          p_realizado: recordData.realizado,
+          p_fechapago: recordData.fechapago,
+          p_url_comprobante: recordData.url_comprobante
+        });
+        if (error) throw error;
       } else {
         // De lo contrario, es una INSERCIÓN.
-        const { error } = await supabase.from('contribucionesporcasa').insert(finalData);
-        rpcError = error;
+        if (!recordData.id_casa || !recordData.id_contribucion || !recordData.fecha) {
+          throw new Error("Casa, Contribución y Fecha son obligatorios para crear un nuevo registro.");
+        }
+        const { error } = await supabase.rpc('create_contribution_admin', {
+          p_id_casa: recordData.id_casa,
+          p_id_contribucion: Number(recordData.id_contribucion),
+          p_fecha: recordData.fecha,
+          p_pagado: recordData.pagado,
+          p_realizado: recordData.realizado,
+          p_fechapago: recordData.fechapago,
+          p_url_comprobante: recordData.url_comprobante
+        });
+        if (error) throw error;
       }
-
-      if (rpcError) throw rpcError;
 
       alert('¡Registro guardado exitosamente!');
     } catch (err: unknown) {
@@ -99,12 +144,11 @@ export default function ManageHouseContributionsPage() {
 
   const handleDelete = async (recordToDelete: ContribucionPorCasa) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este registro?')) {
-      const { error } = await supabase
-        .from('contribucionesporcasa')
-        .delete()
-        .eq('id_casa', recordToDelete.id_casa)
-        .eq('id_contribucion', recordToDelete.id_contribucion)
-        .eq('fecha', recordToDelete.fecha);
+      const { error } = await supabase.rpc('delete_contribution_admin', {
+        p_id_casa: recordToDelete.id_casa,
+        p_id_contribucion: Number(recordToDelete.id_contribucion),
+        p_fecha: recordToDelete.fecha
+      });
 
       if (error) {
         const errorMessage = `Error al eliminar: ${error.message}`;
@@ -360,7 +404,7 @@ export default function ManageHouseContributionsPage() {
   }, [supabase, fetchData]);
 
   return (
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+      <div className="bg-gray-50 p-4 sm:p-8">
         <div className="flex justify-between items-center mb-6">
           {/* Botón de Regresar */}
           <button
@@ -374,7 +418,7 @@ export default function ManageHouseContributionsPage() {
             </svg>
           </button>
 
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 text-center">Gestionar Aportaciones</h1>
+          <h1 className="text-2xl font-bold text-gray-800 text-center">Gestionar Aportaciones</h1>
 
           {/* Contenedor de Acciones */}
           <div className="relative flex items-center gap-2">
