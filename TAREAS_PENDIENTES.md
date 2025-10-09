@@ -17,7 +17,7 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 *   **Comando de Sincronización "LEE":** Al inicio de cada sesión, el usuario proporcionará este archivo y usará la instrucción "LEE". Esto servirá como señal para que el asistente lea, entienda y se adhiera estrictamente a todos los principios y flujos de trabajo aquí definidos antes de realizar cualquier análisis o sugerencia.
 *   **Indicación del Siguiente Paso:** Al final de cada respuesta que involucre un cambio, el asistente debe indicar claramente cuál es el siguiente paso esperado por parte del usuario (ej. "Compila y verifica el cambio", "Sube los cambios a Git con este mensaje", etc.).
 *   **Propuesta de Mejoras:** Cualquier mejora o "buena práctica" no solicitada (ej. seguridad, rendimiento) debe ser propuesta primero como un nuevo ítem en la sección "I. Tareas Pendientes". La propuesta debe incluir una justificación y un análisis del impacto potencial sobre el sistema existente. No se implementará hasta que sea discutida y aprobada.
-
+sh
 ---
 
 # TAREAS PENDIENTES - Val App

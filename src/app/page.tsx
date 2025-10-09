@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
+
 export default function Home() {
   const router = useRouter();
   const supabase = createClient();
@@ -85,13 +86,17 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-lg disabled:bg-gray-400"
+            className="w-full bg-gray-100 text-black font-bold py-3 rounded-lg hover:bg-gray-300  transition-all duration-300 shadow-lg disabled:bg-gray-400"
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
           {error && <p className="text-red-500 text-sm text-center mt-2">{error}</p>}
         </form>
       </div>
+      <footer className="text-xs text-gray-400 text-center mt-4">
+        Versión: {process.env.NEXT_PUBLIC_VERSION || 'Versión No Disponible'}
+      </footer>
     </div>
+    
   );
 }

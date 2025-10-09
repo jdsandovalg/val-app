@@ -173,7 +173,8 @@ export default function MenuLayout({
       <main className="flex-grow px-4 pt-4 flex flex-col overflow-y-auto">{children}</main>
 
       {/* --- Menú de Navegación Inferior --- */}
-      <footer className="bg-white shadow-t sticky bottom-0 z-10">
+      <footer className="bg-white shadow-t sticky bottom-0 z-10 rounded-t-lg mx-4 mb-2">
+
         <nav className="flex justify-evenly max-w-4xl mx-auto">
           {navLinkItems.map((item) => {
             const isActive = pathname === item.href;
