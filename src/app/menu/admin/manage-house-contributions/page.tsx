@@ -15,7 +15,6 @@ import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { ContribucionPorCasa } from '@/types/database';
 import type { ContribucionPorCasaExt, SortableKeys } from '@/types';
-import { useRouter } from 'next/navigation';
 import ContributionModal from './components/ContributionModal';
 import ContributionTable from './components/ContributionTable';
 import ContributionCard from './components/ContributionCard';
@@ -26,7 +25,6 @@ import autoTable from 'jspdf-autotable';
 // --- Componente Principal de la Página ---
 export default function ManageHouseContributionsPage() {
   const supabase = createClient();
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
@@ -57,22 +55,35 @@ export default function ManageHouseContributionsPage() {
     setLoading(true);
     setFetchError(null);
     try {
-      // Usar la nueva función RPC para obtener los datos
-      const { data: recordsData, error: recordsError } = await supabase.rpc('get_all_contributions_admin');
+      // CORRECCIÓN: Usar la vista 'v_usuarios_contribuciones' como única fuente de datos.
+      const { data: recordsData, error: recordsError } = await supabase
+        .from('v_usuarios_contribuciones')
+        .select('*')
+        .order('fecha', { ascending: false });
+
       if (recordsError) throw recordsError;
-      setRecords(recordsData || []);
 
-      // Obtener datos auxiliares para los modales (esto se puede optimizar más adelante si es necesario)
-      const { data: usersData, error: usersError } = await supabase.from('usuarios').select('id, responsable');
-      if (usersError) throw usersError;
-      setUsuarios(usersData || []);
+      const data = recordsData || [];
 
-      const { data: contribsData, error: contribsError } = await supabase.from('contribuciones').select('id_contribucion, descripcion');
-      if (contribsError) throw contribsError;
-      setContribuciones(contribsData || []);
+      // Mapear los datos de la vista al formato esperado por el componente.
+      const formattedRecords = data.map(record => ({
+        ...record,
+        usuarios: { id: record.id, responsable: record.responsable },
+        contribuciones: { id_contribucion: record.id_contribucion, descripcion: record.descripcion, color_del_borde: record.color_del_borde },
+      }));
+      setRecords(formattedRecords);
+
+      // Extraer datos únicos para los modales desde la data ya obtenida.
+      const uniqueUsers = [...new Map(data.map(item => [item.id, { id: item.id, responsable: item.responsable }])).values()];
+      const uniqueContribs = [...new Map(data.map(item => [item.id_contribucion, { id_contribucion: item.id_contribucion, descripcion: item.descripcion }])).values()];
+
+      setUsuarios(uniqueUsers);
+      setContribuciones(uniqueContribs);
 
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ocurrió un error desconocido.';
+      // Mejoramos el manejo de errores para obtener un mensaje claro.
+      const message = err && typeof err === 'object' && 'message' in err ? (err as { message: string }).message : 'Ocurrió un error desconocido.';
+      console.error("Error completo al cargar datos de aportaciones:", err); // Log para depuración
       setFetchError(`Error al cargar los datos: ${message}`);
     } finally {
       setLoading(false);
@@ -94,35 +105,29 @@ export default function ManageHouseContributionsPage() {
   const handleSave = async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null); // Limpiar errores de UI
     try {
-      // Si editingRecord existe, es una ACTUALIZACIÓN.
+      const recordToSave = {
+        id_casa: recordData.id_casa,
+        id_contribucion: recordData.id_contribucion,
+        fecha: recordData.fecha,
+        pagado: recordData.pagado,
+        realizado: recordData.realizado,
+        fechapago: recordData.fechapago,
+        url_comprobante: recordData.url_comprobante,
+      };
+
+      // Si editingRecord existe, es una ACTUALIZACIÓN (UPDATE).
       if (editingRecord && editingRecord.id_casa && editingRecord.id_contribucion && editingRecord.fecha) {
-        const { error } = await supabase.rpc('update_contribution_admin', {
-          p_original_id_casa: editingRecord.id_casa,
-          p_original_id_contribucion: Number(editingRecord.id_contribucion),
-          p_original_fecha: editingRecord.fecha,
-          p_new_id_casa: recordData.id_casa,
-          p_new_id_contribucion: Number(recordData.id_contribucion),
-          p_new_fecha: recordData.fecha,
-          p_pagado: recordData.pagado,
-          p_realizado: recordData.realizado,
-          p_fechapago: recordData.fechapago,
-          p_url_comprobante: recordData.url_comprobante
-        });
+        const { error } = await supabase
+          .from('contribucionesporcasa')
+          .update(recordToSave)
+          .match({ id_casa: editingRecord.id_casa, id_contribucion: editingRecord.id_contribucion, fecha: editingRecord.fecha });
         if (error) throw error;
       } else {
-        // De lo contrario, es una INSERCIÓN.
+        // De lo contrario, es una INSERCIÓN (INSERT).
         if (!recordData.id_casa || !recordData.id_contribucion || !recordData.fecha) {
           throw new Error("Casa, Contribución y Fecha son obligatorios para crear un nuevo registro.");
         }
-        const { error } = await supabase.rpc('create_contribution_admin', {
-          p_id_casa: recordData.id_casa,
-          p_id_contribucion: Number(recordData.id_contribucion),
-          p_fecha: recordData.fecha,
-          p_pagado: recordData.pagado,
-          p_realizado: recordData.realizado,
-          p_fechapago: recordData.fechapago,
-          p_url_comprobante: recordData.url_comprobante
-        });
+        const { error } = await supabase.from('contribucionesporcasa').insert(recordToSave);
         if (error) throw error;
       }
 
@@ -144,11 +149,11 @@ export default function ManageHouseContributionsPage() {
 
   const handleDelete = async (recordToDelete: ContribucionPorCasa) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este registro?')) {
-      const { error } = await supabase.rpc('delete_contribution_admin', {
-        p_id_casa: recordToDelete.id_casa,
-        p_id_contribucion: Number(recordToDelete.id_contribucion),
-        p_fecha: recordToDelete.fecha
-      });
+      // CORRECCIÓN: Usar una operación DELETE directa a la tabla.
+      const { error } = await supabase
+        .from('contribucionesporcasa')
+        .delete()
+        .match({ id_casa: recordToDelete.id_casa, id_contribucion: recordToDelete.id_contribucion, fecha: recordToDelete.fecha });
 
       if (error) {
         const errorMessage = `Error al eliminar: ${error.message}`;
@@ -158,10 +163,6 @@ export default function ManageHouseContributionsPage() {
         fetchData(); // Recargar datos
       }
     }
-  };
-
-  const handleRegresar = () => {
-    router.push('/menu');
   };
 
   const handleSort = (key: SortableKeys) => {
@@ -241,10 +242,19 @@ export default function ManageHouseContributionsPage() {
             bValue = b.pagado ?? -Infinity;
             break;
           default:
+            // Para el resto de las claves, se tratan como strings o tipos comparables directamente.
             aValue = a[sortConfig.key as keyof ContribucionPorCasa];
             bValue = b[sortConfig.key as keyof ContribucionPorCasa];
         }
 
+        // Lógica de comparación específica para números (como 'pagado')
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+          if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+          return 0;
+        }
+
+        // Lógica de comparación para strings y otros tipos
         const valA = aValue === null || aValue === undefined ? '' : aValue;
         const valB = bValue === null || bValue === undefined ? '' : bValue;
 
@@ -407,18 +417,9 @@ export default function ManageHouseContributionsPage() {
       <div className="bg-gray-50 p-4 sm:p-8">
         <div className="flex justify-between items-center mb-6">
           {/* Botón de Regresar */}
-          <button
-            type="button"
-            onClick={handleRegresar}
-            className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-            aria-label="Regresar al menú"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-          </button>
 
-          <h1 className="text-2xl font-bold text-gray-800 text-center">Gestionar Aportaciones</h1>
+
+          <h1 className="text-1xl font-bold text-gray-800 text-center">Gestionar Aportaciones</h1>
 
           {/* Contenedor de Acciones */}
           <div className="relative flex items-center gap-2">

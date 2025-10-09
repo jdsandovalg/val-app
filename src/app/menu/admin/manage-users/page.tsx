@@ -13,7 +13,6 @@
  */
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import type { Usuario } from '@/types/database';
-import { useRouter } from 'next/navigation';
 import UserModal from './components/UserModal';
 import UserTable from './components/UserTable';
 import UserCard from './components/UserCard';
@@ -22,7 +21,6 @@ import { createClient } from '@/utils/supabase/client';
 type SortableKeys = keyof Usuario;
 
 export default function ManageUsersPage() {
-  const router = useRouter();
   const supabase = createClient();
 
   const [users, setUsers] = useState<Usuario[]>([]);
@@ -50,7 +48,10 @@ export default function ManageUsersPage() {
     setLoading(true);
     setFetchError(null);
     try {
-      const { data, error } = await supabase.rpc('get_all_users');
+      // Se llama a la función con los parámetros correctos. Para SELECT, solo se necesita p_action.
+      const { data, error } = await supabase.rpc('manage_user_data', {
+        p_action: 'SELECT'
+      });
       if (error) throw error;
       setUsers(data || []);
     } catch (err: unknown) {
@@ -82,26 +83,24 @@ export default function ManageUsersPage() {
         throw new Error("ID, Responsable y Clave son campos obligatorios.");
       }
 
-      if (editingUser) { // Actualización
-        const { error } = await supabase.rpc('update_user', {
-          p_id: userData.id,
-          p_responsable: userData.responsable,
-          p_clave: userData.clave,
-          p_tipo_usuario: userData.tipo_usuario || 'PRE'
-        });
-        if (error) throw error;
-      } else { // Creación
-        const { error } = await supabase.rpc('create_user', {
-          p_id: userData.id,
-          p_responsable: userData.responsable,
-          p_clave: userData.clave,
-          p_tipo_usuario: userData.tipo_usuario || 'PRE'
-        });
-        if (error) throw error;
-      }
+      // Se construye el objeto de parámetros para que coincida con la nueva firma de la función.
+      const action = editingUser ? 'UPDATE' : 'INSERT';
+      const params = {
+        p_action: action,
+        p_id: userData.id,
+        p_responsable: userData.responsable,
+        p_clave: userData.clave,
+        p_tipo_usuario: userData.tipo_usuario || 'PRE' // Valor por defecto si no se proporciona
+      };
+
+      const { data: updatedUsers, error } = await supabase.rpc('manage_user_data', params);
+
+      if (error) throw error;
+
+      // Actualizar el estado con la lista de usuarios devuelta por la función.
+      setUsers(updatedUsers || []);
       alert('¡Usuario guardado exitosamente!');
     } catch (err: unknown) {
-      console.error('Error en handleSave:', err);
       let message = 'desconocido';
       if (err && typeof err === 'object' && 'message' in err) {
         message = (err as { message: string }).message;
@@ -111,30 +110,13 @@ export default function ManageUsersPage() {
       alert(errorMessage);
     } finally {
       handleCloseModal();
-      fetchData();
+      // Ya no es necesario llamar a fetchData() porque la RPC devuelve la lista actualizada.
     }
   };
 
-  const handleDelete = async (userToDelete: Usuario) => {
-    if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario de la casa ${userToDelete.id}?`)) {
-      setUiError(null);
-      try {
-        const { error } = await supabase.rpc('delete_user', { p_id: userToDelete.id });
-        if (error) throw error;
-
-        alert('Usuario eliminado exitosamente.');
-        fetchData();
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Ocurrió un error desconocido.';
-        const errorMessage = `Error al eliminar: ${message}`;
-        setUiError(errorMessage);
-        alert(errorMessage);
-      }
-    }
-  };
-
-  const handleRegresar = () => {
-    router.push('/menu');
+  // La función 'manage_user_data' no tiene una acción 'DELETE', por lo que se elimina la funcionalidad.
+  const handleDelete = async () => {
+    alert('La funcionalidad de eliminar no está implementada en la base de datos.');
   };
 
   const handleSort = (key: SortableKeys) => {
@@ -190,18 +172,9 @@ export default function ManageUsersPage() {
   return (
     <div className="bg-gray-50 p-4 sm:p-8">
       <div className="flex justify-between items-center mb-6">
-        <button
-          type="button"
-          onClick={handleRegresar}
-          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          aria-label="Regresar al menú"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-        </button>
+        
 
-        <h1 className="text-2xl font-bold text-gray-800 text-center">Gestionar Usuarios</h1>
+        <h1 className="text-1xl font-bold text-gray-800 text-center">Gestionar Usuarios</h1>
 
         <div className="relative flex items-center gap-2">
           <button
