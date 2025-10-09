@@ -32,29 +32,6 @@ type ContribucionAgrupada = {
   }[];
 };
 
-// Tipos intermedios para la agrupación de datos, eliminando el uso de 'any'.
-type CasaInfo = {
-  id: number;
-  responsable: string;
-};
-
-type FechaInfo = {
-  fecha: string;
-  dias_restantes: number;
-  realizado: string;
-  casas: CasaInfo[];
-};
-
-type GrupoInfo = {
-  id_grupo: number | null;
-  fechas: Record<string, FechaInfo>;
-};
-
-type ContribucionIntermediate = {
-  descripcion: string;
-  grupos: Record<string, GrupoInfo>;
-};
-
 export default function GruposDeTrabajoPage() {
   const supabase = createClient();
   const router = useRouter();
@@ -72,65 +49,20 @@ export default function GruposDeTrabajoPage() {
     try {
       const currentUser: Usuario = JSON.parse(storedUser);
 
-      // CORRECCIÓN: Se consulta la vista v_usuarios_contribuciones como fuente de datos principal.
-      let query = supabase.from('v_usuarios_contribuciones')
-        .select('*'); // Se simplifica la consulta para evitar la ambigüedad en las relaciones.
-
-      // Si el usuario no es administrador, solo obtiene sus datos.
-      if (currentUser.tipo_usuario !== 'ADM') {
-        query = query.eq('id', currentUser.id);
-      }
-
-      const { data, error } = await query;
+      // --- OPTIMIZACIÓN ---
+      // Se llama a la función RPC para que la base de datos haga la agrupación.
+      const { data, error } = await supabase.rpc('get_grupos_trabajo_usuario', {
+        p_user_id: currentUser.id,
+        p_user_type: currentUser.tipo_usuario,
+      });
 
       if (error) throw error;
 
-      // Agrupación de datos en el cliente
-      const groupedData = data.reduce<Record<string, ContribucionIntermediate>>((acc, item) => {
-        const contribucionKey = item.descripcion ?? 'Sin Descripción';
-        if (!acc[contribucionKey]) {
-          acc[contribucionKey] = {
-            descripcion: contribucionKey,
-            grupos: {},
-          };
-        }
-
-        const grupoKey = item.id_grupo ?? 'sin_grupo';
-        if (!acc[contribucionKey].grupos[grupoKey]) {
-          acc[contribucionKey].grupos[grupoKey] = {
-            id_grupo: item.id_grupo,
-            fechas: {},
-          };
-        }
-
-        const fechaKey = item.fecha;
-        if (!acc[contribucionKey].grupos[grupoKey].fechas[fechaKey]) {
-          acc[contribucionKey].grupos[grupoKey].fechas[fechaKey] = {
-            fecha: fechaKey,
-            dias_restantes: 0, // Este valor ya no viene de la vista, se puede calcular si es necesario.
-            realizado: item.realizado,
-            casas: [],
-          };
-        }
-
-        acc[contribucionKey].grupos[grupoKey].fechas[fechaKey].casas.push({
-          id: item.id,
-          responsable: item.responsable ?? 'N/A',
-        });
-
-        return acc;
-      }, {});
-
-      // Transformar el objeto agrupado a un array
-      const finalArray = Object.values(groupedData).map(contrib => ({
-        ...contrib,
-        grupos: Object.values(contrib.grupos).map((g: GrupoInfo) => ({
-          ...g,
-          fechas: Object.values(g.fechas),
-        })),
-      }));
-
-      setGrupos(finalArray);
+      // --- OPTIMIZACIÓN ---
+      // Los datos ya vienen agrupados desde la base de datos gracias a la función RPC.
+      // Simplemente los asignamos directamente al estado.
+      // El '|| []' es una salvaguarda por si la función RPC devuelve null.
+      setGrupos(data || []);
     } catch (err: unknown) {
       const message = err && typeof err === 'object' && 'message' in err ? (err as { message: string }).message : 'Error desconocido';
       console.error("Error al cargar los grupos de trabajo:", message);

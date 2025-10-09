@@ -1,5 +1,5 @@
 "use client";
-
+ 
 /**
  * @file /src/app/menu/calendarios/page.tsx
  * @fileoverview Página de calendario de aportaciones del usuario.
@@ -14,10 +14,8 @@
 import { createClient } from '@/utils/supabase/client';
 import React from 'react';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';import Image from 'next/image';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
 import ContributionCalendarCard from './components/ContributionCalendarCard';
 import { saveContributionPayment } from '@/utils/supabase/server-actions';
@@ -286,21 +284,10 @@ export default function CalendariosPage() {
     };
 
     // --- Encabezado con Logo y Título ---
-    fetch('/logo.png')
-      .then(response => response.blob())
-      .then(blob => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => {
-          const logoBase64 = reader.result as string;
-          doc.addImage(logoBase64, 'PNG', 14, 15, 20, 20); // Logo
-          generatePdfContent(doc);
-        };
-      }).catch(() => {
-        console.warn("No se pudo cargar el logo. El reporte se generará sin él.");
-        generatePdfContent(doc);
-      });
-  }, [usuario, filteredAndSortedContribuciones]);
+    // No es necesario cargar el logo para la funcionalidad básica, se restaura la versión simple.
+    generatePdfContent(doc);
+
+  }, [usuario, filteredAndSortedContribuciones, getEstado]);
 
   return (
     <>
