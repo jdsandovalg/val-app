@@ -6,6 +6,7 @@ import type { Usuario } from '@/types/database';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
+
 type ProximoCompromiso = {
   id_contribucion: string;
   descripcion: string;
@@ -53,12 +54,17 @@ export default function MenuLayout({
   const [proximoCompromiso, setProximoCompromiso] = useState<ProximoCompromiso | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const [languageTooltip, setLanguageTooltip] = useState('');
+  const [languageLabel, setLanguageLabel] = useState('');
   const router = useRouter();
   const pathname = usePathname();
   const adminMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsClient(true);
+    const currentLang = localStorage.getItem('language') || 'es';
+    setLanguageTooltip(currentLang === 'en' ? 'Switch to Spanish' : 'Cambiar a Inglés');
+    setLanguageLabel(currentLang === 'en' ? 'ES' : 'EN');
   }, []);
 
   const fetchInitialData = useCallback(async () => {
@@ -103,7 +109,6 @@ export default function MenuLayout({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      // Unbind the event listener on clean up
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [adminMenuRef]);
@@ -117,6 +122,8 @@ export default function MenuLayout({
       router.push('/');
     }
   };
+
+  //const toggleLanguage = () => setIsEnglish(prev => !prev);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
@@ -169,12 +176,11 @@ export default function MenuLayout({
         </div>
       </header>
 
-      {/* --- Contenido Principal (aquí se renderizarán las páginas) --- */}
+      {/* --- Contenido Principal --- */}
       <main className="flex-grow px-4 pt-4 flex flex-col overflow-y-auto">{children}</main>
 
       {/* --- Menú de Navegación Inferior --- */}
       <footer className="bg-white shadow-t sticky bottom-0 z-10 rounded-t-lg mx-4 mb-2">
-
         <nav className="flex justify-evenly max-w-4xl mx-auto">
           {navLinkItems.map((item) => {
             const isActive = pathname === item.href;
@@ -188,6 +194,9 @@ export default function MenuLayout({
               </Link>
             );
           })}
+
+          
+
           {/* --- Botón de Notificaciones --- */}
           <Link href="/menu/avisos" className={`relative flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 hover:bg-gray-200 hover:text-yellow-600 ${!proximoCompromiso ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'text-gray-600'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
@@ -198,6 +207,30 @@ export default function MenuLayout({
               <span className="absolute top-1 right-4 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
             )}
           </Link>
+
+        {/* --- Botón de Idioma (rápido — recarga) --- */}
+          <button
+            type="button"
+            onClick={() => {
+              const next = localStorage.getItem('language') === 'en' ? 'es' : 'en';
+              localStorage.setItem('language', next);
+              // Actualiza el tooltip inmediatamente para reflejar el próximo estado
+              setLanguageTooltip(next === 'en' ? 'Switch to Spanish' : 'Cambiar a Inglés');
+              setLanguageLabel(next === 'en' ? 'ES' : 'EN');
+              window.location.reload();
+            }}
+            className="flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 hover:bg-gray-200 text-gray-600"
+            aria-label="Cambiar idioma"
+            title={languageTooltip}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6 mb-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12 6.615 2.25 12 2.25zM12 2.25v19.5M2.25 12h19.5M4.5 4.5l15 15"/>
+            </svg>
+            <span className="text-xs">{languageLabel}</span>
+          </button>
+
+
+
         </nav>
       </footer>
     </div>
