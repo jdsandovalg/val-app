@@ -1,8 +1,128 @@
 {
   "welcome": "Welcome to Villas de Alcalá",
   "subtitle": "Contributions and Services Management System",
-  "inicio": "Home",
-  "calendario": "Calendar",
-  "grupos": "Groups",
-  "avisos": "Notices"
+  "loading": "Loading...",
+  "navigation": {
+    "home": "Home",
+    "calendar": "Calendar",
+    "groups": "Groups",
+    "notices": "Notices",
+    "language": "Language",
+    "changeLanguage": "Change language",
+    "languageLabel": {
+      "en": "ES",
+      "es": "EN"
+    },
+    "languageTooltip": {
+      "en": "Switch to Spanish",
+      "es": "Cambiar a Inglés"
+    }
+  },
+  "header": {
+    "greeting": "Hello, {user}",
+    "welcome": "Welcome",
+    "admin": {
+      "ariaLabel": "Open administration menu",
+      "contributions": "Contributions",
+      "users": "Users"
+    },
+    "logout": {
+      "ariaLabel": "Log out"
+    }
+  },
+  "login": {
+    "idPlaceholder": "House #",
+    "passwordPlaceholder": "Password",
+    "button": "Login",
+    "loadingButton": "Logging in...",
+    "error": {
+      "credentials": "Incorrect ID or password.",
+      "generic": "Login error. Please check your credentials."
+    }
+  },
+  "calendar": {
+    "title": "Contributions Schedule",
+    "reportTitle": "Contributions Report",
+    "reportNoData": "No data to generate report. Try changing filters.",
+    "reportPdfAriaLabel": "Generate PDF Report",
+    "table": {
+      "id": "#",
+      "description": "Description",
+      "dueDate": "Due Date",
+      "paid": "Paid",
+      "status": "Status",
+      "actions": "Actions",
+      "filterPlaceholder": "Filter...",
+      "paidFilterPlaceholder": "Yes/No",
+      "yes": "Yes",
+      "no": "No",
+      "noContributionsFound": "No contributions found matching the filters."
+    },
+    "status": {
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "scheduled": "Scheduled ({days} days)",
+      "pending": "Pending"
+    },
+    "payment": {
+      "reportButton": "Report Payment",
+      "viewProofButton": "View Proof",
+      "success": "Payment registered successfully!",
+      "error": "Error registering payment: {message}",
+      "unknownError": "unknown"
+    },
+    "imageViewer": {
+      "loading": "Loading image...",
+      "error": "Could not load image. Verify the URL is correct and the file exists in the bucket.\n\nURL: {url}",
+      "altText": "Payment proof",
+      "closeAriaLabel": "Close"
+    },
+    "userData": {
+      "houseId": "House: {id}",
+      "responsible": "Responsible: {name}"
+    },
+    "fetchError": "Error loading calendar data:"
+  },
+  "paymentModal": {
+    "title": "Report Contribution Payment",
+    "contribution": "Contribution:",
+    "amountPaid": "Amount Paid",
+    "amountPlaceholder": "Ex: 150.00",
+    "proof": "Payment Proof",
+    "dropzone": "Drag 'n' drop an image here, or click to select one",
+    "save": "Save",
+    "cancel": "Cancel",
+    "selectFileButton": "Select file",
+    "noFileChosen": "No file chosen"
+  },
+  "groups": {
+    "title": "Work Groups",
+    "loading": "Loading work groups...",
+    "error": "Error loading work groups.",
+    "noGroups": "You do not belong to any work group at the moment.",
+    "membersTitle": "Group Members",
+    "house": "House",
+    "groupTitle": "Group #{number}",
+    "status_done": "Done",
+    "status_pending": "Pending"
+  },
+  "notices": {
+    "title": "Notices",
+    "registerPaymentTitle": "Register Payment",
+    "loading": "Loading notices...",
+    "noPending": "You have no pending payments. You are up to date!",
+    "aboutToPay": "You are about to register the payment for:",
+    "form": {
+      "amount": "Amount Paid",
+      "proof": "Payment Proof",
+      "submit": "Save Payment",
+      "submitting": "Saving..."
+    },
+    "alerts": {
+      "fillAllFields": "Please, fill all the fields.",
+      "uploadError": "Error uploading proof: {message}",
+      "dbError": "Error registering payment: {message}",
+      "success": "Payment registered successfully!"
+    }
+  }
 }

@@ -14,6 +14,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Usuario } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
+import { useI18n } from '@/app/i18n-provider';
+import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
 type ContribucionAgrupada = {
@@ -36,6 +38,7 @@ export default function GruposDeTrabajoPage() {
   const supabase = createClient();
   const router = useRouter();
   const [grupos, setGrupos] = useState<ContribucionAgrupada[]>([]);
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
 
   const fetchDataAndGroup = useCallback(async () => {
@@ -64,13 +67,12 @@ export default function GruposDeTrabajoPage() {
       // El '|| []' es una salvaguarda por si la función RPC devuelve null.
       setGrupos(data || []);
     } catch (err: unknown) {
-      const message = err && typeof err === 'object' && 'message' in err ? (err as { message: string }).message : 'Error desconocido';
-      console.error("Error al cargar los grupos de trabajo:", message);
+      toast.error(t('groups.error'));
       router.push('/menu');
     } finally {
       setLoading(false);
     }
-  }, [router, supabase]);
+  }, [router, supabase, t]);
 
   useEffect(() => {
     fetchDataAndGroup();
@@ -79,7 +81,7 @@ export default function GruposDeTrabajoPage() {
   return (
     <>
       <div className="flex justify-center items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 text-center">Grupos de Trabajo</h1>
+        <h1 className="text-2xl font-bold text-gray-800 text-center">{t('groups.title')}</h1>
       </div>
 
       <div className="space-y-6">
@@ -88,26 +90,28 @@ export default function GruposDeTrabajoPage() {
             <div key={contribucion.descripcion} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-800 border-b pb-2 mb-4">{contribucion.descripcion}</h2>
               {contribucion.grupos.map((grupo) => (
-                <div key={grupo.id_grupo} className="mb-6 last:mb-0">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Grupo #{grupo.id_grupo}</h3>
+                <div key={grupo.id_grupo ?? 'default-group'} className="mb-6 last:mb-0">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                    {grupo.id_grupo ? t('groups.groupTitle', { number: grupo.id_grupo }) : t('groups.membersTitle')}
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {grupo.fechas.map((fechaInfo) => (
-                      <div key={fechaInfo.fecha} className="border rounded-lg p-3 bg-gray-50">
+                      <div key={`${fechaInfo.fecha}-${fechaInfo.casas[0]?.id || 0}`} className="border rounded-lg p-3 bg-gray-50">
                         <div className="flex justify-between items-center mb-2">
                           <p className="text-sm font-medium text-gray-600">{fechaInfo.fecha}</p>
                           <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
                             fechaInfo.realizado === 'S' ? 'bg-green-100 text-green-800' :
                             fechaInfo.dias_restantes >= 0 ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
+                            'bg-yellow-100 text-yellow-800' 
                           }`}>
-                            {fechaInfo.realizado === 'S' ? 'Realizado' : 'Pendiente'}
+                            {fechaInfo.realizado === 'S' ? t('groups.status_done') : t('groups.status_pending')}
                           </span>
                         </div>
                         <div className="text-xs text-gray-500 space-y-1">
                           {fechaInfo.casas.map(casa => (
                             <div key={casa.id} className="flex justify-between">
-                              <span>Casa {casa.id}</span>
-                              <span className="font-medium">{casa.responsable}</span>
+                              <span>{t('groups.house')} {casa.id}</span>
+                              <span className="font-medium text-gray-700">{casa.responsable}</span>
                             </div>
                           ))}
                         </div>
@@ -120,7 +124,7 @@ export default function GruposDeTrabajoPage() {
           ))
         ) : (
           <div className="text-center py-10 text-gray-500 bg-white rounded-lg shadow-md">
-            {loading ? 'Cargando grupos de trabajo...' : 'No hay grupos de trabajo para mostrar.'}
+            {loading ? t('groups.loading') : t('groups.noGroups')}
           </div>
         )}
       </div>

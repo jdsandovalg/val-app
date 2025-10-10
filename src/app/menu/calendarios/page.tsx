@@ -12,10 +12,12 @@
  * se construyen en el cliente y se envían en la consulta para que la base de datos realice el trabajo pesado.
  */
 import { createClient } from '@/utils/supabase/client';
-import React from 'react';
+import React from 'react'; // Asegúrate de que React esté importado
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';import Image from 'next/image';
+import { useI18n } from '@/app/i18n-provider';
+import { toast } from 'react-hot-toast';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
 import ContributionCalendarCard from './components/ContributionCalendarCard';
 import { saveContributionPayment } from '@/utils/supabase/server-actions';
@@ -39,12 +41,13 @@ type SortableKeys = keyof ContribucionConEstado;
 function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () => void }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
 
   if (!src) return null;
 
   const handleImageError = () => {
     setIsLoading(false);
-    const errorMessage = `No se pudo cargar la imagen. Verifique que la URL es correcta y que el archivo existe en el bucket.\n\nURL: ${src}`;
+    const errorMessage = t('calendar.imageViewer.error', { url: src });
     setError(errorMessage);
   };
 
@@ -57,13 +60,13 @@ function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () =>
     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center p-4" onClick={onClose}>
       <div className="bg-white p-2 rounded-lg shadow-xl max-w-3xl max-h-full" onClick={(e) => e.stopPropagation()}>
         <div className="relative flex items-center justify-center" style={{ minHeight: '200px', minWidth: '300px', width: '80vw', height: '80vh' }}>
-          {isLoading && <div className="text-gray-600">Cargando imagen...</div>}
+          {isLoading && <div className="text-gray-600">{t('calendar.imageViewer.loading')}</div>}
           {error && <div className="text-red-600 p-4 text-center whitespace-pre-wrap">{error}</div>}
-          <Image src={src} alt="Comprobante de pago" className={`object-contain ${isLoading || error ? 'hidden' : ''}`} fill={true} onLoad={handleImageLoad} onError={handleImageError} sizes="80vw" />
+          <Image src={src} alt={t('calendar.imageViewer.altText')} className={`object-contain ${isLoading || error ? 'hidden' : ''}`} fill={true} onLoad={handleImageLoad} onError={handleImageError} sizes="80vw" />
           <button
             onClick={onClose}
             className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            aria-label="Cerrar"
+            aria-label={t('calendar.imageViewer.closeAriaLabel')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -77,6 +80,7 @@ function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () =>
 
 export default function CalendariosPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const supabase = createClient();
   const [contribuciones, setContribuciones] = useState<Contribucion[]>([]);  
   const [usuario, setUsuario] = useState<{ id: number; responsable: string } | null>(null);  
@@ -111,10 +115,10 @@ export default function CalendariosPage() {
       if (error) throw error;
       setContribuciones((data as Contribucion[]) || []);
     } catch (e) {
-      console.error("Error al cargar datos de calendario:", e);
+      toast.error(`${t('calendar.fetchError')} ${e instanceof Error ? e.message : ''}`);
       router.push('/menu'); // En caso de error, volver al menú principal
-    }
-  }, [supabase, router]);
+    } 
+  }, [supabase, router, t]);
 
   useEffect(() => {
     fetchContribuciones();
@@ -164,34 +168,34 @@ export default function CalendariosPage() {
 
     try {
       await saveContributionPayment(selectedContribution, usuario, amount, file);
-      alert('¡Pago registrado exitosamente!');
+      toast.success(t('calendar.payment.success'));
       handleClosePaymentModal();
       fetchContribuciones(); // Recargar los datos
     } catch (error: unknown) {
-      let message = 'desconocido';
+      let message = t('calendar.payment.unknownError');
       if (error instanceof Error) {
         message = error.message;
       }
-      alert(`Error al registrar el pago: ${message}`);
+      toast.error(t('calendar.payment.error', { message }));
     }
   };
 
   const getEstado = useCallback((row: Contribucion): { texto: string; icon: React.ReactNode | null; color: string } => {
     if (row.realizado === 'S') {
-      return { texto: 'Pagado', color: 'text-green-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-green-600"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
+      return { texto: t('calendar.status.paid'), color: 'text-green-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-green-600"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
     }
     if (typeof row.dias_restantes === 'number') {
       if (row.dias_restantes >= 0) {
-        return { texto: 'Vencido', color: 'text-red-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-red-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg> };
+        return { texto: t('calendar.status.overdue'), color: 'text-red-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-red-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg> };
       } else {
         const diasFuturo = Math.abs(row.dias_restantes);
         const textColor = diasFuturo <= 7 ? 'text-yellow-700' : 'text-blue-700';
         const iconColor = diasFuturo <= 7 ? 'text-yellow-500' : 'text-blue-500';
-        return { texto: `Programado (${diasFuturo} días)`, color: textColor, icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${iconColor}`}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
+        return { texto: t('calendar.status.scheduled', { days: diasFuturo }), color: textColor, icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${iconColor}`}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
       }
     }
-    return { texto: 'Pendiente', color: 'text-gray-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
-  }, []);
+    return { texto: t('calendar.status.pending'), color: 'text-gray-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
+  }, [t]);
 
   const filteredAndSortedContribuciones = useMemo(() => {
     const items: ContribucionConEstado[] = contribuciones.map(c => ({
@@ -205,7 +209,7 @@ export default function CalendariosPage() {
         String(item.id_contribucion).toLowerCase().includes(filters.id_contribucion.toLowerCase()) &&
         (item.descripcion || '').toLowerCase().includes(filters.descripcion.toLowerCase()) &&
         item.fecha.toLowerCase().includes(filters.fecha.toLowerCase()) &&
-        (item.realizado === 'S' ? 'sí' : 'no').includes(filters.realizado.toLowerCase()) &&
+        (item.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no')).toLowerCase().includes(filters.realizado.toLowerCase()) &&
         item.estado.toLowerCase().includes(filters.estado.toLowerCase())
       );
     });
@@ -229,12 +233,12 @@ export default function CalendariosPage() {
       });
     }
 
-    return filteredItems;
-  }, [contribuciones, filters, sortConfig, getEstado]);
+    return filteredItems; 
+  }, [contribuciones, filters, sortConfig, getEstado, t]);
 
   const handleGeneratePDF = useCallback(() => {
     if (!usuario || filteredAndSortedContribuciones.length === 0) {
-      alert('No hay datos para generar el reporte. Pruebe cambiando los filtros.');
+      toast.error(t('calendar.reportNoData'));
       return;
     }
 
@@ -244,19 +248,19 @@ export default function CalendariosPage() {
     const generatePdfContent = (doc: jsPDF) => {
       doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
-      doc.text('Reporte de Aportaciones', pageWidth / 2, 22, { align: 'center' });
+      doc.text(t('calendar.reportTitle'), pageWidth / 2, 22, { align: 'center' });
 
       // --- Información del Usuario ---
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Casa: ${usuario.id}`, 14, 45);
+      doc.text(t('calendar.userData.houseId', { id: usuario.id }), 14, 45);
       
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Responsable: ${usuario.responsable}`, 14, 52);
+      doc.text(t('calendar.userData.responsible', { name: usuario.responsable }), 14, 52);
 
       // --- Tabla de Aportaciones ---
-      const tableColumn = ["#", "Descripción", "Fecha Límite", "Realizado", "Estado"];
+      const tableColumn = [t('calendar.table.id'), t('calendar.table.description'), t('calendar.table.dueDate'), t('calendar.table.paid'), t('calendar.table.status')];
       const tableRows: (string | number)[][] = [];
 
       filteredAndSortedContribuciones.forEach(contrib => {
@@ -264,7 +268,7 @@ export default function CalendariosPage() {
           contrib.id_contribucion,
           contrib.descripcion ?? '',
           contrib.fecha,
-          contrib.realizado === 'S' ? 'Sí' : 'No',
+          contrib.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no'),
           contrib.estado,
         ];
         tableRows.push(contribData);
@@ -286,8 +290,7 @@ export default function CalendariosPage() {
     // --- Encabezado con Logo y Título ---
     // No es necesario cargar el logo para la funcionalidad básica, se restaura la versión simple.
     generatePdfContent(doc);
-
-  }, [usuario, filteredAndSortedContribuciones, getEstado]);
+  }, [usuario, filteredAndSortedContribuciones, t]);
 
   return (
     <>
@@ -297,12 +300,12 @@ export default function CalendariosPage() {
           <div className="w-full flex justify-between items-center mb-4">
             {/* Espaciador para mantener el título centrado */}
             <div className="w-10 h-10"></div>
-            <h1 className="text-2xl font-bold text-gray-800 text-center">Programación de Aportaciones</h1>
+            <h1 className="text-2xl font-bold text-gray-800 text-center">{t('calendar.title')}</h1>
             <button
               type="button"
               onClick={handleGeneratePDF}
               className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              aria-label="Generar Reporte PDF"
+              aria-label={t('calendar.reportPdfAriaLabel')}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -333,19 +336,19 @@ export default function CalendariosPage() {
           <table className="min-w-full border rounded-lg shadow text-xs sm:text-sm">
             <thead>
               <tr className="bg-blue-900 text-white">
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('id_contribucion')} className="flex items-center gap-1 w-full justify-center"># {sortConfig?.key === 'id_contribucion' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('descripcion')} className="flex items-center gap-1 w-full">Descripción {sortConfig?.key === 'descripcion' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('fecha')} className="flex items-center gap-1 w-full justify-center">Fecha {sortConfig?.key === 'fecha' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('realizado')} className="flex items-center gap-1 w-full justify-center">Realizado {sortConfig?.key === 'realizado' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('estado')} className="flex items-center gap-1 w-full justify-center">Estado {sortConfig?.key === 'estado' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold">Acciones</th>
+                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('id_contribucion')} className="flex items-center gap-1 w-full justify-center">{t('calendar.table.id')} {sortConfig?.key === 'id_contribucion' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
+                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('descripcion')} className="flex items-center gap-1 w-full">{t('calendar.table.description')} {sortConfig?.key === 'descripcion' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
+                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('fecha')} className="flex items-center gap-1 w-full justify-center">{t('calendar.table.dueDate')} {sortConfig?.key === 'fecha' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
+                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('realizado')} className="flex items-center gap-1 w-full justify-center">{t('calendar.table.paid')} {sortConfig?.key === 'realizado' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
+                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('estado')} className="flex items-center gap-1 w-full justify-center">{t('calendar.table.status')} {sortConfig?.key === 'estado' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
+                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold">{t('calendar.table.actions')}</th>
               </tr>
               <tr className="bg-gray-200">
-                <th className="border px-2 py-1"><input name="id_contribucion" value={filters.id_contribucion} onChange={handleFilterChange} placeholder="Filtrar..." className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"><input name="descripcion" value={filters.descripcion} onChange={handleFilterChange} placeholder="Filtrar..." className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"><input name="fecha" value={filters.fecha} onChange={handleFilterChange} placeholder="Filtrar..." className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"><input name="realizado" value={filters.realizado} onChange={handleFilterChange} placeholder="Sí/No" className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"><input name="estado" value={filters.estado} onChange={handleFilterChange} placeholder="Filtrar..." className="text-xs p-1 border rounded w-full font-normal" /></th>
+                <th className="border px-2 py-1"><input name="id_contribucion" value={filters.id_contribucion} onChange={handleFilterChange} placeholder={t('calendar.table.filterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
+                <th className="border px-2 py-1"><input name="descripcion" value={filters.descripcion} onChange={handleFilterChange} placeholder={t('calendar.table.filterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
+                <th className="border px-2 py-1"><input name="fecha" value={filters.fecha} onChange={handleFilterChange} placeholder={t('calendar.table.filterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
+                <th className="border px-2 py-1"><input name="realizado" value={filters.realizado} onChange={handleFilterChange} placeholder={t('calendar.table.paidFilterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
+                <th className="border px-2 py-1"><input name="estado" value={filters.estado} onChange={handleFilterChange} placeholder={t('calendar.table.filterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
                 <th className="border px-2 py-1"></th>
               </tr>
             </thead>
@@ -360,7 +363,7 @@ export default function CalendariosPage() {
                       <td className="border px-1 py-2 sm:px-4 sm:py-3 text-center text-blue-900">{String(row.fecha)}</td>
                       <td className="border px-2 py-2 sm:px-4 sm:py-3 text-center">
                         <span className={`inline-block px-2 py-1 rounded text-xs sm:text-sm ${row.realizado === 'S' ? 'bg-blue-200 text-blue-900 border border-blue-400' : 'bg-gray-300 text-gray-700 border border-gray-400'}`}>
-                          {row.realizado === 'S' ? 'Sí' : 'No'}
+                          {row.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no')}
                         </span>
                       </td>
                       <td className="border px-2 py-2 sm:px-4 sm:py-3 text-center">
@@ -371,10 +374,10 @@ export default function CalendariosPage() {
                       </td>
                       <td className="border px-2 py-2 sm:px-4 sm:py-3 text-center">
                         {row.realizado === 'N' && (
-                          <button onClick={() => handleOpenPaymentModal(row)} className="bg-green-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-green-600">Reportar Pago</button>
+                          <button onClick={() => handleOpenPaymentModal(row)} className="bg-green-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-green-600">{t('calendar.payment.reportButton')}</button>
                         )}
                         {row.realizado === 'S' && row.url_comprobante && (
-                          <button onClick={() => handleOpenImageViewer(row.url_comprobante)} className="bg-blue-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-blue-600">Ver Comprobante</button>
+                          <button onClick={() => handleOpenImageViewer(row.url_comprobante)} className="bg-blue-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-blue-600">{t('calendar.payment.viewProofButton')}</button>
                         )}
                       </td>
                     </tr>
@@ -382,8 +385,8 @@ export default function CalendariosPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={5} className="text-center py-10 text-gray-500">
-                    No se encontraron aportaciones que coincidan con los filtros.
+                  <td colSpan={6} className="text-center py-10 text-gray-500">
+                    {t('calendar.table.noContributionsFound')}
                   </td>
                 </tr>
               )}

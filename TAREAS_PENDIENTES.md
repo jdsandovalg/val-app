@@ -35,9 +35,37 @@ Este documento detalla las mejoras pendientes y completadas para el proyecto Val
     -   **Justificación:** La implementación actual de la Edge Function no es funcional. Es prioritario tener un reporte funcional, aunque sea en el cliente, antes de reintentar la optimización.
 
 2.  **UI/UX:**
-    -   **Objetivo:** Implementar notificaciones modernas en toda la aplicación.
-    -   **Acción:** Reemplazar los `alert()` restantes (ej. en "Gestionar Aportaciones" y "Gestionar Usuarios") por notificaciones "toast".
-    -   **Justificación:** Mejora la experiencia de usuario al no bloquear la interfaz.
+    -   **Objetivo:** Estandarizar el sistema de notificaciones.
+    -   **Decisión:** Se utilizará la librería `react-hot-toast` para todas las notificaciones (éxito, error, información).
+    -   **Justificación:** Es una librería ligera, personalizable y fácil de integrar, mejorando la experiencia de usuario sin bloquear la interfaz.
+    -   **Estado:** ✅ Instalada e integrada en el proveedor raíz. ✅ Implementada en la página de Login.
+
+3.  **UI/UX (Decisión de Diseño):**
+    -   **Objetivo:** Confirmar la estrategia de ubicación del selector de idioma.
+    -   **Decisión:** Se mantendrán **dos** selectores de idioma: uno en la página de Login (para accesibilidad antes de autenticar) y otro en el menú principal (para que los usuarios autenticados puedan cambiarlo sin salir).
+    -   **Justificación:** Asegura la mejor experiencia de usuario en todas las etapas de la navegación.
+
+4.  **Plan de Refactorización por Página:**
+    -   **Objetivo:** Modernizar y estandarizar las páginas restantes de la aplicación.
+    -   **Metodología:** Abordar cada página de forma individual para aplicar dos mejoras principales:
+        1.  **Internacionalización (i18n):** Reemplazar todo el texto estático con claves del sistema de traducción.
+        2.  **Notificaciones Toast:** Reemplazar todos los `alert()` con notificaciones `toast`.
+    -   **Páginas Pendientes:**
+        -   `admin/manage-users`
+        -   `admin/manage-house-contributions`
+
+5.  **Bugs:**
+    -   **Objetivo:** Solucionar la carga de imágenes de comprobantes de pago.
+    -   **Problema:** En la página de "Calendarios", al hacer clic en "Ver Comprobante", el modal se queda en "Cargando imagen..." indefinidamente.
+    -   **Contexto:** La configuración de `next.config.ts` es correcta. El problema parece estar en la URL generada o en las políticas de acceso del bucket de Supabase.
+    -   **Estado:** Pendiente de investigación.
+
+6.  **UI/UX (Formato de Fechas):**
+    -   **Objetivo:** Estandarizar el formato de fecha en toda la aplicación para mejorar la experiencia de usuario.
+    -   **Problema:** Las fechas se muestran en formato `YYYY-MM-DD`. El formato local deseado es `DD-MM-YYYY`.
+    -   **Acción Propuesta:** Investigar e implementar una librería de manejo de fechas (como `date-fns` o `dayjs`) o una función de utilidad para formatear todas las fechas mostradas al usuario.
+    -   **Justificación:** Mejora la legibilidad y la experiencia del usuario al presentar la información en un formato familiar.
+    -   **Estado:** Pendiente de análisis y aprobación.
 
 ---
 
@@ -60,6 +88,16 @@ Este documento detalla las mejoras pendientes y completadas para el proyecto Val
 
 5.  **Accesibilidad:**
     -   ✅ **Texto `alt` en Imágenes:** Se agregó texto alternativo a las imágenes del logo para mejorar la accesibilidad.
+
+6.  **Internacionalización (i18n):**
+    -   ✅ **Proveedor de Contexto:** Se creó un `I18nProvider` para gestionar el estado del idioma y las traducciones en toda la aplicación.
+    -   ✅ **Archivos de Idioma:** Se implementaron los archivos `es.json` y `en.json` con una estructura de claves unificada.
+    -   ✅ **Integración Global:** Se integró el `I18nProvider` en el layout raíz (`/app/layout.tsx`) para dar soporte a toda la aplicación.
+    -   ✅ **Páginas Traducidas:** Se refactorizaron las páginas de Login (`/app/page.tsx`), el Layout del Menú (`/app/menu/layout.tsx`) y la página de Bienvenida (`/app/menu/page.tsx`) para usar el nuevo sistema.
+    -   ✅ **Notificaciones en Login:** Se implementó `react-hot-toast` para los mensajes de error en la página de Login.
+    -   ✅ **Refactorización de "Calendarios":** Se aplicó i18n y notificaciones toast.
+    -   ✅ **Refactorización de "Grupos de Trabajo":** Se aplicó i18n y notificaciones toast.
+    -   ✅ **Refactorización de "Avisos":** Se aplicó i18n y notificaciones toast.
 
 
 Estructura de las Tablas:

@@ -1,34 +1,22 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { I18nProvider } from '@/app/i18n-provider';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Villas de Alcalá App",
-  description: "Sistema de Aportaciones Villas de Alcalá",
-  icons: {
-    icon: "/favicon.png",
-  },
+  title: 'Villas de Alcalá - Sistema de Gestión',
+  description: 'Sistema de Gestión de Aportaciones y Servicios para el residencial Villas de Alcalá.',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="h-full">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-100 dark:bg-gray-900 h-full`}> 
-        {children}
+    // El proveedor de contexto necesita ser un componente de cliente,
+    // por lo que no podemos establecer `lang` aquí directamente. El proveedor se encargará.
+    <html>
+      <body className={inter.className}>
+        <I18nProvider>{children}</I18nProvider>
       </body>
     </html>
   );

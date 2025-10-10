@@ -1,8 +1,128 @@
 {
   "welcome": "Bienvenido a Villas de Alcalá",
   "subtitle": "Sistema de Gestión de Aportaciones y Servicios",
-  "inicio": "Inicio",
-  "calendario": "Calendario",
-  "grupos": "Grupos",
-  "avisos": "Avisos"
+  "loading": "Cargando...",
+  "navigation": {
+    "home": "Inicio",
+    "calendar": "Calendario",
+    "groups": "Grupos",
+    "notices": "Avisos",
+    "language": "Idioma",
+    "changeLanguage": "Cambiar idioma",
+    "languageLabel": {
+      "en": "ES",
+      "es": "EN"
+    },
+    "languageTooltip": {
+      "en": "Switch to Spanish",
+      "es": "Cambiar a Inglés"
+    }
+  },
+  "header": {
+    "greeting": "Hola, {user}",
+    "welcome": "Bienvenido",
+    "admin": {
+      "ariaLabel": "Abrir menú de administración",
+      "contributions": "Aportaciones",
+      "users": "Usuarios"
+    },
+    "logout": {
+      "ariaLabel": "Cerrar Sesión"
+    }
+  },
+  "login": {
+    "idPlaceholder": "Casa #",
+    "passwordPlaceholder": "Clave",
+    "button": "Ingresar",
+    "loadingButton": "Ingresando...",
+    "error": {
+      "credentials": "ID o clave incorrectos.",
+      "generic": "Error al iniciar sesión. Verifique sus credenciales."
+    }
+  },
+  "calendar": {
+    "title": "Programación de Aportaciones",
+    "reportTitle": "Reporte de Aportaciones",
+    "reportNoData": "No hay datos para generar el reporte. Pruebe cambiando los filtros.",
+    "reportPdfAriaLabel": "Generar Reporte PDF",
+    "table": {
+      "id": "#",
+      "description": "Descripción",
+      "dueDate": "Fecha Límite",
+      "paid": "Realizado",
+      "status": "Estado",
+      "actions": "Acciones",
+      "filterPlaceholder": "Filtrar...",
+      "paidFilterPlaceholder": "Sí/No",
+      "yes": "Sí",
+      "no": "No",
+      "noContributionsFound": "No se encontraron aportaciones que coincidan con los filtros."
+    },
+    "status": {
+      "paid": "Pagado",
+      "overdue": "Vencido",
+      "scheduled": "Programado ({days} días)",
+      "pending": "Pendiente"
+    },
+    "payment": {
+      "reportButton": "Reportar Pago",
+      "viewProofButton": "Ver Comprobante",
+      "success": "¡Pago registrado exitosamente!",
+      "error": "Error al registrar el pago: {message}",
+      "unknownError": "desconocido"
+    },
+    "imageViewer": {
+      "loading": "Cargando imagen...",
+      "error": "No se pudo cargar la imagen. Verifique que la URL es correcta y que el archivo existe en el bucket.\n\nURL: {url}",
+      "altText": "Comprobante de pago",
+      "closeAriaLabel": "Cerrar"
+    },
+    "userData": {
+      "houseId": "Casa: {id}",
+      "responsible": "Responsable: {name}"
+    },
+    "fetchError": "Error al cargar datos de calendario:"
+  },
+  "paymentModal": {
+    "title": "Reportar Pago de Aportación",
+    "contribution": "Aportación:",
+    "amountPaid": "Monto Pagado",
+    "amountPlaceholder": "Ej: 150.00",
+    "proof": "Comprobante de Pago",
+    "dropzone": "Arrastra una imagen o haz clic para seleccionar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "selectFileButton": "Seleccionar archivo",
+    "noFileChosen": "Ningún archivo seleccionado"
+  },
+  "groups": {
+    "title": "Grupos de Trabajo",
+    "loading": "Cargando grupos de trabajo...",
+    "error": "Error al cargar los grupos de trabajo.",
+    "noGroups": "No perteneces a ningún grupo de trabajo actualmente.",
+    "membersTitle": "Miembros del Grupo",
+    "house": "Casa",
+    "groupTitle": "Grupo #{number}",
+    "status_done": "Realizado",
+    "status_pending": "Pendiente"
+  },
+  "notices": {
+    "title": "Avisos",
+    "registerPaymentTitle": "Registrar Pago",
+    "loading": "Cargando avisos...",
+    "noPending": "No tienes compromisos de pago pendientes. ¡Estás al día!",
+    "aboutToPay": "Estás a punto de registrar el pago para:",
+    "form": {
+      "amount": "Monto Pagado",
+      "proof": "Comprobante de Pago",
+      "submit": "Guardar Pago",
+      "submitting": "Guardando..."
+    },
+    "alerts": {
+      "fillAllFields": "Por favor, complete todos los campos.",
+      "uploadError": "Error al subir el comprobante: {message}",
+      "dbError": "Error al registrar el pago: {message}",
+      "success": "¡Pago registrado exitosamente!"
+    }
+  }
 }

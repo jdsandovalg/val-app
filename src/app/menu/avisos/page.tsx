@@ -13,6 +13,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
+import { useI18n } from '@/app/i18n-provider';
+import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
 type ProximoCompromiso = {
@@ -25,6 +27,7 @@ type ProximoCompromiso = {
 export default function AvisosPage() {
   const supabase = createClient();
   const router = useRouter();
+  const { t } = useI18n();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [proximoCompromiso, setProximoCompromiso] = useState<ProximoCompromiso | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,12 +56,12 @@ export default function AvisosPage() {
         setProximoCompromiso(data[0]);
       }
     } catch (e) {
-      console.error("Error al obtener datos de avisos:", e);
+      toast.error(`${t('notices.alerts.dbError', { message: e instanceof Error ? e.message : '' })}`);
       router.push('/menu');
     } finally {
       setIsLoading(false);
     }
-  }, [supabase, router]);
+  }, [supabase, router, t]);
 
   useEffect(() => {
     fetchAvisoData();
@@ -67,7 +70,7 @@ export default function AvisosPage() {
   const handleSavePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!proximoCompromiso || !usuario || !file || amount <= 0) {
-      alert('Por favor, complete todos los campos.');
+      toast.error(t('notices.alerts.fillAllFields'));
       return;
     }
 
@@ -77,7 +80,7 @@ export default function AvisosPage() {
     const { error: uploadError } = await supabase.storage.from('imagenespagos').upload(filePath, file);
 
     if (uploadError) {
-      alert(`Error al subir el comprobante: ${uploadError.message}`);
+      toast.error(t('notices.alerts.uploadError', { message: uploadError.message }));
       setIsSubmitting(false);
       return;
     }
@@ -95,9 +98,9 @@ export default function AvisosPage() {
       .eq('fecha', proximoCompromiso.fecha);
 
     if (dbError) {
-      alert(`Error al registrar el pago: ${dbError.message}`);
+      toast.error(t('notices.alerts.dbError', { message: dbError.message }));
     } else {
-      alert('¡Pago registrado exitosamente!');
+      toast.success(t('notices.alerts.success'));
       router.push('/menu');
       router.refresh(); // Refresca los datos en el layout
     }
@@ -105,28 +108,28 @@ export default function AvisosPage() {
   };
 
   if (isLoading) {
-    return <div className="bg-white p-6 rounded-lg shadow">Cargando avisos...</div>;
+    return <div className="bg-white p-6 rounded-lg shadow">{t('notices.loading')}</div>;
   }
 
   if (!proximoCompromiso) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
-        <h1 className="text-2xl font-bold text-gray-800 text-center">Avisos</h1>
-        <p className="mt-4 text-gray-600">No tienes compromisos de pago pendientes. ¡Estás al día!</p>
+        <h1 className="text-2xl font-bold text-gray-800 text-center">{t('notices.title')}</h1>
+        <p className="mt-4 text-gray-600">{t('notices.noPending')}</p>
       </div>
     );
   }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 text-center">Registrar Pago</h1>
+      <h1 className="text-2xl font-bold text-gray-800 text-center">{t('notices.registerPaymentTitle')}</h1>
       <p className="mt-2 text-gray-600">
-        Estás a punto de registrar el pago para: <span className="font-semibold">{proximoCompromiso.descripcion}</span>
+        {t('notices.aboutToPay')} <span className="font-semibold">{proximoCompromiso.descripcion}</span> ({proximoCompromiso.fecha})
       </p>
 
       <form onSubmit={handleSavePayment} className="mt-6 space-y-4">
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Monto Pagado</label>
+          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">{t('notices.form.amount')}</label>
           <input
             type="number"
             id="amount"
@@ -137,7 +140,7 @@ export default function AvisosPage() {
           />
         </div>
         <div>
-          <label htmlFor="file" className="block text-sm font-medium text-gray-700">Comprobante de Pago</label>
+          <label htmlFor="file" className="block text-sm font-medium text-gray-700">{t('notices.form.proof')}</label>
           <input
             type="file"
             id="file"
@@ -147,7 +150,7 @@ export default function AvisosPage() {
           />
         </div>
         <button type="submit" disabled={isSubmitting} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">
-          {isSubmitting ? 'Guardando...' : 'Guardar Pago'}
+          {isSubmitting ? t('notices.form.submitting') : t('notices.form.submit')}
         </button>
       </form>
     </div>
