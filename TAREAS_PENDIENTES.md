@@ -67,6 +67,13 @@ Este documento detalla las mejoras pendientes y completadas para el proyecto Val
     -   **Justificación:** Mejora la legibilidad y la experiencia del usuario al presentar la información en un formato familiar.
     -   **Estado:** Pendiente de análisis y aprobación.
 
+7.  **Bugs (Despliegue):**
+    -   **Objetivo:** Solucionar la visualización del logo en Vercel.
+    -   **Problema:** El logo no se muestra en el entorno de producción (Vercel), aunque sí es visible en el desarrollo local.
+    -   **Contexto:** Probablemente es un problema con la ruta de los archivos estáticos en Vercel. La ruta `/logo.png` podría no estar resolviéndose correctamente.
+    -   **Acción:** Investigar la configuración de archivos estáticos de Vercel y asegurar que el logo esté en la carpeta `public` y que la ruta en los componentes `Image` sea la correcta.
+    -   **Estado:** Pendiente de investigación.
+
 ---
 
 ## II. Tareas Terminadas
