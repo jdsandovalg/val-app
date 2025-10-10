@@ -2,40 +2,45 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import esTranslations from '@/locales/es.json';
-import { Toaster } from 'react-hot-toast';
 import enTranslations from '@/locales/en.json';
+import frTranslations from '@/locales/fr.json';
+import { Toaster } from 'react-hot-toast';
 
 type Translations = typeof esTranslations;
-type Language = 'es' | 'en';
+const availableLanguages = ['es', 'en', 'fr'] as const;
+type Language = typeof availableLanguages[number];
 type TranslationValue = string | { [key: string]: TranslationValue };
 
 interface I18nContextType {
   t: (key: string, params?: { [key: string]: string | number }) => string;
   lang: Language;
-  setLang: (lang: Language) => void;
+  setLang: () => void;
 }
 
 const translations: { [key in Language]: Translations } = {
   es: esTranslations,
   en: enTranslations,
+  fr: frTranslations,
 };
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export const I18nProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLangState] = useState<Language>('es');
+  const [lang, setLangState] = useState<Language>(availableLanguages[0]);
 
   useEffect(() => {
     const savedLang = localStorage.getItem('language') as Language | null;
-    if (savedLang && (savedLang === 'es' || savedLang === 'en')) {
+    if (savedLang && availableLanguages.includes(savedLang)) {
       setLangState(savedLang);
     }
   }, []);
 
-  const setLang = (newLang: Language) => {
-    localStorage.setItem('language', newLang);
-    setLangState(newLang);
-    window.location.reload(); // For simplicity, reload to apply changes everywhere
+  const setLang = () => {
+    const currentIndex = availableLanguages.indexOf(lang);
+    const nextIndex = (currentIndex + 1) % availableLanguages.length;
+    const nextLang = availableLanguages[nextIndex];
+    localStorage.setItem('language', nextLang);
+    setLangState(nextLang);
   };
 
   const t = (key: string, params?: { [key: string]: string | number }): string => {

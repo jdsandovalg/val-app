@@ -94,7 +94,7 @@ export default function Home() {
         <div className="mt-6">
           <button
             type="button"
-            onClick={() => setLang(lang === 'en' ? 'es' : 'en')}
+            onClick={() => setLang()}
             className="text-sm text-gray-500 hover:text-blue-600"
             title={t(`navigation.languageTooltip.${lang}`)}
           >

@@ -98,6 +98,7 @@ Este documento detalla las mejoras pendientes y completadas para el proyecto Val
     -   ✅ **Refactorización de "Calendarios":** Se aplicó i18n y notificaciones toast.
     -   ✅ **Refactorización de "Grupos de Trabajo":** Se aplicó i18n y notificaciones toast.
     -   ✅ **Refactorización de "Avisos":** Se aplicó i18n y notificaciones toast.
+    -   ✅ **Prueba de Extensibilidad (Francés):** Se añadió con éxito un tercer idioma (francés) para demostrar la facilidad de expansión del sistema de internacionalización.
 
 
 Estructura de las Tablas:

@@ -66,7 +66,7 @@ export default function GruposDeTrabajoPage() {
       // Simplemente los asignamos directamente al estado.
       // El '|| []' es una salvaguarda por si la función RPC devuelve null.
       setGrupos(data || []);
-    } catch (err: unknown) {
+    } catch {
       toast.error(t('groups.error'));
       router.push('/menu');
     } finally {

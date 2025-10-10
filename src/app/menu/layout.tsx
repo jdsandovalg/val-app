@@ -201,7 +201,7 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
         {/* --- Botón de Idioma (rápido — recarga) --- */}
           <button
             type="button"
-            onClick={() => setLang(lang === 'en' ? 'es' : 'en')}
+            onClick={() => setLang()}
             className="flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 hover:bg-gray-200 text-gray-600"
             aria-label={t('navigation.changeLanguage')}
             title={t(`navigation.languageTooltip.${lang}`)}
