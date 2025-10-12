@@ -209,7 +209,7 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6 mb-1">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12 6.615 2.25 12 2.25zM12 2.25v19.5M2.25 12h19.5M4.5 4.5l15 15"/>
             </svg>
-            <span className="text-xs">{t(`navigation.languageLabel.${lang}`)}</span>
+            <span className="text-xs">{t('navigation.languageMenu')}</span>
           </button>
 
 

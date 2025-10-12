@@ -7,17 +7,16 @@
     "calendar": "Calendrier",
     "groups": "Groupes",
     "notices": "Avis",
+    "languageMenu": "Langue",
     "language": "Langue",
     "changeLanguage": "Changer de langue",
     "languageLabel": {
       "en": "ES",
-      "es": "FR",
-      "fr": "EN"
+      "es": "EN"
     },
     "languageTooltip": {
       "en": "Passer à l'espagnol",
-      "es": "Passer au français",
-      "fr": "Passer à l'anglais"
+      "es": "Changer vers l'anglais"
     }
   },
   "header": {
@@ -35,8 +34,8 @@
   "login": {
     "idPlaceholder": "Maison #",
     "passwordPlaceholder": "Mot de passe",
-    "button": "Entrer",
-    "loadingButton": "Connexion...",
+    "button": "Connexion",
+    "loadingButton": "Connexion en cours...",
     "error": {
       "credentials": "ID ou mot de passe incorrect.",
       "generic": "Erreur de connexion. Veuillez vérifier vos identifiants."
@@ -50,7 +49,7 @@
     "table": {
       "id": "#",
       "description": "Description",
-      "dueDate": "Date Limite",
+      "dueDate": "Date d'échéance",
       "paid": "Payé",
       "status": "Statut",
       "actions": "Actions",
@@ -68,30 +67,30 @@
     },
     "payment": {
       "reportButton": "Signaler un Paiement",
-      "viewProofButton": "Voir le Justificatif",
-      "success": "Paiement enregistré avec succès!",
-      "error": "Erreur lors de l'enregistrement du paiement: {message}",
+      "viewProofButton": "Voir la Preuve",
+      "success": "Paiement enregistré avec succès !",
+      "error": "Erreur lors de l'enregistrement du paiement : {message}",
       "unknownError": "inconnue"
     },
     "imageViewer": {
       "loading": "Chargement de l'image...",
-      "error": "Impossible de charger l'image. Vérifiez que l'URL est correcte et que le fichier existe.\n\nURL: {url}",
-      "altText": "Justificatif de paiement",
+      "error": "Impossible de charger l'image. Vérifiez que l'URL est correcte et que le fichier existe dans le bucket.\n\nURL : {url}",
+      "altText": "Preuve de paiement",
       "closeAriaLabel": "Fermer"
     },
     "userData": {
-      "houseId": "Maison: {id}",
-      "responsible": "Responsable: {name}"
+      "houseId": "Maison : {id}",
+      "responsible": "Responsable : {name}"
     },
-    "fetchError": "Erreur lors du chargement des données du calendrier:"
+    "fetchError": "Erreur lors du chargement des données du calendrier :"
   },
   "paymentModal": {
-    "title": "Signaler un Paiement de Contribution",
-    "contribution": "Contribution:",
+    "title": "Signaler le Paiement d'une Contribution",
+    "contribution": "Contribution :",
     "amountPaid": "Montant Payé",
-    "amountPlaceholder": "Ex: 150.00",
-    "proof": "Justificatif de Paiement",
-    "dropzone": "Faites glisser une image ou cliquez pour sélectionner",
+    "amountPlaceholder": "Ex : 150.00",
+    "proof": "Preuve de Paiement",
+    "dropzone": "Faites glisser une image ici, ou cliquez pour en sélectionner une",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "selectFileButton": "Sélectionner un fichier",
@@ -105,26 +104,157 @@
     "membersTitle": "Membres du Groupe",
     "house": "Maison",
     "groupTitle": "Groupe #{number}",
-    "status_done": "Fait",
+    "status_done": "Terminé",
     "status_pending": "En attente"
+  },
+  "groupsSortMenu": {
+    "byGroup": "Trier par Groupe",
+    "byDate": "Trier par Date"
   },
   "notices": {
     "title": "Avis",
     "registerPaymentTitle": "Enregistrer un Paiement",
     "loading": "Chargement des avis...",
-    "noPending": "Vous n'avez aucun paiement en attente. Vous êtes à jour!",
-    "aboutToPay": "Vous êtes sur le point d'enregistrer le paiement pour:",
+    "noPending": "Vous n'avez aucun paiement en attente. Vous êtes à jour !",
+    "aboutToPay": "Vous êtes sur le point d'enregistrer le paiement pour :",
     "form": {
       "amount": "Montant Payé",
-      "proof": "Justificatif de Paiement",
+      "proof": "Preuve de Paiement",
       "submit": "Enregistrer le Paiement",
       "submitting": "Enregistrement..."
     },
     "alerts": {
       "fillAllFields": "Veuillez remplir tous les champs.",
-      "uploadError": "Erreur lors du téléversement du justificatif: {message}",
-      "dbError": "Erreur lors de l'enregistrement du paiement: {message}",
-      "success": "Paiement enregistré avec succès!"
+      "uploadError": "Erreur lors du téléversement de la preuve : {message}",
+      "dbError": "Erreur lors de l'enregistrement du paiement : {message}",
+      "success": "Paiement enregistré avec succès !"
     }
+  },
+  "manageUsers": {
+    "title": "Gérer les Utilisateurs",
+    "loading": "Chargement des utilisateurs...",
+    "fetchError": "Erreur lors du chargement des utilisateurs : {message}",
+    "loadError": "Erreur de chargement :",
+    "operationError": "Erreur d'opération :",
+    "ariaLabels": {
+      "openFilters": "Ouvrir les filtres",
+      "openSortMenu": "Ouvrir le menu de tri",
+      "addUser": "Ajouter un Nouvel Utilisateur"
+    },
+    "sortMenu": {
+      "byHouse": "Trier par Maison",
+      "byResponsible": "Trier par Responsable",
+      "byType": "Trier par Type"
+    },
+    "emptyState": {
+      "noUsers": "Aucun utilisateur à afficher.",
+      "addUserHint": "Vous pouvez ajouter un nouvel utilisateur avec le bouton '+'."
+    },
+    "noResults": "Aucun utilisateur trouvé correspondant aux filtres.",
+    "filterModal": {
+      "title": "Filtrer les Utilisateurs",
+      "housePlaceholder": "Filtrer par # Maison...",
+      "responsiblePlaceholder": "Filtrer par responsable...",
+      "allTypes": "Tous les types",
+      "admin": "Administrateur",
+      "owner": "Propriétaire",
+      "close": "Fermer"
+    },
+    "alerts": {
+      "saveSuccess": "Utilisateur enregistré avec succès !",
+      "saveError": "Erreur lors de l'enregistrement de l'utilisateur : {message}.\n\nVeuillez vous assurer que l'ID n'est pas dupliqué et que tous les champs obligatoires (ID, Responsable, Mot de passe) ont une valeur.",
+      "validationError": "Les champs ID, Responsable et Mot de passe sont obligatoires.",
+      "deleteNotImplemented": "La fonctionnalité de suppression n'est pas implémentée dans la base de données."
+    }
+  },
+  "userModal": {
+    "titleAdd": "Ajouter un Nouvel Utilisateur",
+    "titleEdit": "Modifier l'Utilisateur",
+    "idLabel": "ID (Maison #)",
+    "idPlaceholder": "Ex: 101",
+    "responsibleLabel": "Responsable",
+    "responsiblePlaceholder": "Nom du propriétaire",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Mot de passe d'accès",
+    "userTypeLabel": "Type d'Utilisateur",
+    "saveButton": "Enregistrer",
+    "cancelButton": "Annuler"
+  },
+  "manageContributions": {
+    "title": "Gérer les Contributions",
+    "loading": "Chargement des données de la table...",
+    "uploading": "Traitement du fichier CSV, veuillez patienter...",
+    "loadError": "Erreur de chargement :",
+    "operationError": "Erreur d'opération :",
+    "noResults": "Aucun enregistrement trouvé correspondant aux filtres.",
+    "ariaLabels": {
+      "openFilters": "Ouvrir les filtres",
+      "openSortMenu": "Ouvrir le menu de tri"
+    },
+    "sortMenu": {
+      "byDate": "Trier par Date",
+      "byHouse": "Trier par Maison",
+      "byContribution": "Trier par Contribution",
+      "byStatus": "Trier par Statut"
+    },
+    "actionsMenu": {
+      "addNew": "Ajouter Nouveau",
+      "uploadCsv": "Charger CSV",
+      "processing": "Traitement...",
+      "pdfReport": "Rapport PDF"
+    },
+    "emptyState": {
+      "noContributions": "Aucune contribution à afficher.",
+      "addContributionHint": "Vous pouvez ajouter une nouvelle contribution via le menu d'actions."
+    },
+    "card": {
+      "paidAmount": "Montant Payé",
+      "notPaid": "Non payé",
+      "statusDone": "Réalisé",
+      "statusPending": "En attente",
+      "date": "Date",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "alerts": {
+      "saveSuccess": "Enregistrement sauvegardé avec succès !",
+      "saveError": "Erreur lors de la sauvegarde de l'enregistrement : {message}.\n\nVeuillez vérifier que tous les champs obligatoires ont une valeur.",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet enregistrement ?",
+      "deleteError": "Erreur lors de la suppression : {message}",
+      "pdfNoData": "Aucune donnée pour générer le rapport. Essayez de changer les filtres."
+    }
+  },
+  "contributionModal": {
+    "titleAdd": "Ajouter une Contribution",
+    "titleEdit": "Modifier la Contribution",
+    "houseLabel": "Maison",
+    "housePlaceholder": "Sélectionnez une maison",
+    "contributionTypeLabel": "Type de Contribution",
+    "contributionTypePlaceholder": "Sélectionnez une contribution",
+    "dateLabel": "Date",
+    "amountPaidLabel": "Montant Payé",
+    "amountPaidPlaceholder": "0.00",
+    "statusLabel": "Réalisé",
+    "saveButton": "Enregistrer",
+    "savingButton": "Enregistrement...",
+    "cancelButton": "Annuler"
+  },
+  "contributionFilterModal": {
+    "title": "Filtrer les Contributions",
+    "housePlaceholder": "Filtrer par maison...",
+    "contributionPlaceholder": "Filtrer par contribution...",
+    "datePlaceholder": "Filtrer par date...",
+    "amountPlaceholder": "Filtrer par montant...",
+    "statusPlaceholder": "Filtrer par statut (oui/non)...",
+    "close": "Fermer"
+  },
+  "contributionReport": {
+    "title": "Rapport des Contributions",
+    "generatedOn": "Généré le :",
+    "headerHouse": "Maison",
+    "headerContribution": "Contribution",
+    "headerDate": "Date",
+    "headerAmount": "Montant Payé",
+    "headerStatus": "Réalisé"
   }
 }

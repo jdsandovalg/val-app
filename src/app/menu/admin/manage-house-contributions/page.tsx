@@ -12,12 +12,14 @@
  * `v_usuarios_contribuciones`. El filtrado y la ordenación se realizan en el lado del cliente mediante `useMemo`.
  */
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { createClient } from '@/utils/supabase/client';
 import type { ContribucionPorCasa } from '@/types/database';
 import type { ContribucionPorCasaExt, SortableKeys } from '@/types';
 import ContributionModal from './components/ContributionModal';
-import ContributionTable from './components/ContributionTable';
 import ContributionCard from './components/ContributionCard';
+import { useI18n } from '@/app/i18n-provider';
+import { formatDate, formatCurrency } from '@/utils/format';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -26,6 +28,7 @@ import autoTable from 'jspdf-autotable';
 export default function ManageHouseContributionsPage() {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t, locale, currency } = useI18n();
   
   const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
   const [usuarios, setUsuarios] = useState<{ id: number; responsable: string; }[]>([]);
@@ -97,12 +100,12 @@ export default function ManageHouseContributionsPage() {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setEditingRecord(null);
-  };
+  }, []);
 
-  const handleSave = async (recordData: Partial<ContribucionPorCasaExt>) => {
+  const handleSave = useCallback(async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null); // Limpiar errores de UI
     try {
       const recordToSave = {
@@ -131,24 +134,24 @@ export default function ManageHouseContributionsPage() {
         if (error) throw error;
       }
 
-      alert('¡Registro guardado exitosamente!');
+      toast.success(t('manageContributions.alerts.saveSuccess'));
     } catch (err: unknown) {
       console.error('Error en handleSave:', err);
       let message = 'desconocido';
       if (err && typeof err === 'object' && 'message' in err) {
         message = (err as { message: string }).message;
       }
-      const errorMessage = `Error al guardar el registro: ${message}.\n\nVerifique que tiene permisos para INSERTAR/ACTUALIZAR en la tabla (RLS en Supabase) y que todos los campos obligatorios tienen un valor.`;
+      const errorMessage = t('manageContributions.alerts.saveError', { message });
       setError(errorMessage);
-      alert(errorMessage);
+      toast.error(errorMessage, { duration: 6000 });
     } finally {
       handleCloseModal();
       fetchData(); // Recargar datos
     }
-  };
+  }, [supabase, editingRecord, t, handleCloseModal, fetchData]);
 
-  const handleDelete = async (recordToDelete: ContribucionPorCasa) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este registro?')) {
+  const handleDelete = useCallback(async (recordToDelete: ContribucionPorCasa) => {
+    if (window.confirm(t('manageContributions.alerts.deleteConfirm'))) {
       // CORRECCIÓN: Usar una operación DELETE directa a la tabla.
       const { error } = await supabase
         .from('contribucionesporcasa')
@@ -156,14 +159,14 @@ export default function ManageHouseContributionsPage() {
         .match({ id_casa: recordToDelete.id_casa, id_contribucion: recordToDelete.id_contribucion, fecha: recordToDelete.fecha });
 
       if (error) {
-        const errorMessage = `Error al eliminar: ${error.message}`;
+        const errorMessage = t('manageContributions.alerts.deleteError', { message: error.message });
         setError(errorMessage);
-        alert(errorMessage);
+        toast.error(errorMessage);
       } else {
         fetchData(); // Recargar datos
       }
     }
-  };
+  }, [supabase, t, fetchData]);
 
   const handleSort = (key: SortableKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -272,7 +275,7 @@ export default function ManageHouseContributionsPage() {
 
   const handleGeneratePDF = useCallback(() => {
     if (filteredAndSortedRecords.length === 0) {
-      alert('No hay datos para generar el reporte. Pruebe cambiando los filtros.');
+      toast.error(t('manageContributions.alerts.pdfNoData'));
       return;
     }
 
@@ -283,22 +286,22 @@ export default function ManageHouseContributionsPage() {
       // Encabezado del reporte
       docInstance.setFontSize(22);
       docInstance.setFont('helvetica', 'bold');
-      docInstance.text('Reporte de Aportaciones', pageWidth / 2, 22, { align: 'center' });
+      docInstance.text(t('contributionReport.title'), pageWidth / 2, 22, { align: 'center' });
       
       docInstance.setFontSize(10);
       docInstance.setFont('helvetica', 'normal');
-      docInstance.text(`Generado el: ${new Date().toLocaleDateString()}`, pageWidth - 14, 22, { align: 'right' });
+      docInstance.text(`${t('contributionReport.generatedOn')} ${new Date().toLocaleDateString()}`, pageWidth - 14, 22, { align: 'right' });
 
       // Preparar datos para la tabla
-      const tableColumn = ["Casa", "Contribución", "Fecha", "Monto Pagado", "Realizado"];
+      const tableColumn = [t('contributionReport.headerHouse'), t('contributionReport.headerContribution'), t('contributionReport.headerDate'), t('contributionReport.headerAmount'), t('contributionReport.headerStatus')];
       const tableRows = filteredAndSortedRecords.map(record => {
         const casa = record.usuarios
-          ? `Casa #${record.usuarios.id} - ${record.usuarios.responsable}`
-          : `Casa ID: ${record.id_casa} (No encontrado)`;
-        const contribucion = record.contribuciones?.descripcion ?? `ID: ${record.id_contribucion} (No encontrada)`;
-        const pagado = record.pagado != null ? `$${Number(record.pagado).toFixed(2)}` : 'No pagado';
-        const realizado = record.realizado === 'S' ? 'Sí' : 'No';
-        return [casa, contribucion, record.fecha, pagado, realizado];
+          ? `${t('groups.house')} #${record.usuarios.id} - ${record.usuarios.responsable}`
+          : `${t('groups.house')} ID: ${record.id_casa}`;
+        const contribucion = record.contribuciones?.descripcion ?? `ID: ${record.id_contribucion}`;
+      const pagado = record.pagado != null ? formatCurrency(record.pagado, locale, currency) : t('manageContributions.card.notPaid');
+        const realizado = record.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no');
+      return [casa, contribucion, formatDate(record.fecha, locale), pagado, realizado];
       });
 
       // Crear la tabla
@@ -330,7 +333,7 @@ export default function ManageHouseContributionsPage() {
         console.warn("No se pudo cargar el logo. El reporte se generará sin él.");
         generatePdfContent(doc);
       });
-  }, [filteredAndSortedRecords]);
+  }, [filteredAndSortedRecords, t, locale, currency]);
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -416,7 +419,7 @@ export default function ManageHouseContributionsPage() {
   return (
       <div className="bg-gray-50 p-4 sm:p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-1xl font-bold text-gray-800 text-center">Gestionar Aportaciones</h1>
+          <h1 className="text-1xl font-bold text-gray-800 text-center">{t('manageContributions.title')}</h1>
 
           {/* Contenedor de Acciones */}
           <div className="relative flex items-center gap-2">
@@ -424,7 +427,7 @@ export default function ManageHouseContributionsPage() {
             <button
               onClick={() => setIsFilterModalOpen(true)}
               className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 md:hidden"
-              aria-label="Abrir filtros"
+              aria-label={t('manageContributions.ariaLabels.openFilters')}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
@@ -436,7 +439,7 @@ export default function ManageHouseContributionsPage() {
               <button
                 onClick={() => setIsSortMenuOpen(prev => !prev)}
                 className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                aria-label="Abrir menú de ordenamiento"
+                aria-label={t('manageContributions.ariaLabels.openSortMenu')}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
@@ -445,10 +448,10 @@ export default function ManageHouseContributionsPage() {
               {isSortMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
                   <div className="py-1">
-                    <button onClick={() => { handleSort('fecha'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">Ordenar por Fecha</button>
-                    <button onClick={() => { handleSort('usuarios'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">Ordenar por Casa</button>
-                    <button onClick={() => { handleSort('contribuciones'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-1 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">Ordenar por Contribución</button>
-                    <button onClick={() => { handleSort('realizado'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">Ordenar por Estado</button>
+                    <button onClick={() => { handleSort('fecha'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byDate')}</button>
+                    <button onClick={() => { handleSort('usuarios'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byHouse')}</button>
+                    <button onClick={() => { handleSort('contribuciones'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-1 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byContribution')}</button>
+                    <button onClick={() => { handleSort('realizado'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byStatus')}</button>
                   </div>
                 </div>
               )}
@@ -470,15 +473,15 @@ export default function ManageHouseContributionsPage() {
                 <div className="py-1">
                   <button onClick={() => { handleOpenModal(null); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={isUploadingCsv} >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    Agregar Nuevo
+                    {t('manageContributions.actionsMenu.addNew')}
                   </button>
                   <button onClick={() => { fileInputRef.current?.click(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-                    {isUploadingCsv ? 'Procesando...' : 'Cargar CSV'}
+                    {isUploadingCsv ? t('manageContributions.actionsMenu.processing') : t('manageContributions.actionsMenu.uploadCsv')}
                   </button>
                   <button onClick={() => { handleGeneratePDF(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                    Reporte PDF
+                    {t('manageContributions.actionsMenu.pdfReport')}
                   </button>
                 </div>
               </div>
@@ -493,35 +496,22 @@ export default function ManageHouseContributionsPage() {
           />
         </div>
 
-      {loading && <p>Cargando datos de la tabla...</p>}
-      {isUploadingCsv && <p className="text-purple-600">Procesando archivo CSV, por favor espere...</p>}
-      {fetchError && <p className="text-red-500 bg-red-100 p-3 rounded">Error de carga: {fetchError}</p>}
-      {error && <p className="text-red-500 bg-red-100 p-3 rounded">Error de operación: {error}</p>}
+      {loading && <p className="text-center">{t('manageContributions.loading')}</p>}
+      {isUploadingCsv && <p className="text-center text-purple-600">{t('manageContributions.uploading')}</p>}
+      {fetchError && <p className="text-center text-red-500 bg-red-100 p-3 rounded">{t('manageContributions.loadError')} {fetchError}</p>}
+      {error && <p className="text-center text-red-500 bg-red-100 p-3 rounded">{t('manageContributions.operationError')} {error}</p>}
 
       {!loading && !fetchError && records.length === 0 ? (
         <div className="text-center py-10 bg-white shadow-md rounded-lg">
-          <p className="text-gray-500">No hay aportaciones para mostrar.</p>
+          <p className="text-gray-500">{t('manageContributions.emptyState.noContributions')}</p>
           <p className="text-sm text-gray-400 mt-2">
-            Puedes agregar una nueva aportación usando el botón &apos;+ Agregar Nuevo&apos;.
+            {t('manageContributions.emptyState.addContributionHint')}
           </p>
         </div>
       ) : (
         <>
-          {/* Vista de Tabla para pantallas medianas y grandes (md y superior) */}
-          <div className="hidden md:block">
-            <ContributionTable
-              records={filteredAndSortedRecords}
-              sortConfig={sortConfig}
-              filters={filters}
-              handleSort={handleSort}
-              handleFilterChange={handleFilterChange}
-              handleDelete={handleDelete}
-              handleOpenModal={handleOpenModal}
-            />
-          </div>
-
-          {/* Vista de Tarjetas para pantallas pequeñas (hasta md) */}
-          <div className="block md:hidden">
+          {/* La vista de tabla ha sido eliminada para unificar la interfaz a "Mobile-Only" */}
+          <div className="block">
             {filteredAndSortedRecords.map((record) => (
               <ContributionCard
                 key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`}
@@ -534,7 +524,7 @@ export default function ManageHouseContributionsPage() {
 
           {records.length > 0 && filteredAndSortedRecords.length === 0 && (
             <div className="text-center py-10 bg-white shadow-md rounded-lg mt-4">
-              <p className="text-gray-500">No se encontraron registros que coincidan con los filtros.</p>
+              <p className="text-gray-500">{t('manageContributions.noResults')}</p>
             </div>
           )}
         </>
@@ -553,20 +543,20 @@ export default function ManageHouseContributionsPage() {
       {isFilterModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
-            <h2 className="text-xl font-bold mb-4">Filtrar Registros</h2>
+            <h2 className="text-xl font-bold mb-4">{t('contributionFilterModal.title')}</h2>
             <div className="space-y-4">
-              <input name="casa" value={filters.casa} onChange={handleFilterChange} placeholder="Filtrar por casa..." className="w-full p-2 border rounded" />
-              <input name="contribucion" value={filters.contribucion} onChange={handleFilterChange} placeholder="Filtrar por contribución..." className="w-full p-2 border rounded" />
-              <input name="fecha" value={filters.fecha} onChange={handleFilterChange} placeholder="Filtrar por fecha (YYYY-MM-DD)..." className="w-full p-2 border rounded" />
-              <input name="pagado" value={filters.pagado} onChange={handleFilterChange} placeholder="Filtrar por monto..." className="w-full p-2 border rounded" />
-              <input name="realizado" value={filters.realizado} onChange={handleFilterChange} placeholder="Filtrar por estado (sí/no)..." className="w-full p-2 border rounded" />
+              <input name="casa" value={filters.casa} onChange={handleFilterChange} placeholder={t('contributionFilterModal.housePlaceholder')} className="w-full p-2 border rounded" />
+              <input name="contribucion" value={filters.contribucion} onChange={handleFilterChange} placeholder={t('contributionFilterModal.contributionPlaceholder')} className="w-full p-2 border rounded" />
+              <input name="fecha" value={filters.fecha} onChange={handleFilterChange} placeholder={t('contributionFilterModal.datePlaceholder')} className="w-full p-2 border rounded" />
+              <input name="pagado" value={filters.pagado} onChange={handleFilterChange} placeholder={t('contributionFilterModal.amountPlaceholder')} className="w-full p-2 border rounded" />
+              <input name="realizado" value={filters.realizado} onChange={handleFilterChange} placeholder={t('contributionFilterModal.statusPlaceholder')} className="w-full p-2 border rounded" />
             </div>
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setIsFilterModalOpen(false)}
                 className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
               >
-                Cerrar
+                {t('contributionFilterModal.close')}
               </button>
             </div>
           </div>

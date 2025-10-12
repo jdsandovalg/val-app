@@ -1,6 +1,7 @@
 'use client';
 
 import { useI18n } from '@/app/i18n-provider';
+import { formatDate } from '@/utils/format';
 
 type Estado = {
   texto: string;
@@ -9,7 +10,6 @@ type Estado = {
 };
 
 interface ContributionCalendarCardProps {
-  id_contribucion: string;
   descripcion: string | null;
   fecha: string;
   estado: Estado;
@@ -41,7 +41,7 @@ const ContributionCalendarCard: React.FC<ContributionCalendarCardProps> = ({
   onPay,
   onViewProof,
 }) => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const dbColor = color_del_borde?.toLowerCase() || '';
   const borderColor = colorToClassMap[dbColor] || 'border-gray-500';
 
@@ -50,7 +50,7 @@ const ContributionCalendarCard: React.FC<ContributionCalendarCardProps> = ({
       <div className="flex justify-between items-start">
         <div>
           <p className="font-bold text-gray-800">{descripcion ?? 'N/A'}</p>
-          <p className="text-sm text-gray-500">{t('calendar.table.dueDate')}: {fecha}</p>
+          <p className="text-sm text-gray-500">{t('calendar.table.dueDate')}: {formatDate(fecha, lang)}</p>
         </div>
         <div className={`flex items-center justify-center gap-2 font-medium text-xs ${estado.color}`}>
           {estado.icon}

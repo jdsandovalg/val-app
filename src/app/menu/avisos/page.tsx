@@ -14,6 +14,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
 import { useI18n } from '@/app/i18n-provider';
+import { formatDate } from '@/utils/format';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -27,7 +28,7 @@ type ProximoCompromiso = {
 export default function AvisosPage() {
   const supabase = createClient();
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [proximoCompromiso, setProximoCompromiso] = useState<ProximoCompromiso | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,12 +109,12 @@ export default function AvisosPage() {
   };
 
   if (isLoading) {
-    return <div className="bg-white p-6 rounded-lg shadow">{t('notices.loading')}</div>;
+    return <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-gray-300">{t('notices.loading')}</div>;
   }
 
   if (!proximoCompromiso) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
         <h1 className="text-2xl font-bold text-gray-800 text-center">{t('notices.title')}</h1>
         <p className="mt-4 text-gray-600">{t('notices.noPending')}</p>
       </div>
@@ -121,10 +122,10 @@ export default function AvisosPage() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow max-w-lg mx-auto">
+    <div className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto border-l-4 border-yellow-500">
       <h1 className="text-2xl font-bold text-gray-800 text-center">{t('notices.registerPaymentTitle')}</h1>
       <p className="mt-2 text-gray-600">
-        {t('notices.aboutToPay')} <span className="font-semibold">{proximoCompromiso.descripcion}</span> ({proximoCompromiso.fecha})
+        {t('notices.aboutToPay')} <span className="font-semibold">{proximoCompromiso.descripcion}</span> ({formatDate(proximoCompromiso.fecha, lang)})
       </p>
 
       <form onSubmit={handleSavePayment} className="mt-6 space-y-4">
@@ -140,14 +141,21 @@ export default function AvisosPage() {
           />
         </div>
         <div>
-          <label htmlFor="file" className="block text-sm font-medium text-gray-700">{t('notices.form.proof')}</label>
-          <input
-            type="file"
-            id="file"
-            onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-            className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
-            required
-          />
+          <label className="block text-sm font-medium text-gray-700">{t('notices.form.proof')}</label>
+          <div className="mt-1 flex items-center">
+            <label htmlFor="file-upload" className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-blue-600 whitespace-nowrap">
+              {t('paymentModal.selectFileButton')}
+            </label>
+            <input 
+              id="file-upload"
+              name="file-upload"
+              type="file" 
+              className="hidden"
+              onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} 
+              accept="image/*" 
+              required />
+            <span className="ml-3 text-sm text-gray-500 truncate" title={file?.name}>{file ? file.name : t('paymentModal.noFileChosen')}</span>
+          </div>
         </div>
         <button type="submit" disabled={isSubmitting} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">
           {isSubmitting ? t('notices.form.submitting') : t('notices.form.submit')}

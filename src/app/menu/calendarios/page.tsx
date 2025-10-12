@@ -14,11 +14,13 @@
 import { createClient } from '@/utils/supabase/client';
 import React from 'react'; // Asegúrate de que React esté importado
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
+import { formatDate } from '@/utils/format';
 import ContributionCalendarCard from './components/ContributionCalendarCard';
 import { saveContributionPayment } from '@/utils/supabase/server-actions';
 
@@ -32,12 +34,6 @@ type Contribucion = {
   url_comprobante?: string | null;
 };
 
-type ContribucionConEstado = Contribucion & {
-  estado: string;
-};
-
-type SortableKeys = keyof ContribucionConEstado;
-
 function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () => void }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +42,7 @@ function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () =>
   if (!src) return null;
 
   const handleImageError = () => {
+    console.log('Failing image URL:', src); // Log de diagnóstico
     setIsLoading(false);
     const errorMessage = t('calendar.imageViewer.error', { url: src });
     setError(errorMessage);
@@ -59,10 +56,22 @@ function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () =>
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center p-4" onClick={onClose}>
       <div className="bg-white p-2 rounded-lg shadow-xl max-w-3xl max-h-full" onClick={(e) => e.stopPropagation()}>
-        <div className="relative flex items-center justify-center" style={{ minHeight: '200px', minWidth: '300px', width: '80vw', height: '80vh' }}>
-          {isLoading && <div className="text-gray-600">{t('calendar.imageViewer.loading')}</div>}
+        <div className="relative flex flex-col items-center justify-center" style={{ minHeight: '200px', minWidth: '300px', width: '80vw', height: '80vh' }}>
+          {isLoading && (
+            <div className="text-center">
+              <div className="text-gray-600">{t('calendar.imageViewer.loading')}</div>
+              <div className="text-xs text-gray-400 mt-2 break-all">URL: {src}</div>
+            </div>
+          )}
           {error && <div className="text-red-600 p-4 text-center whitespace-pre-wrap">{error}</div>}
-          <Image src={src} alt={t('calendar.imageViewer.altText')} className={`object-contain ${isLoading || error ? 'hidden' : ''}`} fill={true} onLoad={handleImageLoad} onError={handleImageError} sizes="80vw" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={t('calendar.imageViewer.altText')}
+            className={`w-full h-full object-contain ${isLoading || error ? 'hidden' : ''}`}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+          />
           <button
             onClick={onClose}
             className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -80,7 +89,7 @@ function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () =>
 
 export default function CalendariosPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const supabase = createClient();
   const [contribuciones, setContribuciones] = useState<Contribucion[]>([]);  
   const [usuario, setUsuario] = useState<{ id: number; responsable: string } | null>(null);  
@@ -88,14 +97,12 @@ export default function CalendariosPage() {
   const [selectedContribution, setSelectedContribution] = useState<Contribucion | null>(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
-  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({ key: 'fecha', direction: 'ascending' });
-  const [filters, setFilters] = useState({
-    id_contribucion: '',
-    descripcion: '',
-    fecha: '',
-    realizado: '',
-    estado: '',
-  });
+
+  // Ordenamiento por defecto. Ya no se necesita configuración de ordenamiento o filtros.
+  const filteredAndSortedContribuciones = useMemo(() => {
+    return [...contribuciones]
+      .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+  }, [contribuciones]);
 
   const fetchContribuciones = useCallback(async () => {
     const stored = localStorage.getItem('usuario');
@@ -124,19 +131,6 @@ export default function CalendariosPage() {
     fetchContribuciones();
   }, [fetchContribuciones]);
 
-  const handleSort = (key: SortableKeys) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
-
   const handleOpenPaymentModal = (contribution: Contribucion) => {
     setSelectedContribution(contribution);
     setIsPaymentModalOpen(true);
@@ -151,10 +145,9 @@ export default function CalendariosPage() {
     if (!url) return;
 
     // Generar la URL pública desde la ruta del archivo almacenada en la BD.
-    // Esto asegura que siempre se use el método correcto y es más seguro.
+    // Este es el método oficial y más seguro para obtener la URL.
     const { data } = supabase.storage.from('imagenespagos').getPublicUrl(url);
-    const fullUrl = data.publicUrl;
-    setViewingImageUrl(fullUrl);
+    setViewingImageUrl(data.publicUrl);
     setIsImageViewerOpen(true);
   };
 
@@ -197,48 +190,9 @@ export default function CalendariosPage() {
     return { texto: t('calendar.status.pending'), color: 'text-gray-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
   }, [t]);
 
-  const filteredAndSortedContribuciones = useMemo(() => {
-    const items: ContribucionConEstado[] = contribuciones.map(c => ({
-      ...c,
-      estado: getEstado(c).texto,
-    }));
-
-    // Filtrado en el cliente
-    const filteredItems = items.filter(item => {
-      return (
-        String(item.id_contribucion).toLowerCase().includes(filters.id_contribucion.toLowerCase()) &&
-        (item.descripcion || '').toLowerCase().includes(filters.descripcion.toLowerCase()) &&
-        item.fecha.toLowerCase().includes(filters.fecha.toLowerCase()) &&
-        (item.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no')).toLowerCase().includes(filters.realizado.toLowerCase()) &&
-        item.estado.toLowerCase().includes(filters.estado.toLowerCase())
-      );
-    });
-
-    // Ordenamiento en el cliente
-    if (sortConfig !== null) {
-      filteredItems.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
-
-        if (aValue < bValue) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-
-    return filteredItems; 
-  }, [contribuciones, filters, sortConfig, getEstado, t]);
-
   const handleGeneratePDF = useCallback(() => {
     if (!usuario || filteredAndSortedContribuciones.length === 0) {
-      toast.error(t('calendar.reportNoData'));
+      toast.error(t('calendar.reportNoData')); // Esta clave ya existe
       return;
     }
 
@@ -257,17 +211,19 @@ export default function CalendariosPage() {
       
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      doc.text(t('calendar.userData.responsible', { name: usuario.responsable }), 14, 52);
+      doc.text(t('calendar.userData.responsible', { name: usuario.responsable }), 14, 52); // Esta clave ya existe
 
       // --- Tabla de Aportaciones ---
       const tableColumn = [t('calendar.table.id'), t('calendar.table.description'), t('calendar.table.dueDate'), t('calendar.table.paid'), t('calendar.table.status')];
       const tableRows: (string | number)[][] = [];
 
-      filteredAndSortedContribuciones.forEach(contrib => {
+      // Usar las contribuciones ordenadas para el PDF
+      const contribucionesParaPdf = filteredAndSortedContribuciones.map(c => ({ ...c, estado: getEstado(c).texto }));
+      contribucionesParaPdf.forEach(contrib => {
         const contribData = [
           contrib.id_contribucion,
           contrib.descripcion ?? '',
-          contrib.fecha,
+          formatDate(contrib.fecha, lang),
           contrib.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no'),
           contrib.estado,
         ];
@@ -290,7 +246,7 @@ export default function CalendariosPage() {
     // --- Encabezado con Logo y Título ---
     // No es necesario cargar el logo para la funcionalidad básica, se restaura la versión simple.
     generatePdfContent(doc);
-  }, [usuario, filteredAndSortedContribuciones, t]);
+  }, [usuario, filteredAndSortedContribuciones, t, getEstado, lang]);
 
   return (
     <>
@@ -314,12 +270,11 @@ export default function CalendariosPage() {
           </div>
         </>
       )}
-        {/* Vista de Tarjetas para móvil */}
-        <div className="w-full md:hidden">
+        {/* Vista de Tarjetas (Mobile-Only) */}
+        <div className="w-full">
           {filteredAndSortedContribuciones.map((row) => (
             <ContributionCalendarCard
               key={`${row.id_contribucion}-${row.fecha}`}
-              id_contribucion={row.id_contribucion}
               descripcion={row.descripcion}
               fecha={row.fecha}
               estado={getEstado(row)}
@@ -330,68 +285,6 @@ export default function CalendariosPage() {
               onViewProof={() => handleOpenImageViewer(row.url_comprobante)}
             />
           ))}
-        </div>
-        {/* Vista de Tabla para escritorio */}
-        <div className="hidden md:block overflow-x-auto w-full -mx-2 sm:mx-0">
-          <table className="min-w-full border rounded-lg shadow text-xs sm:text-sm">
-            <thead>
-              <tr className="bg-blue-900 text-white">
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('id_contribucion')} className="flex items-center gap-1 w-full justify-center">{t('calendar.table.id')} {sortConfig?.key === 'id_contribucion' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('descripcion')} className="flex items-center gap-1 w-full">{t('calendar.table.description')} {sortConfig?.key === 'descripcion' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('fecha')} className="flex items-center gap-1 w-full justify-center">{t('calendar.table.dueDate')} {sortConfig?.key === 'fecha' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('realizado')} className="flex items-center gap-1 w-full justify-center">{t('calendar.table.paid')} {sortConfig?.key === 'realizado' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold"><button onClick={() => handleSort('estado')} className="flex items-center gap-1 w-full justify-center">{t('calendar.table.status')} {sortConfig?.key === 'estado' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button></th>
-                <th className="border px-2 py-2 sm:px-4 sm:py-3 font-semibold">{t('calendar.table.actions')}</th>
-              </tr>
-              <tr className="bg-gray-200">
-                <th className="border px-2 py-1"><input name="id_contribucion" value={filters.id_contribucion} onChange={handleFilterChange} placeholder={t('calendar.table.filterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"><input name="descripcion" value={filters.descripcion} onChange={handleFilterChange} placeholder={t('calendar.table.filterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"><input name="fecha" value={filters.fecha} onChange={handleFilterChange} placeholder={t('calendar.table.filterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"><input name="realizado" value={filters.realizado} onChange={handleFilterChange} placeholder={t('calendar.table.paidFilterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"><input name="estado" value={filters.estado} onChange={handleFilterChange} placeholder={t('calendar.table.filterPlaceholder')} className="text-xs p-1 border rounded w-full font-normal" /></th>
-                <th className="border px-2 py-1"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAndSortedContribuciones.length > 0 ? (
-                filteredAndSortedContribuciones.map((row, idx) => {
-                  const { icon, color, texto } = getEstado(row);
-                  return (
-                    <tr key={`${row.id_contribucion}-${row.fecha}`} className={idx % 2 === 0 ? "bg-blue-50" : "bg-gray-100"}>
-                      <td className="border px-2 py-2 sm:px-4 sm:py-3 text-center font-bold text-blue-900">{String(row.id_contribucion)}</td>
-                      <td className="border px-2 py-2 sm:px-4 sm:py-3 text-blue-900">{String(row.descripcion ?? '')}</td>
-                      <td className="border px-1 py-2 sm:px-4 sm:py-3 text-center text-blue-900">{String(row.fecha)}</td>
-                      <td className="border px-2 py-2 sm:px-4 sm:py-3 text-center">
-                        <span className={`inline-block px-2 py-1 rounded text-xs sm:text-sm ${row.realizado === 'S' ? 'bg-blue-200 text-blue-900 border border-blue-400' : 'bg-gray-300 text-gray-700 border border-gray-400'}`}>
-                          {row.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no')}
-                        </span>
-                      </td>
-                      <td className="border px-2 py-2 sm:px-4 sm:py-3 text-center">
-                        <div className={`flex items-center justify-center gap-2 font-medium ${color}`}>
-                          {icon}
-                          <span className="hidden sm:inline">{texto}</span>
-                        </div>
-                      </td>
-                      <td className="border px-2 py-2 sm:px-4 sm:py-3 text-center">
-                        {row.realizado === 'N' && (
-                          <button onClick={() => handleOpenPaymentModal(row)} className="bg-green-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-green-600">{t('calendar.payment.reportButton')}</button>
-                        )}
-                        {row.realizado === 'S' && row.url_comprobante && (
-                          <button onClick={() => handleOpenImageViewer(row.url_comprobante)} className="bg-blue-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-blue-600">{t('calendar.payment.viewProofButton')}</button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={6} className="text-center py-10 text-gray-500">
-                    {t('calendar.table.noContributionsFound')}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
         </div>
       </div>
       <PaymentModal

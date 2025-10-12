@@ -11,12 +11,20 @@
  * @acceso_a_datos Llama a la función RPC de Supabase `get_grupos_trabajo_usuario`, pasándole el ID y tipo
  * del usuario. La base de datos devuelve los datos ya procesados y agrupados en formato JSON.
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Usuario } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
+import { formatDate } from '@/utils/format';
 import { useRouter } from 'next/navigation';
+
+type SortableKeys = 'id_grupo' | 'fecha_contribucion';
+
+type SortConfig = {
+  key: SortableKeys;
+  direction: 'ascending' | 'descending';
+};
 
 type ContribucionAgrupada = {
   descripcion: string;
@@ -38,8 +46,13 @@ export default function GruposDeTrabajoPage() {
   const supabase = createClient();
   const router = useRouter();
   const [grupos, setGrupos] = useState<ContribucionAgrupada[]>([]);
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [loading, setLoading] = useState(true);
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: 'id_grupo',
+    direction: 'ascending',
+  });
 
   const fetchDataAndGroup = useCallback(async () => {
     setLoading(true);
@@ -78,15 +91,60 @@ export default function GruposDeTrabajoPage() {
     fetchDataAndGroup();
   }, [fetchDataAndGroup]);
 
+  const handleSort = (key: SortableKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+    setIsSortMenuOpen(false);
+  };
+
+  const sortedGrupos = useMemo(() => {
+    return grupos.map(contribucion => {
+      const sortedInnerGrupos = [...contribucion.grupos].sort((a, b) => {
+        const aValue = sortConfig.key === 'id_grupo' ? a.id_grupo : a.fechas[0]?.fecha;
+        const bValue = sortConfig.key === 'id_grupo' ? b.id_grupo : b.fechas[0]?.fecha;
+
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+
+        if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+      });
+      return { ...contribucion, grupos: sortedInnerGrupos };
+    });
+  }, [grupos, sortConfig]);
+
   return (
     <>
-      <div className="flex justify-center items-center mb-6">
+      <div className="w-full flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800 text-center">{t('groups.title')}</h1>
+        <div className="relative">
+          <button
+            onClick={() => setIsSortMenuOpen(prev => !prev)}
+            className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            aria-label={t('manageUsers.ariaLabels.openSortMenu')}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+            </svg>
+          </button>
+          {isSortMenuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+              <div className="py-1">
+                <button onClick={() => handleSort('id_grupo')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t('groupsSortMenu.byGroup')}</button>
+                <button onClick={() => handleSort('fecha_contribucion')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t('groupsSortMenu.byDate')}</button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-6">
-        {!loading && grupos.length > 0 ? (
-          grupos.map((contribucion) => (
+        {!loading && sortedGrupos.length > 0 ? (
+          sortedGrupos.map((contribucion) => (
             <div key={contribucion.descripcion} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-800 border-b pb-2 mb-4">{contribucion.descripcion}</h2>
               {contribucion.grupos.map((grupo) => (
@@ -97,8 +155,7 @@ export default function GruposDeTrabajoPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {grupo.fechas.map((fechaInfo) => (
                       <div key={`${fechaInfo.fecha}-${fechaInfo.casas[0]?.id || 0}`} className="border rounded-lg p-3 bg-gray-50">
-                        <div className="flex justify-between items-center mb-2">
-                          <p className="text-sm font-medium text-gray-600">{fechaInfo.fecha}</p>
+                        <div className="flex justify-between items-center mb-2">                          <p className="text-sm font-medium text-gray-600">{formatDate(fechaInfo.fecha, lang)}</p>
                           <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
                             fechaInfo.realizado === 'S' ? 'bg-green-100 text-green-800' :
                             fechaInfo.dias_restantes >= 0 ? 'bg-red-100 text-red-800' :

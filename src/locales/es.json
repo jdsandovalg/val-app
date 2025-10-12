@@ -7,6 +7,7 @@
     "calendar": "Calendario",
     "groups": "Grupos",
     "notices": "Avisos",
+    "languageMenu": "Idioma",
     "language": "Idioma",
     "changeLanguage": "Cambiar idioma",
     "languageLabel": {
@@ -106,6 +107,10 @@
     "status_done": "Realizado",
     "status_pending": "Pendiente"
   },
+  "groupsSortMenu": {
+    "byGroup": "Ordenar por Grupo",
+    "byDate": "Ordenar por Fecha"
+  },
   "notices": {
     "title": "Avisos",
     "registerPaymentTitle": "Registrar Pago",
@@ -124,5 +129,133 @@
       "dbError": "Error al registrar el pago: {message}",
       "success": "¡Pago registrado exitosamente!"
     }
+  },
+  "manageUsers": {
+    "title": "Gestionar Usuarios",
+    "loading": "Cargando usuarios...",
+    "fetchError": "Error al cargar los usuarios: {message}",
+    "loadError": "Error de carga:",
+    "operationError": "Error de operación:",
+    "ariaLabels": {
+      "openFilters": "Abrir filtros",
+      "openSortMenu": "Abrir menú de ordenamiento",
+      "addUser": "Agregar Nuevo Usuario"
+    },
+    "sortMenu": {
+      "byHouse": "Ordenar por Casa",
+      "byResponsible": "Ordenar por Responsable",
+      "byType": "Ordenar por Tipo"
+    },
+    "emptyState": {
+      "noUsers": "No hay usuarios para mostrar.",
+      "addUserHint": "Puedes agregar un nuevo usuario usando el botón '+'."
+    },
+    "noResults": "No se encontraron usuarios que coincidan con los filtros.",
+    "filterModal": {
+      "title": "Filtrar Usuarios",
+      "housePlaceholder": "Filtrar por # Casa...",
+      "responsiblePlaceholder": "Filtrar por responsable...",
+      "allTypes": "Todos los tipos",
+      "admin": "Administrador",
+      "owner": "Propietario",
+      "close": "Cerrar"
+    },
+    "alerts": {
+      "saveSuccess": "¡Usuario guardado exitosamente!",
+      "saveError": "Error al guardar el usuario: {message}.\n\nVerifique que el ID no esté duplicado y que todos los campos obligatorios (ID, Responsable, Clave) tengan un valor.",
+      "validationError": "ID, Responsable y Clave son campos obligatorios.",
+      "deleteNotImplemented": "La funcionalidad de eliminar no está implementada en la base de datos."
+    }
+  },
+  "userModal": {
+    "titleAdd": "Agregar Nuevo Usuario",
+    "titleEdit": "Editar Usuario",
+    "idLabel": "ID (Casa #)",
+    "idPlaceholder": "Ej: 101",
+    "responsibleLabel": "Responsable",
+    "responsiblePlaceholder": "Nombre del propietario",
+    "passwordLabel": "Clave",
+    "passwordPlaceholder": "Clave de acceso",
+    "userTypeLabel": "Tipo de Usuario",
+    "saveButton": "Guardar",
+    "cancelButton": "Cancelar"
+  },
+  "manageContributions": {
+    "title": "Gestionar Aportaciones",
+    "loading": "Cargando datos de la tabla...",
+    "uploading": "Procesando archivo CSV, por favor espere...",
+    "loadError": "Error de carga:",
+    "operationError": "Error de operación:",
+    "noResults": "No se encontraron registros que coincidan con los filtros.",
+    "ariaLabels": {
+      "openFilters": "Abrir filtros",
+      "openSortMenu": "Abrir menú de ordenamiento"
+    },
+    "sortMenu": {
+      "byDate": "Ordenar por Fecha",
+      "byHouse": "Ordenar por Casa",
+      "byContribution": "Ordenar por Aportación",
+      "byStatus": "Ordenar por Estado"
+    },
+    "actionsMenu": {
+      "addNew": "Agregar Nuevo",
+      "uploadCsv": "Cargar CSV",
+      "processing": "Procesando...",
+      "pdfReport": "Reporte PDF"
+    },
+    "emptyState": {
+      "noContributions": "No hay aportaciones para mostrar.",
+      "addContributionHint": "Puedes agregar una nueva aportación usando el menú de acciones."
+    },
+    "card": {
+      "paidAmount": "Monto Pagado",
+      "notPaid": "No pagado",
+      "statusDone": "Realizado",
+      "statusPending": "Pendiente",
+      "date": "Fecha",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "alerts": {
+      "saveSuccess": "¡Registro guardado exitosamente!",
+      "saveError": "Error al guardar el registro: {message}.\n\nVerifique que todos los campos obligatorios tienen un valor.",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar este registro?",
+      "deleteError": "Error al eliminar: {message}",
+      "pdfNoData": "No hay datos para generar el reporte. Pruebe cambiando los filtros."
+    }
+  },
+  "contributionModal": {
+    "titleAdd": "Agregar Aportación",
+    "titleEdit": "Editar Aportación",
+    "houseLabel": "Casa",
+    "housePlaceholder": "Seleccione una casa",
+    "contributionTypeLabel": "Tipo de Aportación",
+    "contributionTypePlaceholder": "Seleccione una aportación",
+    "dateLabel": "Fecha",
+    "amountPaidLabel": "Monto Pagado",
+    "amountPaidPlaceholder": "0.00",
+    "statusLabel": "Realizado",
+    "saveButton": "Guardar",
+    "savingButton": "Guardando...",
+    "cancelButton": "Cancelar"
+  }
+,
+  "contributionFilterModal": {
+    "title": "Filtrar Aportaciones",
+    "housePlaceholder": "Filtrar por casa...",
+    "contributionPlaceholder": "Filtrar por aportación...",
+    "datePlaceholder": "Filtrar por fecha...",
+    "amountPlaceholder": "Filtrar por monto...",
+    "statusPlaceholder": "Filtrar por estado (sí/no)...",
+    "close": "Cerrar"
+  },
+  "contributionReport": {
+    "title": "Reporte de Aportaciones",
+    "generatedOn": "Generado el:",
+    "headerHouse": "Casa",
+    "headerContribution": "Aportación",
+    "headerDate": "Fecha",
+    "headerAmount": "Monto Pagado",
+    "headerStatus": "Realizado"
   }
 }

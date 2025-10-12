@@ -21,9 +21,7 @@ export default function UserCard({ user, onDelete, onOpenModal }: UserCardProps)
           <p className="font-bold text-gray-800">{t('groups.house')} #{user.id}</p>
           <p className="text-sm text-gray-600">{user.responsable}</p>
         </div>
-        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${userTypeClasses}`}>
-          {userType}
-        </span>
+        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${userTypeClasses}`}>{userType}</span>
       </div>
       <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-3">
         <button onClick={() => onOpenModal(user)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">{t('userModal.titleEdit')}</button>

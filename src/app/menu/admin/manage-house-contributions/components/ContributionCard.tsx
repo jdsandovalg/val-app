@@ -1,5 +1,7 @@
 import React from 'react';
 import type { ContribucionPorCasaExt } from '@/types';
+import { useI18n } from '@/app/i18n-provider';
+import { formatDate, formatCurrency } from '@/utils/format'; // La importación sigue igual
 
 interface ContributionCardProps {
   record: ContribucionPorCasaExt;
@@ -19,13 +21,14 @@ const colorToClassMap: { [key: string]: string } = {
 };
 
 const ContributionCard: React.FC<ContributionCardProps> = ({ record, onDelete, onOpenModal }) => {
+  const { t, locale, currency } = useI18n(); // Obtenemos locale y currency del provider
   const casaInfo = record.usuarios
-    ? `Casa #${record.usuarios.id} - ${record.usuarios.responsable}`
-    : `Casa ID: ${record.id_casa}`;
+    ? `${t('groups.house')} #${record.usuarios.id} - ${record.usuarios.responsable}`
+    : `${t('groups.house')} ID: ${record.id_casa}`;
 
   const montoPagado = record.pagado != null
-    ? `$${Number(record.pagado).toFixed(2)}`
-    : 'No pagado';
+    ? formatCurrency(record.pagado, locale, currency) // Pasamos los nuevos parámetros
+    : t('manageContributions.card.notPaid');
 
   const dbColor = record.contribuciones?.color_del_borde?.toLowerCase() || '';
   const borderColor = colorToClassMap[dbColor] || 'border-gray-500'; // Color gris por defecto
@@ -39,24 +42,24 @@ const ContributionCard: React.FC<ContributionCardProps> = ({ record, onDelete, o
           <p className="text-sm text-gray-500">{casaInfo}</p>
         </div>
         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${record.realizado === 'S' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-          {record.realizado === 'S' ? 'Realizado' : 'Pendiente'}
+          {record.realizado === 'S' ? t('manageContributions.card.statusDone') : t('manageContributions.card.statusPending')}
         </span>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <div>
-          <p className="text-gray-500">Fecha</p>
-          <p className="font-medium text-gray-900">{record.fecha}</p>
+          <p className="text-gray-500">{t('manageContributions.card.date')}</p>
+          <p className="font-medium text-gray-900">{formatDate(record.fecha, locale)}</p>
         </div>
         <div className="text-right">
-          <p className="text-gray-500">Monto Pagado</p>
+          <p className="text-gray-500">{t('manageContributions.card.paidAmount')}</p>
           <p className="font-medium text-gray-900">{montoPagado}</p>
         </div>
       </div>
 
       <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-3">
-        <button onClick={() => onOpenModal(record)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Editar</button>
-        <button onClick={() => onDelete(record)} className="text-red-600 hover:text-red-900 text-sm font-medium">Eliminar</button>
+        <button onClick={() => onOpenModal(record)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">{t('manageContributions.card.edit')}</button>
+        <button onClick={() => onDelete(record)} className="text-red-600 hover:text-red-900 text-sm font-medium">{t('manageContributions.card.delete')}</button>
       </div>
     </div>
   );

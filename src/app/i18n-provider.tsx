@@ -1,26 +1,34 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import esTranslations from '@/locales/es.json';
-import enTranslations from '@/locales/en.json';
-import frTranslations from '@/locales/fr.json';
+import es from '@/locales/es.json';
+import en from '@/locales/en.json';
+import fr from '@/locales/fr.json';
 import { Toaster } from 'react-hot-toast';
 
-type Translations = typeof esTranslations;
+type Translations = typeof es;
 const availableLanguages = ['es', 'en', 'fr'] as const;
 type Language = typeof availableLanguages[number];
 type TranslationValue = string | { [key: string]: TranslationValue };
 
-interface I18nContextType {
+type LocaleConfig = {
+  translations: Translations;
+  locale: string; // ej. 'es-GT'
+  currency: string; // ej. 'GTQ'
+};
+
+const locales: Record<Language, LocaleConfig> = {
+  es: { translations: es, locale: 'es-GT', currency: 'GTQ' },
+  en: { translations: en, locale: 'en-US', currency: 'USD' },
+  fr: { translations: fr, locale: 'fr-FR', currency: 'EUR' },
+};
+
+type I18nContextType = {
   t: (key: string, params?: { [key: string]: string | number }) => string;
   lang: Language;
   setLang: () => void;
-}
-
-const translations: { [key in Language]: Translations } = {
-  es: esTranslations,
-  en: enTranslations,
-  fr: frTranslations,
+  locale: string;
+  currency: string;
 };
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -43,9 +51,11 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     setLangState(nextLang);
   };
 
+  const config = locales[lang];
+
   const t = (key: string, params?: { [key: string]: string | number }): string => {
     const keys = key.split('.');
-    let currentLevel: Translations | TranslationValue | undefined = translations[lang];
+    let currentLevel: Translations | TranslationValue | undefined = config.translations;
 
     for (let i = 0; i < keys.length; i++) {
       const k = keys[i];
@@ -75,7 +85,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <I18nContext.Provider value={{ t, lang, setLang }}>
+    <I18nContext.Provider value={{ t, lang, setLang, locale: config.locale, currency: config.currency }}>
       <Toaster
         position="bottom-right"
         reverseOrder={false}

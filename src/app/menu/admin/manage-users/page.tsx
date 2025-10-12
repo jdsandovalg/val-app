@@ -14,9 +14,10 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import type { Usuario } from '@/types/database';
 import UserModal from './components/UserModal';
-import UserTable from './components/UserTable';
 import UserCard from './components/UserCard';
 import { createClient } from '@/utils/supabase/client';
+import { useI18n } from '@/app/i18n-provider';
+import { toast } from 'react-hot-toast';
 
 type SortableKeys = keyof Usuario;
 
@@ -24,6 +25,7 @@ export default function ManageUsersPage() {
   const supabase = createClient();
 
   const [users, setUsers] = useState<Usuario[]>([]);
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -56,11 +58,11 @@ export default function ManageUsersPage() {
       setUsers(data || []);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ocurrió un error desconocido.';
-      setFetchError(`Error al cargar los usuarios: ${message}`);
+      setFetchError(t('manageUsers.fetchError', { message }));
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [supabase, t]);
 
   useEffect(() => {
     fetchData();
@@ -71,16 +73,16 @@ export default function ManageUsersPage() {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setEditingUser(null);
-  };
+  }, []);
 
-  const handleSave = async (userData: Partial<Usuario>) => {
+  const handleSave = useCallback(async (userData: Partial<Usuario>) => {
     setUiError(null);
     try {
       if (!userData.id || !userData.responsable || !userData.clave) {
-        throw new Error("ID, Responsable y Clave son campos obligatorios.");
+        throw new Error(t('manageUsers.alerts.validationError'));
       }
 
       // Se construye el objeto de parámetros para que coincida con la nueva firma de la función.
@@ -99,25 +101,27 @@ export default function ManageUsersPage() {
 
       // Actualizar el estado con la lista de usuarios devuelta por la función.
       setUsers(updatedUsers || []);
-      alert('¡Usuario guardado exitosamente!');
+      toast.success(t('manageUsers.alerts.saveSuccess'));
     } catch (err: unknown) {
       let message = 'desconocido';
       if (err && typeof err === 'object' && 'message' in err) {
         message = (err as { message: string }).message;
       }
-      const errorMessage = `Error al guardar el usuario: ${message}.\n\nVerifique que el ID no esté duplicado y que todos los campos obligatorios (ID, Responsable, Clave) tengan un valor.`;
+      const errorMessage = t('manageUsers.alerts.saveError', { message });
       setUiError(errorMessage);
-      alert(errorMessage);
+      toast.error(errorMessage, {
+        duration: 6000, // Duración más larga para errores detallados
+      });
     } finally {
       handleCloseModal();
       // Ya no es necesario llamar a fetchData() porque la RPC devuelve la lista actualizada.
     }
-  };
+  }, [supabase, editingUser, t, handleCloseModal]);
 
   // La función 'manage_user_data' no tiene una acción 'DELETE', por lo que se elimina la funcionalidad.
-  const handleDelete = async () => {
-    alert('La funcionalidad de eliminar no está implementada en la base de datos.');
-  };
+  const handleDelete = useCallback(async () => {
+    toast.error(t('manageUsers.alerts.deleteNotImplemented'));
+  }, [t]);
 
   const handleSort = (key: SortableKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -174,13 +178,13 @@ export default function ManageUsersPage() {
       <div className="flex justify-between items-center mb-6">
         
 
-        <h1 className="text-1xl font-bold text-gray-800 text-center">Gestionar Usuarios</h1>
+        <h1 className="text-1xl font-bold text-gray-800 text-center">{t('manageUsers.title')}</h1>
 
         <div className="relative flex items-center gap-2">
           <button
             onClick={() => setIsFilterModalOpen(true)}
             className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 md:hidden"
-            aria-label="Abrir filtros"
+            aria-label={t('manageUsers.ariaLabels.openFilters')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
@@ -191,7 +195,7 @@ export default function ManageUsersPage() {
             <button
               onClick={() => setIsSortMenuOpen(prev => !prev)}
               className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              aria-label="Abrir menú de ordenamiento"
+              aria-label={t('manageUsers.ariaLabels.openSortMenu')}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
@@ -200,9 +204,9 @@ export default function ManageUsersPage() {
             {isSortMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
                 <div className="py-1">
-                  <button onClick={() => { handleSort('id'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.2 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">Ordenar por Casa</button>
-                  <button onClick={() => { handleSort('responsable'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.2 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">Ordenar por Responsable</button>
-                  <button onClick={() => { handleSort('tipo_usuario'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.2 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">Ordenar por Tipo</button>
+                  <button onClick={() => { handleSort('id'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.2 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageUsers.sortMenu.byHouse')}</button>
+                  <button onClick={() => { handleSort('responsable'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.2 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageUsers.sortMenu.byResponsible')}</button>
+                  <button onClick={() => { handleSort('tipo_usuario'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.2 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageUsers.sortMenu.byType')}</button>
                 </div>
               </div>
             )}
@@ -211,7 +215,7 @@ export default function ManageUsersPage() {
           <button
             onClick={() => handleOpenModal(null)}
             className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-            aria-label="Agregar Nuevo Usuario"
+            aria-label={t('manageUsers.ariaLabels.addUser')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -220,32 +224,21 @@ export default function ManageUsersPage() {
         </div>
       </div>
 
-      {loading && <p className="text-center">Cargando usuarios...</p>}
-      {fetchError && <p className="text-center text-red-500 bg-red-100 p-3 rounded">Error de carga: {fetchError}</p>}
-      {uiError && <p className="text-center text-red-500 bg-red-100 p-3 rounded">Error de operación: {uiError}</p>}
+      {loading && <p className="text-center">{t('manageUsers.loading')}</p>}
+      {fetchError && <p className="text-center text-red-500 bg-red-100 p-3 rounded">{t('manageUsers.loadError')} {fetchError}</p>}
+      {uiError && <p className="text-center text-red-500 bg-red-100 p-3 rounded">{t('manageUsers.operationError')} {uiError}</p>}
 
       {!loading && !fetchError && users.length === 0 ? (
         <div className="text-center py-10 bg-white shadow-md rounded-lg">
-          <p className="text-gray-500">No hay usuarios para mostrar.</p>
+          <p className="text-gray-500">{t('manageUsers.emptyState.noUsers')}</p>
           <p className="text-sm text-gray-400 mt-2">
-            Puedes agregar un nuevo usuario usando el botón &apos;+&apos;.
+            {t('manageUsers.emptyState.addUserHint')}
           </p>
         </div>
       ) : (
         <>
-          <div className="hidden md:block">
-            <UserTable
-              users={filteredAndSortedUsers}
-              sortConfig={sortConfig}
-              filters={filters}
-              handleSort={handleSort}
-              handleFilterChange={handleFilterChange}
-              handleDelete={handleDelete}
-              handleOpenModal={handleOpenModal}
-            />
-          </div>
-
-          <div className="block md:hidden">
+          {/* La vista de tabla ha sido eliminada para unificar la interfaz a "Mobile-Only" */}
+          <div className="block">
             {filteredAndSortedUsers.map((user) => (
               <UserCard
                 key={user.id}
@@ -258,7 +251,7 @@ export default function ManageUsersPage() {
 
           {users.length > 0 && filteredAndSortedUsers.length === 0 && (
             <div className="text-center py-10 bg-white shadow-md rounded-lg mt-4">
-              <p className="text-gray-500">No se encontraron usuarios que coincidan con los filtros.</p>
+              <p className="text-gray-500">{t('manageUsers.noResults')}</p>
             </div>
           )}
         </>
@@ -274,14 +267,14 @@ export default function ManageUsersPage() {
       {isFilterModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
-            <h2 className="text-xl font-bold mb-4">Filtrar Usuarios</h2>
+            <h2 className="text-xl font-bold mb-4">{t('manageUsers.filterModal.title')}</h2>
             <div className="space-y-4">
-              <input name="id" value={filters.id} onChange={handleFilterChange} placeholder="Filtrar por # Casa..." className="w-full p-2 border rounded" />
-              <input name="responsable" value={filters.responsable} onChange={handleFilterChange} placeholder="Filtrar por responsable..." className="w-full p-2 border rounded" />
+              <input name="id" value={filters.id} onChange={handleFilterChange} placeholder={t('manageUsers.filterModal.housePlaceholder')} className="w-full p-2 border rounded" />
+              <input name="responsable" value={filters.responsable} onChange={handleFilterChange} placeholder={t('manageUsers.filterModal.responsiblePlaceholder')} className="w-full p-2 border rounded" />
               <select name="tipo_usuario" value={filters.tipo_usuario} onChange={handleFilterChange} className="w-full p-2 border rounded">
-                <option value="">Todos los tipos</option>
-                <option value="ADM">Administrador</option>
-                <option value="PRE">Propietario</option>
+                <option value="">{t('manageUsers.filterModal.allTypes')}</option>
+                <option value="ADM">{t('manageUsers.filterModal.admin')}</option>
+                <option value="PRE">{t('manageUsers.filterModal.owner')}</option>
               </select>
             </div>
             <div className="mt-6 flex justify-end">
@@ -289,7 +282,7 @@ export default function ManageUsersPage() {
                 onClick={() => setIsFilterModalOpen(false)}
                 className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
               >
-                Cerrar
+                {t('manageUsers.filterModal.close')}
               </button>
             </div>
           </div>
