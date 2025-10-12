@@ -160,6 +160,10 @@
       "owner": "Propriétaire",
       "close": "Fermer"
     },
+    "card": {
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
     "alerts": {
       "saveSuccess": "Utilisateur enregistré avec succès !",
       "saveError": "Erreur lors de l'enregistrement de l'utilisateur : {message}.\n\nVeuillez vous assurer que l'ID n'est pas dupliqué et que tous les champs obligatoires (ID, Responsable, Mot de passe) ont une valeur.",
@@ -201,7 +205,8 @@
       "addNew": "Ajouter Nouveau",
       "uploadCsv": "Charger CSV",
       "processing": "Traitement...",
-      "pdfReport": "Rapport PDF"
+      "pdfReport": "Rapport PDF (Plat)",
+      "pdfCardReport": "Rapport PDF (Cartes)"
     },
     "emptyState": {
       "noContributions": "Aucune contribution à afficher.",
@@ -255,6 +260,7 @@
     "headerContribution": "Contribution",
     "headerDate": "Date",
     "headerAmount": "Montant Payé",
-    "headerStatus": "Réalisé"
+    "headerStatus": "Réalisé",
+    "fileName": "Rapport_Contributions.pdf"
   }
 }

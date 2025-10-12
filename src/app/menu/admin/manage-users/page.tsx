@@ -10,7 +10,7 @@
  * @accesible_desde Menú de "Admin" en el encabezado -> Opción "Usuarios".
  * @acceso_a_datos Utiliza el hook `useUsersData` para obtener todos los usuarios de la tabla `usuarios`.
  * El filtrado y la ordenación se realizan en el lado del cliente mediante `useMemo`.
- */
+ */import { useRef } from 'react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import type { Usuario } from '@/types/database';
 import UserModal from './components/UserModal';
@@ -46,6 +46,9 @@ export default function ManageUsersPage() {
     tipo_usuario: '',
   });
 
+  const sortMenuRef = useRef<HTMLDivElement>(null);
+  const actionsMenuRef = useRef<HTMLDivElement>(null); // Asumo que podría haber un menú de acciones aquí también
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
@@ -66,6 +69,20 @@ export default function ManageUsersPage() {
 
   useEffect(() => {
     fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
+        setIsSortMenuOpen(false);
+      }
+      // Si hubiera otro menú, se añadiría aquí una lógica similar con actionsMenuRef
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [fetchData]);
 
   const handleOpenModal = (user: Partial<Usuario> | null = null) => {
@@ -183,7 +200,7 @@ export default function ManageUsersPage() {
         <div className="relative flex items-center gap-2">
           <button
             onClick={() => setIsFilterModalOpen(true)}
-            className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 md:hidden"
+            className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
             aria-label={t('manageUsers.ariaLabels.openFilters')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
@@ -191,7 +208,7 @@ export default function ManageUsersPage() {
             </svg>
           </button>
 
-          <div className="relative md:hidden">
+          <div className="relative" ref={sortMenuRef}>
             <button
               onClick={() => setIsSortMenuOpen(prev => !prev)}
               className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"

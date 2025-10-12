@@ -23,12 +23,15 @@ import { formatDate, formatCurrency } from '@/utils/format';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { PDFDownloadLink, Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer';
+import PdfContributionCard from './components/PdfContributionCard';
 
 // --- Componente Principal de la Página ---
 export default function ManageHouseContributionsPage() {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t, locale, currency } = useI18n();
+  const [logoBase64, setLogoBase64] = useState<string | null>(null);
   
   const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
   const [usuarios, setUsuarios] = useState<{ id: number; responsable: string; }[]>([]);
@@ -53,6 +56,9 @@ export default function ManageHouseContributionsPage() {
     pagado: '',
     realizado: '',
   });
+
+  const menuRef = useRef<HTMLDivElement>(null);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -93,7 +99,38 @@ export default function ManageHouseContributionsPage() {
     }
   }, [supabase]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+    // Cargar el logo para el PDF
+    fetch('/logo.png')
+      .then(response => response.ok ? response.blob() : Promise.reject('Logo not found'))
+      .then(blob => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => {
+          setLogoBase64(reader.result as string);
+        };
+      }).catch(() => {
+        console.warn("No se pudo cargar el logo para el PDF.");
+        setLogoBase64(null);
+      });
+  }, [fetchData]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
+        setIsSortMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleOpenModal = (record: Partial<ContribucionPorCasaExt> | null = null) => {
     setEditingRecord(record);
@@ -315,7 +352,7 @@ export default function ManageHouseContributionsPage() {
         styles: { font: 'helvetica', fontSize: 8 },
       });
 
-      docInstance.save('Reporte_Aportaciones.pdf');
+      docInstance.save(t('contributionReport.fileName'));
     };
 
     // Cargar el logo y luego generar el contenido del PDF
@@ -334,6 +371,72 @@ export default function ManageHouseContributionsPage() {
         generatePdfContent(doc);
       });
   }, [filteredAndSortedRecords, t, locale, currency]);
+
+  // --- Lógica para el nuevo reporte con tarjetas ---
+  Font.register({
+    family: 'Helvetica',
+    fonts: [
+      { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf', fontWeight: 'normal' },
+      { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf', fontWeight: 'bold' },
+    ]
+  });
+
+  const styles = StyleSheet.create({
+    page: {
+      padding: 20,
+      fontFamily: 'Helvetica',
+      backgroundColor: '#F9FAFB', // gray-50
+    },
+    title: {
+      fontSize: 24,
+      textAlign: 'center',
+      marginBottom: 20,
+      fontWeight: 'bold',
+      color: '#1F2937', // gray-800
+    },
+    cardContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    header: {
+      position: 'absolute',
+      top: 10,
+      left: 20,
+      right: 20,
+      height: 50,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    logo: {
+      width: 40,
+      height: 40,
+    },
+    footer: {
+      position: 'absolute',
+      bottom: 10,
+      left: 20,
+      right: 20,
+      textAlign: 'center',
+      color: 'grey',
+      fontSize: 10,
+    },
+  });
+
+  const PdfCardDocument = (
+    <Document>
+      <Page size="A4" style={styles.page} wrap>
+        {logoBase64 && <Image style={styles.logo} src={logoBase64} fixed />}
+        <Text style={styles.title} fixed>{t('contributionReport.title')}</Text>
+        <View style={styles.cardContainer} wrap>
+          {filteredAndSortedRecords.map((record) => (
+            <PdfContributionCard key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`} record={record} t={t} locale={locale} currency={currency} />
+          ))}
+        </View>
+        <Text style={styles.footer} render={({ pageNumber, totalPages }) => (`${t('contributionReport.generatedOn')} ${new Date().toLocaleDateString(locale)} | ${pageNumber} / ${totalPages}`)} fixed />
+      </Page>
+    </Document>
+  );
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -426,7 +529,7 @@ export default function ManageHouseContributionsPage() {
             {/* Botón de Filtros (solo para móvil) */}
             <button
               onClick={() => setIsFilterModalOpen(true)}
-              className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 md:hidden"
+              className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
               aria-label={t('manageContributions.ariaLabels.openFilters')}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
@@ -435,7 +538,7 @@ export default function ManageHouseContributionsPage() {
             </button>
             
             {/* Botón de Ordenamiento (solo para móvil) */}
-            <div className="relative md:hidden">
+            <div className="relative" ref={sortMenuRef}>
               <button
                 onClick={() => setIsSortMenuOpen(prev => !prev)}
                 className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
@@ -458,34 +561,47 @@ export default function ManageHouseContributionsPage() {
             </div>
 
             {/* Botón de Menú de Acciones */}
-            <button
-              onClick={() => setIsMenuOpen(prev => !prev)}
-              className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-              </svg>
-            </button>
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setIsMenuOpen(prev => !prev)}
+                className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                </svg>
+              </button>
 
-            {/* Menú Desplegable */}
-            {isMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                <div className="py-1">
-                  <button onClick={() => { handleOpenModal(null); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={isUploadingCsv} >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    {t('manageContributions.actionsMenu.addNew')}
-                  </button>
-                  <button onClick={() => { fileInputRef.current?.click(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-                    {isUploadingCsv ? t('manageContributions.actionsMenu.processing') : t('manageContributions.actionsMenu.uploadCsv')}
-                  </button>
-                  <button onClick={() => { handleGeneratePDF(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                    {t('manageContributions.actionsMenu.pdfReport')}
-                  </button>
+              {/* Menú Desplegable */}
+              {isMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                  <div className="py-1">
+                    <button onClick={() => { handleOpenModal(null); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={isUploadingCsv} >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                      {t('manageContributions.actionsMenu.addNew')}
+                    </button>
+                    <button onClick={() => { fileInputRef.current?.click(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                      {isUploadingCsv ? t('manageContributions.actionsMenu.processing') : t('manageContributions.actionsMenu.uploadCsv')}
+                    </button>
+                    <button onClick={() => { handleGeneratePDF(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                      {t('manageContributions.actionsMenu.pdfReport')}
+                    </button>
+                    <PDFDownloadLink document={PdfCardDocument} fileName={t('contributionReport.fileName')}>
+                      {({ loading: pdfLoading }) => (
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
+                          disabled={loading || isUploadingCsv || pdfLoading}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          {pdfLoading ? t('manageContributions.actionsMenu.processing') : t('manageContributions.actionsMenu.pdfCardReport')}
+                        </button>
+                      )}
+                    </PDFDownloadLink>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           <input
             type="file"

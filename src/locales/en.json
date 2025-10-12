@@ -160,6 +160,10 @@
       "owner": "Owner",
       "close": "Close"
     },
+    "card": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
     "alerts": {
       "saveSuccess": "User saved successfully!",
       "saveError": "Error saving user: {message}.\n\nPlease ensure the ID is not duplicated and that all required fields (ID, Responsible, Password) have a value.",
@@ -201,7 +205,8 @@
       "addNew": "Add New",
       "uploadCsv": "Upload CSV",
       "processing": "Processing...",
-      "pdfReport": "PDF Report"
+      "pdfReport": "PDF Report (Plain)",
+      "pdfCardReport": "PDF Report (Cards)"
     },
     "emptyState": {
       "noContributions": "No contributions to display.",
@@ -256,6 +261,7 @@
     "headerContribution": "Contribution",
     "headerDate": "Date",
     "headerAmount": "Amount Paid",
-    "headerStatus": "Done"
+    "headerStatus": "Done",
+    "fileName": "Contributions_Report.pdf"
   }
 }

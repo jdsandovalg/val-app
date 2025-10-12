@@ -1,24 +1,4 @@
-# REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
-
-Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
-
-## Principios de Arquitectura y Decisiones Clave
-*   **Fuente de Datos:** Las funciones de base de datos **NO DEBEN** depender de vistas (`VIEW`). Toda la lógica debe operar directamente sobre las **tablas base** (`usuarios`, `contribucionesporcasa`, etc.).
-*   **Enfoque "Mobile-Only":** La aplicación se desarrollará y diseñará exclusivamente para una experiencia móvil (WebApp). Se eliminarán las vistas y componentes específicos para escritorio (como tablas complejas) para simplificar el código, reducir el mantenimiento y alinear el producto con su objetivo primario.
-*   **Autenticación:** El inicio de sesión se realiza **únicamente** a través de la función RPC `login_user`, que valida contra la tabla `public.usuarios`. **NO SE UTILIZA** el sistema de autenticación de Supabase (`supabase.auth`).
-*   **Rendimiento en "Grupos de Trabajo":** La página de "Grupos de Trabajo" **DEBE** usar la función RPC `get_grupos_trabajo_usuario` para delegar la agrupación de datos al servidor. No se debe realizar la agrupación en el cliente.
-*   **Organización del Código:** Toda la lógica de las páginas (obtención de datos, manejo de estado, funciones de guardado) debe permanecer dentro del archivo `page.tsx` correspondiente. **NO SE CREARÁN** archivos separados como hooks o servicios a menos que sea solicitado explícitamente.
-*   **Seguridad:** No se deben introducir nuevas prácticas de seguridad (como encriptación de contraseñas con `crypt`) sin una discusión y aprobación previa.
-
-*   **Diseño Extensible y Preparado para el Futuro:** Todas las sugerencias de código deben considerar la futura implementación de características como temas (claro/oscuro), internacionalización (múltiples idiomas) y accesibilidad. Se debe evitar el uso de valores "hardcodeados" (ej. colores como `#FFFFFF` o texto como `"Guardar"`) en favor de abstracciones (ej. variables de tema, claves de traducción) que faciliten la extensibilidad sin romper el diseño existente.
-## Flujo de Trabajo para Cambios (Workflow)
-*   **Propuesta Detallada:** Para cualquier cambio que no sea una corrección trivial (como un error de tipeo), se debe presentar un plan de propuesta detallado que incluya el "Razonamiento del Problema" y la "Solución Propuesta".
-*   **Aprobación por Pasos:** La solución propuesta debe desglosarse en pasos pequeños e incrementales. Cada paso debe ser lo suficientemente pequeño como para ser compilado y verificado de forma independiente.
-*   **Autorización Explícita:** Se debe obtener la autorización explícita del usuario ("aprobado", "adelante", etc.) para **cada paso individual** antes de proporcionar el código o `diff` correspondiente. No se procederá al siguiente paso sin la aprobación del anterior.
-*   **Comando de Sincronización "LEE":** Al inicio de cada sesión, el usuario proporcionará este archivo y usará la instrucción "LEE". Esto servirá como señal para que el asistente lea, entienda y se adhiera estrictamente a todos los principios y flujos de trabajo aquí definidos antes de realizar cualquier análisis o sugerencia.
-*   **Propuesta de Mejoras:** Cualquier mejora o "buena práctica" no solicitada (ej. seguridad, rendimiento) debe ser propuesta primero como un nuevo ítem en la sección "I. Tareas Pendientes". La propuesta debe incluir una justificación y un análisis del impacto potencial sobre el sistema existente. No se implementará hasta que sea discutida y aprobada.
-*   **Indicación Explícita de Acción:** Al final de cada respuesta que contenga un cambio de código, debo indicar explícitamente la acción que espero de ti. Por ejemplo: "Ahora, por favor, **compila y verifica** que los cambios se aplican correctamente" o "Ahora, por favor, **sube los cambios a Git** con el siguiente mensaje:".
-sh
+w
 ---
 
 # TAREAS PENDIENTES - Val App
@@ -29,18 +9,23 @@ Este documento detalla las mejoras pendientes y completadas para el proyecto Val
 
 ### Siguiente Tarea
 - **Objetivo:** Optimizar la generación de PDF en la página de "Calendarios".
-    - **Acción:** Investigar el uso de una función *serverless* o un hilo de trabajador para generar el PDF, evitando bloquear la interfaz de usuario.
-    - **Justificación:** Mejora la experiencia de usuario en reportes grandes.
+- **UI/UX:** Estandarizar el ancho de la tarjeta en la página de "Avisos".
+    - **Problema:** La tarjeta de "Avisos" cambia de tamaño según el idioma, causando un redibujado incómodo.
+    - **Acción:** Asignar un ancho fijo (`w-full`) a la tarjeta para que ocupe todo el espacio disponible hasta su `max-w-lg`, manteniendo un tamaño consistente.
+∫
+---
 
-7.  **Bugs Solucionados:**
-    -   ✅ **Carga de Imágenes de Comprobantes:** Se solucionó el problema que impedía visualizar las imágenes de los comprobantes de pago desde Supabase Storage.
-    -   ✅ **Visualización del Logo en Vercel:** Solucionado. El problema era que el archivo `logo.png` no se había publicado correctamente.
-    -   ✅ **Unificación de Interfaz a "Mobile-Only":** Se eliminaron las vistas de tabla de escritorio en las páginas de administración y calendario, dejando únicamente la vista de tarjetas para una experiencia consistente.
-    -   ✅ **UI/UX - Tarjeta de Avisos:** Se actualizó el diseño de la tarjeta en la página de "Avisos" para que sea consistente con el estilo moderno de la aplicación.
-    -   ✅ **UI/UX - Favicon:** Solucionado. Se migró el favicon a `app/icon.png` siguiendo las convenciones de Next.js y se limpiaron los archivos antiguos.
-    -   ✅ **UI/UX - Ordenamiento en Grupos:** Se añadió un menú para ordenar los grupos de trabajo por número de grupo o por fecha en el lado del cliente.
-    -   ✅ **UI/UX - Internacionalización de Formatos:** Se estandarizó el formato de fechas y monedas en toda la aplicación usando la API `Intl` para una correcta localización.
+## II. Logros Recientes (Tareas Completadas)
 
+*   **Bugs Solucionados:**
+    *   ✅ **Carga de Imágenes de Comprobantes:** Se solucionó el problema que impedía visualizar las imágenes de los comprobantes de pago desde Supabase Storage.
+    *   ✅ **Visualización del Logo en Vercel:** Solucionado. El problema era que el archivo `logo.png` no se había publicado correctamente.
+*   **Mejoras de UI/UX:**
+    *   ✅ **Unificación de Interfaz a "Mobile-Only":** Se eliminaron las vistas de tabla de escritorio en las páginas de administración y calendario, dejando únicamente la vista de tarjetas para una experiencia consistente.
+    *   ✅ **Diseño de Tarjeta de Avisos:** Se actualizó el diseño de la tarjeta en la página de "Avisos" para que sea consistente con el estilo moderno de la aplicación.
+    *   ✅ **Solución de Favicon:** Se migró el favicon a `app/icon.png` siguiendo las convenciones de Next.js.
+    *   ✅ **Ordenamiento en Grupos de Trabajo:** Se añadió un menú para ordenar los grupos por número o fecha en el cliente.
+    *   ✅ **Internacionalización de Formatos:** Se estandarizó el formato de fechas y monedas en toda la aplicación usando la API `Intl` para una correcta localización.
 
 ---
 
@@ -87,7 +72,35 @@ Para internacionalizar un nuevo componente, el proceso es el siguiente:
 -   **Detección Automática de Idioma:** Actualmente, el idioma por defecto es 'es'. Se podría mejorar para que la primera vez que un usuario visita la aplicación, se detecte el idioma de su navegador (`navigator.language`) y se establezca como el idioma inicial.
 -   **Gestión de Moneda por Entidad:** En un sistema multi-regional más complejo, la moneda podría no depender solo del idioma, sino de la entidad o usuario. En ese caso, el código de la moneda podría venir de la base de datos junto con los datos del usuario y pasarse a la función `formatCurrency`. Para el alcance actual, la configuración por `locale` es la solución más limpia y adecuada.
 
+---
+
+## IV. Normas de Colaboración y Lecciones Aprendidas
+
+Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
+
+### 1. Claridad en los Requerimientos
+
+*   **Lección Aprendida:** Una falta de especificidad en la solicitud inicial (ej. "mejorar el reporte PDF") llevó a una implementación incorrecta (modificar la UI en lugar del PDF).
+*   **Norma de Trabajo:**
+    *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, el asistente de IA debe proponer un plan de trabajo detallado.
+    *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entiendan el objetivo y la estrategia.
+
+### 2. Estrategia de Desarrollo Segura
+
+*   **Lección Aprendida:** La modificación directa de una funcionalidad existente para añadir una mejora compleja introdujo múltiples errores de compilación y bloqueos.
+*   **Norma de Trabajo:**
+    *   **Desarrollo en Paralelo:** Para nuevas funcionalidades de alto riesgo o complejidad (como la generación de un nuevo tipo de reporte), se debe optar por un desarrollo en paralelo.
+    *   **Mecanismo de Respaldo:** Se mantendrá la funcionalidad original (ej. "Reporte PDF Plano") mientras se desarrolla la nueva ("Reporte PDF con Tarjetas"). Esto garantiza que la aplicación siga siendo funcional y proporciona una red de seguridad si la nueva implementación falla.
+
+### 3. Comunicación y Contexto
+
+*   **Lección Aprendida:** El asistente de IA puede perder el hilo de la conversación o el contexto de los archivos si no se le recuerda el objetivo principal.
+*   **Norma de Trabajo:**
+    *   **Referencia a Tareas:** Es útil hacer referencia explícita al archivo `TAREAS_PENDIENTES.md` para re-enfocar la conversación en los objetivos definidos.
+    *   **Feedback Constructivo:** El desarrollador debe señalar claramente cuando el asistente se desvía del plan, permitiendo una rápida corrección del rumbo.
 Estructura de las Tablas:
+
+### CONTRIBUCIONES
 
 create table public.contribuciones (
   id_contribucion bigint generated by default as identity not null,
@@ -101,7 +114,7 @@ create table public.contribucionesporcasa (
   id_casa bigint generated by default as identity not null,
   id_contribucion bigint not null,
   fecha date not null,
-  realizado text null default '1'::text,
+  realizado text null default '1'::wtext,
   pagado double precision null,
   url_comprobante text null,
   fechapago date null,
@@ -109,6 +122,8 @@ create table public.contribucionesporcasa (
   constraint tmp_fk_casa foreign KEY (id_casa) references usuarios (id),
   constraint tmp_fk_contribucion foreign KEY (id_contribucion) references contribuciones (id_contribucion)
 ) TABLESPACE pg_default;
+
+### GRUPOS DE TRABAJO PARA ACTIVIDADES ADMINISTRATIVAS
 
 create table public.grupos (
   id_grupo bigint generated by default as identity not null,
@@ -120,43 +135,7 @@ create table public.grupos (
   constraint fk_grupos_usuario foreign KEY (id_usuario) references usuarios (id) on delete CASCADE
 ) TABLESPACE pg_default;
 
-create table public.nits (
-  nit text not null,
-  nombre text not null,
-  direccion text null,
-  constraint nits_pkey primary key (nit)
-) TABLESPACE pg_default;
-
-create table public.nits (
-  nit text not null,
-  nombre text not null,
-  direccion text null,
-  constraint nits_pkey primary key (nit)
-) TABLESPACE pg_default;
-
-
-create table public.liquidacion_de_gastos (
-  id_contribucion bigint not null,
-  fecha_documento date not null default now(),
-  no_documento text not null,
-  tipo_documento text not null default 'factura'::text,
-  nit_contribuyente text not null,
-  valor numeric null,
-  constraint id_contribucion_pkey primary key (
-    id_contribucion,
-    fecha_documento,
-    no_documento,
-    tipo_documento,
-    nit_contribuyente
-  ),
-  constraint id_contribucion_id_contribucion_fkey foreign KEY (id_contribucion) references contribuciones (id_contribucion),
-  constraint liquidacion_de_gastos_nit_contribuyente_fkey foreign KEY (nit_contribuyente) references nits (nit)
-) TABLESPACE pg_default;
-
-create index IF not exists idx_grupos_usuario on public.grupos using btree (id_usuario) TABLESPACE pg_default;
-
-create index IF not exists idx_grupos_contribucion on public.grupos using btree (id_contribucion) TABLESPACE pg_default;
-
+### CORE 
 
 create table public.usuarios (
   id bigint generated by default as identity not null,
@@ -175,7 +154,7 @@ create table public.logs (
   constraint logs_pkey primary key (id, created_at)
 ) TABLESPACE pg_default;
 
-VISTAS (NO DEBEN DE USARSE MAS QUE PARA CUANDO SE REQUIERAN REPORTES MUY PLANOS Y GENERALES)
+### VISTAS (NO DEBEN DE USARSE MAS QUE PARA CUANDO SE REQUIERAN REPORTES MUY PLANOS Y GENERALES)
 
 create view public.v_contribuciones_detalle as
 select
@@ -216,3 +195,48 @@ from
   join contribuciones c on c.id_contribucion = cp.id_contribucion
   full join grupos g on cp.id_casa = g.id_usuario
   and cp.id_contribucion = g.id_contribucion;
+
+  ### PROYECTOS
+
+  
+create table public.proyectos (
+  id_proyecto bigint generated by default as identity not null,
+  descripcion text not null,
+  descripcion_proyecto text null,
+  tipo_proyecto bigint null,
+  valor double precision null default '0'::double precision,
+  constraint proyectos_pkey primary key (id_proyecto)
+) TABLESPACE pg_default;
+
+
+create table public.contribucionesporcasa_proyectos (
+  id_casa bigint generated by default as identity not null,
+  id_proyecto bigint not null,
+  fecha date not null,
+  realizado text null default '1'::text,
+  pagado double precision null,
+  url_comprobante text null,
+  fechapago date null,
+  constraint contribucionesporcasa_proyectos_pkey primary key (id_casa, id_proyecto, fecha),
+  constraint tmp_fk_casa foreign KEY (id_casa) references usuarios (id),
+  constraint tmp_fk_proyectos foreign KEY (id_proyecto) references proyectos (id_proyecto)
+) TABLESPACE pg_default;
+
+
+create table public.liquidacion_de_gastos (
+  id_proyecto bigint not null,
+  fecha_documento date not null default now(),
+  no_documento text not null,
+  tipo_documento text not null default 'factura'::text,
+  nit_contribuyente text not null,
+  valor numeric null,
+  constraint liquidacion_de_gastos_pkey primary key (
+    id_proyecto,
+    fecha_documento,
+    no_documento,
+    tipo_documento,
+    nit_contribuyente
+  ),
+  constraint liquidacion_de_gastos_id_proyecto_fkey foreign KEY (id_proyecto) references proyectos (id_proyecto) on update CASCADE on delete RESTRICT,
+  constraint liquidacion_de_gastos_nit_contribuyente_fkey foreign KEY (nit_contribuyente) references nits (nit)
+) TABLESPACE pg_default;

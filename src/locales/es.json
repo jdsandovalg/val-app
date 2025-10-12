@@ -160,6 +160,10 @@
       "owner": "Propietario",
       "close": "Cerrar"
     },
+    "card": {
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
     "alerts": {
       "saveSuccess": "¡Usuario guardado exitosamente!",
       "saveError": "Error al guardar el usuario: {message}.\n\nVerifique que el ID no esté duplicado y que todos los campos obligatorios (ID, Responsable, Clave) tengan un valor.",
@@ -201,7 +205,8 @@
       "addNew": "Agregar Nuevo",
       "uploadCsv": "Cargar CSV",
       "processing": "Procesando...",
-      "pdfReport": "Reporte PDF"
+      "pdfReport": "Reporte PDF (Plano)",
+      "pdfCardReport": "Reporte PDF (Tarjetas)"
     },
     "emptyState": {
       "noContributions": "No hay aportaciones para mostrar.",
@@ -256,6 +261,7 @@
     "headerContribution": "Aportación",
     "headerDate": "Fecha",
     "headerAmount": "Monto Pagado",
-    "headerStatus": "Realizado"
+    "headerStatus": "Realizado",
+    "fileName": "Reporte_Aportaciones.pdf"
   }
 }
