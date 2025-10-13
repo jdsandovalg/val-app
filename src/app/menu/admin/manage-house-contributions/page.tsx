@@ -426,6 +426,7 @@ export default function ManageHouseContributionsPage() {
   const PdfCardDocument = (
     <Document>
       <Page size="A4" style={styles.page} wrap>
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- La prop 'alt' no es aplicable en react-pdf */}
         {logoBase64 && <Image style={styles.logo} src={logoBase64} fixed />}
         <Text style={styles.title} fixed>{t('contributionReport.title')}</Text>
         <View style={styles.cardContainer} wrap>

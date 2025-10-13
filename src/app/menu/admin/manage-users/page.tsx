@@ -47,7 +47,6 @@ export default function ManageUsersPage() {
   });
 
   const sortMenuRef = useRef<HTMLDivElement>(null);
-  const actionsMenuRef = useRef<HTMLDivElement>(null); // Asumo que podría haber un menú de acciones aquí también
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -76,7 +75,6 @@ export default function ManageUsersPage() {
       if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
         setIsSortMenuOpen(false);
       }
-      // Si hubiera otro menú, se añadiría aquí una lógica similar con actionsMenuRef
     }
 
     document.addEventListener('mousedown', handleClickOutside);

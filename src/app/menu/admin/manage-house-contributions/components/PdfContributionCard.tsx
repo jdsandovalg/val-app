@@ -104,7 +104,6 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
           <Text style={styles.headerText}>{record.contribuciones?.descripcion ?? 'N/A'}</Text>
           <Text style={styles.subHeaderText}>{casaInfo}</Text>
         </View>
-        <Text style={styles.status}>{statusText}</Text>
       </View>
       <View style={styles.body}>
         <View style={styles.bodyColumn}>
@@ -114,6 +113,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
         <View style={[styles.bodyColumn, { alignItems: 'flex-end' }]}>
           <Text style={styles.bodyLabel}>{t('manageContributions.card.paidAmount')}</Text>
           <Text style={styles.bodyValue}>{montoPagado}</Text>
+          <Text style={styles.status}>{statusText}</Text>
         </View>
       </View>
     </View>

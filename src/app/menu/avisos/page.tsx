@@ -109,12 +109,12 @@ export default function AvisosPage() {
   };
 
   if (isLoading) {
-    return <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-gray-300">{t('notices.loading')}</div>;
+    return <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-gray-300 w-full max-w-lg mx-auto">{t('notices.loading')}</div>;
   }
 
   if (!proximoCompromiso) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+      <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500 w-full max-w-lg mx-auto">
         <h1 className="text-2xl font-bold text-gray-800 text-center">{t('notices.title')}</h1>
         <p className="mt-4 text-gray-600">{t('notices.noPending')}</p>
       </div>
@@ -122,7 +122,7 @@ export default function AvisosPage() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto border-l-4 border-yellow-500">
+    <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-lg mx-auto border-l-4 border-yellow-500">
       <h1 className="text-2xl font-bold text-gray-800 text-center">{t('notices.registerPaymentTitle')}</h1>
       <p className="mt-2 text-gray-600">
         {t('notices.aboutToPay')} <span className="font-semibold">{proximoCompromiso.descripcion}</span> ({formatDate(proximoCompromiso.fecha, lang)})
@@ -136,7 +136,8 @@ export default function AvisosPage() {
             id="amount"
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            onFocus={(e) => e.target.select()}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-right"
             required
           />
         </div>

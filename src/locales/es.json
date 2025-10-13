@@ -25,7 +25,10 @@
     "admin": {
       "ariaLabel": "Abrir menú de administración",
       "contributions": "Aportaciones",
-      "users": "Usuarios"
+      "users": "Usuarios",
+      "catalog_management": "Gestión de Catálogos",
+      "project_operation": "Operación de Proyectos",
+      "project_classification_management": "Gestión Clasificación de Proyectos"
     },
     "logout": {
       "ariaLabel": "Cerrar Sesión"
@@ -263,5 +266,62 @@
     "headerAmount": "Monto Pagado",
     "headerStatus": "Realizado",
     "fileName": "Reporte_Aportaciones.pdf"
+  },
+  "catalog": {
+    "title": "Gestión de Catálogos",
+    "maintenance_groups": "Grupos de Mantenimiento",
+    "project_types": "Tipos de Proyecto",
+    "project_classification": "Clasificación de Proyectos",
+    "suppliers_nits": "Proveedores (NITs)",
+    "buttons": {
+      "addGroup": "Agregar Grupo",
+      "addType": "Agregar Tipo",
+      "addSupplier": "Agregar Proveedor"
+    },
+    "toggle_groups": "Grupos",
+    "toggle_types": "Tipos de Proyecto",
+    "toggle_suppliers": "Proveedores",
+    "toggle_overview": "Vista General",
+    "fields": {
+      "name": "Nombre",
+      "order": "Orden",
+      "group": "Grupo",
+      "noGroup": "Sin grupo asignado",
+      "nit": "NIT",
+      "address": "Dirección"
+    },
+    "emptyState": {
+      "noGroups": "No se encontraron grupos de mantenimiento.",
+      "noTypes": "No se encontraron tipos de proyecto.",
+      "noSuppliers": "No se encontraron proveedores."
+    },
+    "alerts": {
+      "fetchError": "Error al obtener {entity}: {message}",
+      "saveSuccess": "¡Registro guardado exitosamente!",
+      "saveError": "Error al guardar el registro: {message}",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar este registro?",
+      "deleteSuccess": "Registro eliminado exitosamente.",
+      "deleteError": "Error al eliminar el registro: {message}",
+      "nameRequired": "El nombre es un campo obligatorio.",
+      "allFieldsRequired": "Por favor, complete todos los campos obligatorios."
+    },
+    "modals": {
+      "addGroup": "Agregar Nuevo Grupo de Mantenimiento",
+      "editGroup": "Editar Grupo de Mantenimiento",
+      "addType": "Agregar Nuevo Tipo de Proyecto",
+      "editType": "Editar Tipo de Proyecto",
+      "addSupplier": "Agregar Nuevo Proveedor",
+      "editSupplier": "Editar Proveedor"
+    },
+    "placeholders": {
+      "selectGroup": "Seleccione un grupo",
+      "nit": "Ej: 1234567-8",
+      "address": "Ej: Av. Principal 123, Ciudad",
+      "searchGroup": "Buscar por nombre de grupo..."
+    },
+    "sortMenu": {
+      "byName": "Ordenar por Nombre",
+      "byOrder": "Ordenar por Orden"
+    }
   }
 }

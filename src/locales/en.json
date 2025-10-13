@@ -25,7 +25,10 @@
     "admin": {
       "ariaLabel": "Open administration menu",
       "contributions": "Contributions",
-      "users": "Users"
+      "users": "Users",
+      "catalog_management": "Catalog Management",
+      "project_operation": "Project Operation",
+      "project_classification_management": "Project Classification Management"
     },
     "logout": {
       "ariaLabel": "Log out"
@@ -263,5 +266,62 @@
     "headerAmount": "Amount Paid",
     "headerStatus": "Done",
     "fileName": "Contributions_Report.pdf"
+  },
+  "catalog": {
+    "title": "Catalog Management",
+    "maintenance_groups": "Maintenance Groups",
+    "project_types": "Project Types",
+    "project_classification": "Project Classification",
+    "suppliers_nits": "Suppliers (NITs)",
+    "buttons": {
+      "addGroup": "Add Group",
+      "addType": "Add Type",
+      "addSupplier": "Add Supplier"
+    },
+    "toggle_groups": "Groups",
+    "toggle_types": "Project Types",
+    "toggle_suppliers": "Suppliers",
+    "toggle_overview": "Overview",
+    "fields": {
+      "name": "Name",
+      "order": "Order",
+      "group": "Group",
+      "noGroup": "No group assigned",
+      "nit": "NIT/ID",
+      "address": "Address"
+    },
+    "emptyState": {
+      "noGroups": "No maintenance groups found.",
+      "noTypes": "No project types found.",
+      "noSuppliers": "No suppliers found."
+    },
+    "alerts": {
+      "fetchError": "Error fetching {entity}: {message}",
+      "saveSuccess": "Record saved successfully!",
+      "saveError": "Error saving record: {message}",
+      "deleteConfirm": "Are you sure you want to delete this record?",
+      "deleteSuccess": "Record deleted successfully.",
+      "deleteError": "Error deleting record: {message}",
+      "nameRequired": "Name is a required field.",
+      "allFieldsRequired": "Please fill in all required fields."
+    },
+    "modals": {
+      "addGroup": "Add New Maintenance Group",
+      "editGroup": "Edit Maintenance Group",
+      "addType": "Add New Project Type",
+      "editType": "Edit Project Type",
+      "addSupplier": "Add New Supplier",
+      "editSupplier": "Edit Supplier"
+    },
+    "placeholders": {
+      "selectGroup": "Select a group",
+      "nit": "e.g. 1234567-8",
+      "address": "e.g. 123 Main St, City",
+      "searchGroup": "Search by group name..."
+    },
+    "sortMenu": {
+      "byName": "Sort by Name",
+      "byOrder": "Sort by Order"
+    }
   }
 }

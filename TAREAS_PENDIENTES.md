@@ -1,4 +1,26 @@
-w
+# REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
+
+Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
+
+## Principios de Arquitectura y Decisiones Clave
+*   **Verificación de Dependencias Cruzadas:** Al modificar un archivo central (como un proveedor de contexto, una utilidad global o un archivo de configuración), se debe identificar y revisar explícitamente todos los archivos que lo importan. Esto se hará para anticipar y corregir errores de compilación o efectos secundarios de manera proactiva, en lugar de reactiva.
+*   **Fuente de Datos:** Las funciones de base de datos **NO DEBEN** depender de vistas (`VIEW`). Toda la lógica debe operar directamente sobre las **tablas base** (`usuarios`, `contribucionesporcasa`, etc.).
+*   **Enfoque "Mobile-Only":** La aplicación se desarrollará y diseñará exclusivamente para una experiencia móvil (WebApp). Se eliminarán las vistas y componentes específicos para escritorio (como tablas complejas) para simplificar el código, reducir el mantenimiento y alinear el producto con su objetivo primario.
+*   **Autenticación:** El inicio de sesión se realiza **únicamente** a través de la función RPC `login_user`, que valida contra la tabla `public.usuarios`. **NO SE UTILIZA** el sistema de autenticación de Supabase (`supabase.auth`).
+*   **Rendimiento en "Grupos de Trabajo":** La página de "Grupos de Trabajo" **DEBE** usar la función RPC `get_grupos_trabajo_usuario` para delegar la agrupación de datos al servidor. No se debe realizar la agrupación en el cliente.
+*   **Organización del Código:** Toda la lógica de las páginas (obtención de datos, manejo de estado, funciones de guardado) debe permanecer dentro del archivo `page.tsx` correspondiente. **NO SE CREARÁN** archivos separados como hooks o servicios a menos que sea solicitado explícitamente.
+*   **Seguridad:** No se deben introducir nuevas prácticas de seguridad (como encriptación de contraseñas con `crypt`) sin una discusión y aprobación previa.
+
+*   **Diseño Extensible y Preparado para el Futuro:** Todas las sugerencias de código deben considerar la futura implementación de características como temas (claro/oscuro), internacionalización (múltiples idiomas) y accesibilidad. Se debe evitar el uso de valores "hardcodeados" (ej. colores como `#FFFFFF` o texto como `"Guardar"`) en favor de abstracciones (ej. variables de tema, claves de traducción) que faciliten la extensibilidad sin romper el diseño existente.
+## Flujo de Trabajo para Cambios (Workflow)
+*   **Propuesta Detallada:** Para cualquier cambio que no sea una corrección trivial (como un error de tipeo), se debe presentar un plan de propuesta detallado que incluya el "Razonamiento del Problema" y la "Solución Propuesta".
+*   **Aprobación por Pasos:** La solución propuesta debe desglosarse en pasos pequeños e incrementales. Cada paso debe ser lo suficientemente pequeño como para ser compilado y verificado de forma independiente.
+*   **Autorización Explícita:** Se debe obtener la autorización explícita del usuario ("aprobado", "adelante", etc.) para **cada paso individual** antes de proporcionar el código o `diff` correspondiente. No se procederá al siguiente paso sin la aprobación del anterior.
+*   **Comando de Sincronización "LEE":** Al inicio de cada sesión, el usuario proporcionará este archivo y usará la instrucción "LEE". Esto servirá como señal para que el asistente lea, entienda y se adhiera estrictamente a todos los principios y flujos de trabajo aquí definidos antes de realizar cualquier análisis o sugerencia.
+*   **Propuesta de Mejoras:** Cualquier mejora o "buena práctica" no solicitada (ej. seguridad, rendimiento) debe ser propuesta primero como un nuevo ítem en la sección "I. Tareas Pendientes". La propuesta debe incluir una justificación y un análisis del impacto potencial sobre el sistema existente. No se implementará hasta que sea discutida y aprobada.
+*   **Indicación Explícita de Acción:** Al final de cada respuesta que contenga un cambio de código, debo indicar explícitamente la acción que espero de ti. Por ejemplo: "Ahora, por favor, **compila y verifica** que los cambios se aplican correctamente" o "Ahora, por favor, **sube los cambios a Git** con el siguiente mensaje:".
+
+
 ---
 
 # TAREAS PENDIENTES - Val App
@@ -6,13 +28,6 @@ w
 Este documento detalla las mejoras pendientes y completadas para el proyecto Val App, según lo determinado por una evaluación de ingeniería de software.
 
 ## I. Tareas Pendientes
-
-### Siguiente Tarea
-- **Objetivo:** Optimizar la generación de PDF en la página de "Calendarios".
-- **UI/UX:** Estandarizar el ancho de la tarjeta en la página de "Avisos".
-    - **Problema:** La tarjeta de "Avisos" cambia de tamaño según el idioma, causando un redibujado incómodo.
-    - **Acción:** Asignar un ancho fijo (`w-full`) a la tarjeta para que ocupe todo el espacio disponible hasta su `max-w-lg`, manteniendo un tamaño consistente.
-∫
 ---
 
 ## II. Logros Recientes (Tareas Completadas)
@@ -24,6 +39,7 @@ Este documento detalla las mejoras pendientes y completadas para el proyecto Val
     *   ✅ **Unificación de Interfaz a "Mobile-Only":** Se eliminaron las vistas de tabla de escritorio en las páginas de administración y calendario, dejando únicamente la vista de tarjetas para una experiencia consistente.
     *   ✅ **Diseño de Tarjeta de Avisos:** Se actualizó el diseño de la tarjeta en la página de "Avisos" para que sea consistente con el estilo moderno de la aplicación.
     *   ✅ **Solución de Favicon:** Se migró el favicon a `app/icon.png` siguiendo las convenciones de Next.js.
+    *   ✅ **Estandarización de Tarjeta en "Avisos":** Se asignó un ancho fijo a la tarjeta de avisos para evitar que cambie de tamaño al cambiar de idioma, mejorando la estabilidad de la UI.
     *   ✅ **Ordenamiento en Grupos de Trabajo:** Se añadió un menú para ordenar los grupos por número o fecha en el cliente.
     *   ✅ **Internacionalización de Formatos:** Se estandarizó el formato de fechas y monedas en toda la aplicación usando la API `Intl` para una correcta localización.
 
@@ -100,143 +116,8 @@ Esta sección documenta las mejores prácticas y lecciones aprendidas durante el
     *   **Feedback Constructivo:** El desarrollador debe señalar claramente cuando el asistente se desvía del plan, permitiendo una rápida corrección del rumbo.
 Estructura de las Tablas:
 
-### CONTRIBUCIONES
+### Tareas Pendientes postpuestas indefinidamente
 
-create table public.contribuciones (
-  id_contribucion bigint generated by default as identity not null,
-  contribucion text null,
-  descripcion text null,
-  color_del_borde text null,
-  constraint Contribuciones_pkey primary key (id_contribucion)
-) TABLESPACE pg_default;
-
-create table public.contribucionesporcasa (
-  id_casa bigint generated by default as identity not null,
-  id_contribucion bigint not null,
-  fecha date not null,
-  realizado text null default '1'::wtext,
-  pagado double precision null,
-  url_comprobante text null,
-  fechapago date null,
-  constraint contribucionesporcasa_pkey primary key (id_casa, id_contribucion, fecha),
-  constraint tmp_fk_casa foreign KEY (id_casa) references usuarios (id),
-  constraint tmp_fk_contribucion foreign KEY (id_contribucion) references contribuciones (id_contribucion)
-) TABLESPACE pg_default;
-
-### GRUPOS DE TRABAJO PARA ACTIVIDADES ADMINISTRATIVAS
-
-create table public.grupos (
-  id_grupo bigint generated by default as identity not null,
-  id_usuario bigint not null,
-  id_contribucion bigint not null,
-  created_at timestamp with time zone null default now(),
-  constraint grupos_pkey primary key (id_grupo, id_usuario, id_contribucion),
-  constraint fk_grupos_contribucion foreign KEY (id_contribucion) references contribuciones (id_contribucion) on delete CASCADE,
-  constraint fk_grupos_usuario foreign KEY (id_usuario) references usuarios (id) on delete CASCADE
-) TABLESPACE pg_default;
-
-### CORE 
-
-create table public.usuarios (
-  id bigint generated by default as identity not null,
-  created_at timestamp with time zone not null default now(),
-  responsable text not null,
-  clave text not null,
-  tipo_usuario text null,
-  constraint usuarios_pkey primary key (id)
-) TABLESPACE pg_default;
-
-
-create table public.logs (
-  id bigint generated by default as identity not null,
-  created_at timestamp with time zone not null default now(),
-  mensaje text null,
-  constraint logs_pkey primary key (id, created_at)
-) TABLESPACE pg_default;
-
-### VISTAS (NO DEBEN DE USARSE MAS QUE PARA CUANDO SE REQUIERAN REPORTES MUY PLANOS Y GENERALES)
-
-create view public.v_contribuciones_detalle as
-select
-  cpc.id_casa,
-  cpc.id_contribucion,
-  cpc.fecha,
-  cpc.pagado,
-  cpc.realizado,
-  cpc.fechapago,
-  cpc.url_comprobante,
-  u.responsable,
-  c.descripcion as contribucion_descripcion,
-  c.color_del_borde
-from
-  contribucionesporcasa cpc
-  left join usuarios u on cpc.id_casa = u.id
-  left join contribuciones c on cpc.id_contribucion = c.id_contribucion;
-
-  create view public.v_usuarios_contribuciones as
-select
-  u.id,
-  u.responsable,
-  u.clave,
-  cp.id_casa,
-  cp.id_contribucion,
-  cp.fecha,
-  cp.realizado,
-  cp.pagado,
-  c.contribucion,
-  c.descripcion,
-  CURRENT_DATE - cp.fecha as dias_restantes,
-  cp.url_comprobante,
-  g.id_grupo,
-  c.color_del_borde
-from
-  usuarios u
-  join contribucionesporcasa cp on cp.id_casa = u.id
-  join contribuciones c on c.id_contribucion = cp.id_contribucion
-  full join grupos g on cp.id_casa = g.id_usuario
-  and cp.id_contribucion = g.id_contribucion;
-
-  ### PROYECTOS
-
-  
-create table public.proyectos (
-  id_proyecto bigint generated by default as identity not null,
-  descripcion text not null,
-  descripcion_proyecto text null,
-  tipo_proyecto bigint null,
-  valor double precision null default '0'::double precision,
-  constraint proyectos_pkey primary key (id_proyecto)
-) TABLESPACE pg_default;
-
-
-create table public.contribucionesporcasa_proyectos (
-  id_casa bigint generated by default as identity not null,
-  id_proyecto bigint not null,
-  fecha date not null,
-  realizado text null default '1'::text,
-  pagado double precision null,
-  url_comprobante text null,
-  fechapago date null,
-  constraint contribucionesporcasa_proyectos_pkey primary key (id_casa, id_proyecto, fecha),
-  constraint tmp_fk_casa foreign KEY (id_casa) references usuarios (id),
-  constraint tmp_fk_proyectos foreign KEY (id_proyecto) references proyectos (id_proyecto)
-) TABLESPACE pg_default;
-
-
-create table public.liquidacion_de_gastos (
-  id_proyecto bigint not null,
-  fecha_documento date not null default now(),
-  no_documento text not null,
-  tipo_documento text not null default 'factura'::text,
-  nit_contribuyente text not null,
-  valor numeric null,
-  constraint liquidacion_de_gastos_pkey primary key (
-    id_proyecto,
-    fecha_documento,
-    no_documento,
-    tipo_documento,
-    nit_contribuyente
-  ),
-  constraint liquidacion_de_gastos_id_proyecto_fkey foreign KEY (id_proyecto) references proyectos (id_proyecto) on update CASCADE on delete RESTRICT,
-  constraint liquidacion_de_gastos_nit_contribuyente_fkey foreign KEY (nit_contribuyente) references nits (nit)
-) TABLESPACE pg_default;
+- **Objetivo:** Mejorar el reporte PDF en la página de "Calendarios".
+- **Problema:** El reporte actual que se genera desde la vista del usuario es una tabla simple. Se busca un diseño más visual y moderno.
+- **Acción:** Reemplazar la generación de PDF actual con una nueva versión que utilice la librería `react-pdf` para crear un reporte con **tarjetas a color**, similar al nuevo reporte implementado en el área de administración. Esto proporcionará un documento más atractivo y profesional. Dado el bajo volumen de datos (aprox. 50 registros anuales), la generación en el lado del cliente es una estrategia aceptable y eficiente.
