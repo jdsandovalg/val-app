@@ -10,7 +10,8 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 *   **Rendimiento en "Grupos de Trabajo":** La página de "Grupos de Trabajo" **DEBE** usar la función RPC `get_grupos_trabajo_usuario` para delegar la agrupación de datos al servidor. No se debe realizar la agrupación en el cliente.
 *   **Organización del Código:** Toda la lógica de las páginas (obtención de datos, manejo de estado, funciones de guardado) debe permanecer dentro del archivo `page.tsx` correspondiente. **NO SE CREARÁN** archivos separados como hooks o servicios a menos que sea solicitado explícitamente.
 *   **Seguridad:** No se deben introducir nuevas prácticas de seguridad (como encriptación de contraseñas con `crypt`) sin una discusión y aprobación previa.
-
+*   **Alteración de Funciones de BD:** Antes de proponer cualquier modificación (DDL) a una función de base de datos existente, debo solicitarte la versión actual que está en producción para usarla como base.
+**DDL de Base de Datos:** Toda definición de funciones de base de datos (DDL) que se proporcione **DEBE** incluir la cláusula `SECURITY DEFINER` para asegurar que se ejecuten con los permisos adecuados y evitar problemas de acceso a datos por RLS.
 *   **Diseño Extensible y Preparado para el Futuro:** Todas las sugerencias de código deben considerar la futura implementación de características como temas (claro/oscuro), internacionalización (múltiples idiomas) y accesibilidad. Se debe evitar el uso de valores "hardcodeados" (ej. colores como `#FFFFFF` o texto como `"Guardar"`) en favor de abstracciones (ej. variables de tema, claves de traducción) que faciliten la extensibilidad sin romper el diseño existente.
 ## Flujo de Trabajo para Cambios (Workflow)
 *   **Propuesta Detallada:** Para cualquier cambio que no sea una corrección trivial (como un error de tipeo), se debe presentar un plan de propuesta detallado que incluya el "Razonamiento del Problema" y la "Solución Propuesta".
@@ -25,10 +26,16 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 # TAREAS PENDIENTES - Val App
 
-Este documento detalla las mejoras pendientes y completadas para el proyecto Val App, según lo determinado por una evaluación de ingeniería de software.
-
 ## I. Tareas Pendientes
----
+
+### Implementar Evidencias de Gasto en Reporte PDF Financiero
+- **Objetivo:** Incrustar las imágenes de los comprobantes de gasto (facturas, recibos) dentro del reporte PDF financiero. El diseño debe ser una rejilla de 2x2 (cuatro imágenes por página) en una sección de "Anexo de Evidencias" al final del reporte.
+- **Contexto del Intento Fallido (Análisis para Futuro Agente):**
+    - **Problema:** La implementación para mostrar las imágenes de los comprobantes en el PDF no funcionó. La página de anexos se generaba con el título del gasto, pero la imagen no aparecía.
+    - **Causa Raíz del Error:** La estrategia correcta, que consiste en descargar la imagen y convertirla a formato **base64**, se implementó en el componente `FinancialReport.tsx`. Sin embargo, el error final estuvo en el componente `ReportDocument` (dentro del mismo archivo). La línea que renderiza la imagen (`<Image src={...} />`) no se actualizó para usar directamente el string `base64`. En su lugar, seguía intentando construir una URL, pasando el `base64` como si fuera un nombre de archivo. Esto resultaba en un `src` inválido y, por lo tanto, la imagen no se mostraba.
+    - **Estado Actual:** Para evitar que el reporte fallara, toda la lógica relacionada con la carga y visualización de evidencias en `FinancialReport.tsx` ha sido **comentada**, no borrada. El código comentado es el punto de partida correcto para la futura implementación.
+
+Este documento detalla las mejoras pendientes y completadas para el proyecto Val App, según lo determinado por una evaluación de ingeniería de software.
 
 ## II. Logros Recientes (Tareas Completadas)
 
@@ -39,6 +46,7 @@ Este documento detalla las mejoras pendientes y completadas para el proyecto Val
     *   ✅ **Unificación de Interfaz a "Mobile-Only":** Se eliminaron las vistas de tabla de escritorio en las páginas de administración y calendario, dejando únicamente la vista de tarjetas para una experiencia consistente.
     *   ✅ **Diseño de Tarjeta de Avisos:** Se actualizó el diseño de la tarjeta en la página de "Avisos" para que sea consistente con el estilo moderno de la aplicación.
     *   ✅ **Solución de Favicon:** Se migró el favicon a `app/icon.png` siguiendo las convenciones de Next.js.
+    *   ✅ **Implementación de Gestión de Catálogos:** Se añadió una nueva sección administrativa para la gestión completa (CRUD) de catálogos: Grupos de Mantenimiento, Tipos de Proyecto y Proveedores. Incluye una vista de consulta jerárquica con filtros y ordenamiento. La implementación se realizó con un componente genérico reutilizable para facilitar el mantenimiento y la extensibilidad.
     *   ✅ **Estandarización de Tarjeta en "Avisos":** Se asignó un ancho fijo a la tarjeta de avisos para evitar que cambie de tamaño al cambiar de idioma, mejorando la estabilidad de la UI.
     *   ✅ **Ordenamiento en Grupos de Trabajo:** Se añadió un menú para ordenar los grupos por número o fecha en el cliente.
     *   ✅ **Internacionalización de Formatos:** Se estandarizó el formato de fechas y monedas en toda la aplicación usando la API `Intl` para una correcta localización.

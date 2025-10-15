@@ -28,7 +28,8 @@
       "users": "Users",
       "catalog_management": "Catalog Management",
       "project_operation": "Project Operation",
-      "project_classification_management": "Project Classification Management"
+      "project_classification_management": "Project Classification Management",
+      "projects_management": "Project Management"
     },
     "logout": {
       "ariaLabel": "Log out"
@@ -46,7 +47,7 @@
   },
   "calendar": {
     "title": "Contributions Schedule",
-    "reportTitle": "Contributions Report",
+    "reportTitle": "Contributions Calendar",
     "reportNoData": "No data to generate report. Try changing filters.",
     "reportPdfAriaLabel": "Generate PDF Report",
     "table": {
@@ -322,6 +323,86 @@
     "sortMenu": {
       "byName": "Sort by Name",
       "byOrder": "Sort by Order"
+    }
+  },
+  "projects": {
+    "title": "Project Management",
+    "modals": {
+      "addProject": "Define New Project"
+    },
+    "fields": {
+      "description": "Task Description",
+      "details": "Task Details",
+      "estimatedValue": "Estimated Value ($)",
+      "suggestedFrequency": "Suggested Frequency",
+      "keyNotes": "Key Notes",
+      "amount": "Amount"
+    },
+    "alerts": {
+      "fetchError": "Error loading projects: {message}",
+      "saveSuccess": "Project created successfully! Contributions have been generated for each house.",
+      "saveError": "Error creating project: {message}"
+    },
+    "activeProjectsTitle": "Active Projects",
+    "emptyState": {
+      "noActiveProjects": "There are no active projects at the moment."
+    },
+    "contributions": {
+      "title": "Contributions",
+      "emptyState": "No contributions found for this project.",
+      "paidOn": "Paid on:",
+      "status": {
+        "PENDIENTE": "Pending",
+        "PAGADO": "Paid"
+      },
+      "buttons": {
+        "markAsPaid": "Mark as Paid",
+        "cancelPayment": "Cancel Payment"
+      },
+      "alerts": {
+        "fetchError": "Error loading contributions: {message}",
+        "updateSuccess": "Status updated successfully.",
+        "updateError": "Error updating status: {message}"
+      }
+    },
+    "expenses": {
+      "title": "Expenses",
+      "buttons": {
+        "add": "Add Expense"
+      },
+      "modals": {
+        "add": "Register New Expense",
+        "edit": "Edit Expense"
+      },
+      "fields": {
+        "supplier": "Supplier",
+        "docNumber": "Document No.",
+        "docDate": "Document Date",
+        "amount": "Expense Amount",
+        "description": "Expense Description"
+      },
+      "placeholders": {
+        "selectSupplier": "Select a supplier"
+      },
+      "alerts": {
+        "fetchSuppliersError": "Error loading suppliers: {message}",
+        "fetchError": "Error loading expenses: {message}",
+        "emptyState": "No expenses have been recorded for this project."
+      }
+    },
+    "summary": {
+      "title": "Summary",
+      "totalContributions": "Total Contributions",
+      "totalExpenses": "Total Expenses",
+      "balance": "Balance",
+      "noData": "Could not load project summary.",
+      "reportTitle": "Project Financial Summary",
+      "generatePdf": "PDF Report",
+      "downloadPdf": "Download PDF",
+      "alerts": {
+        "fetchError": "Error loading summary: {message}",
+        "noProjectInfo": "Project information not found."
+      }
     }
   }
 }

@@ -4,10 +4,15 @@
  * @param locale El código del locale (ej. 'es-GT', 'en-US').
  * @returns La fecha formateada según el locale.
  */
-export function formatDate(dateString: string, locale: string): string {
-  // Añadimos 'T00:00:00' para asegurar que la fecha se interprete en la zona horaria local
-  // y no se desplace un día por diferencias con UTC.
-  const date = new Date(`${dateString}T00:00:00`);
+export function formatDate(dateInput: string | Date, locale: string): string {
+  let date: Date;
+  if (typeof dateInput === 'string') {
+    // Añadimos 'T00:00:00' para asegurar que la fecha se interprete en la zona horaria local
+    // y no se desplace un día por diferencias con UTC.
+    date = new Date(`${dateInput}T00:00:00`);
+  } else {
+    date = dateInput;
+  }
   return new Intl.DateTimeFormat(locale, {
     day: '2-digit',
     month: '2-digit',

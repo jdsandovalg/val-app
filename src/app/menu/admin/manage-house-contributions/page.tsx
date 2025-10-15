@@ -23,15 +23,12 @@ import { formatDate, formatCurrency } from '@/utils/format';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { PDFDownloadLink, Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer';
-import PdfContributionCard from './components/PdfContributionCard';
 
 // --- Componente Principal de la Página ---
 export default function ManageHouseContributionsPage() {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t, locale, currency } = useI18n();
-  const [logoBase64, setLogoBase64] = useState<string | null>(null);
   
   const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
   const [usuarios, setUsuarios] = useState<{ id: number; responsable: string; }[]>([]);
@@ -101,19 +98,6 @@ export default function ManageHouseContributionsPage() {
 
   useEffect(() => {
     fetchData();
-    // Cargar el logo para el PDF
-    fetch('/logo.png')
-      .then(response => response.ok ? response.blob() : Promise.reject('Logo not found'))
-      .then(blob => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => {
-          setLogoBase64(reader.result as string);
-        };
-      }).catch(() => {
-        console.warn("No se pudo cargar el logo para el PDF.");
-        setLogoBase64(null);
-      });
   }, [fetchData]);
 
   useEffect(() => {
@@ -372,73 +356,6 @@ export default function ManageHouseContributionsPage() {
       });
   }, [filteredAndSortedRecords, t, locale, currency]);
 
-  // --- Lógica para el nuevo reporte con tarjetas ---
-  Font.register({
-    family: 'Helvetica',
-    fonts: [
-      { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf', fontWeight: 'normal' },
-      { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf', fontWeight: 'bold' },
-    ]
-  });
-
-  const styles = StyleSheet.create({
-    page: {
-      padding: 20,
-      fontFamily: 'Helvetica',
-      backgroundColor: '#F9FAFB', // gray-50
-    },
-    title: {
-      fontSize: 24,
-      textAlign: 'center',
-      marginBottom: 20,
-      fontWeight: 'bold',
-      color: '#1F2937', // gray-800
-    },
-    cardContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-    },
-    header: {
-      position: 'absolute',
-      top: 10,
-      left: 20,
-      right: 20,
-      height: 50,
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    logo: {
-      width: 40,
-      height: 40,
-    },
-    footer: {
-      position: 'absolute',
-      bottom: 10,
-      left: 20,
-      right: 20,
-      textAlign: 'center',
-      color: 'grey',
-      fontSize: 10,
-    },
-  });
-
-  const PdfCardDocument = (
-    <Document>
-      <Page size="A4" style={styles.page} wrap>
-        {/* eslint-disable-next-line jsx-a11y/alt-text -- La prop 'alt' no es aplicable en react-pdf */}
-        {logoBase64 && <Image style={styles.logo} src={logoBase64} fixed />}
-        <Text style={styles.title} fixed>{t('contributionReport.title')}</Text>
-        <View style={styles.cardContainer} wrap>
-          {filteredAndSortedRecords.map((record) => (
-            <PdfContributionCard key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`} record={record} t={t} locale={locale} currency={currency} />
-          ))}
-        </View>
-        <Text style={styles.footer} render={({ pageNumber, totalPages }) => (`${t('contributionReport.generatedOn')} ${new Date().toLocaleDateString(locale)} | ${pageNumber} / ${totalPages}`)} fixed />
-      </Page>
-    </Document>
-  );
-
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -588,17 +505,19 @@ export default function ManageHouseContributionsPage() {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                       {t('manageContributions.actionsMenu.pdfReport')}
                     </button>
-                    <PDFDownloadLink document={PdfCardDocument} fileName={t('contributionReport.fileName')}>
-                      {({ loading: pdfLoading }) => (
-                        <button
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
-                          disabled={loading || isUploadingCsv || pdfLoading}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          {pdfLoading ? t('manageContributions.actionsMenu.processing') : t('manageContributions.actionsMenu.pdfCardReport')}
-                        </button>
-                      )}
-                    </PDFDownloadLink>
+                    <button
+                      onClick={() => {
+                        // Guardar los datos en localStorage para que la otra página los lea
+                        localStorage.setItem('pdfReportData', JSON.stringify(filteredAndSortedRecords));
+                        window.open('/menu/admin/manage-house-contributions/report', '_blank');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
+                      disabled={loading || isUploadingCsv}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      {t('manageContributions.actionsMenu.pdfCardReport')}
+                    </button>
                   </div>
                 </div>
               )}

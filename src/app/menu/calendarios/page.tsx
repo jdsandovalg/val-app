@@ -15,14 +15,13 @@ import { createClient } from '@/utils/supabase/client';
 import React from 'react'; // Asegúrate de que React esté importado
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
-import { formatDate } from '@/utils/format';
+import ImageViewerModal from '@/components/modals/ImageViewerModal';
 import ContributionCalendarCard from './components/ContributionCalendarCard';
 import { saveContributionPayment } from '@/utils/supabase/server-actions';
+
 
 type Contribucion = {
   id_contribucion: string;
@@ -34,62 +33,9 @@ type Contribucion = {
   url_comprobante?: string | null;
 };
 
-function ImageViewerModal({ src, onClose }: { src: string | null; onClose: () => void }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { t } = useI18n();
-
-  if (!src) return null;
-
-  const handleImageError = () => {
-    console.log('Failing image URL:', src); // Log de diagnóstico
-    setIsLoading(false);
-    const errorMessage = t('calendar.imageViewer.error', { url: src });
-    setError(errorMessage);
-  };
-
-  const handleImageLoad = () => {
-    setIsLoading(false);
-    setError(null);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center p-4" onClick={onClose}>
-      <div className="bg-white p-2 rounded-lg shadow-xl max-w-3xl max-h-full" onClick={(e) => e.stopPropagation()}>
-        <div className="relative flex flex-col items-center justify-center" style={{ minHeight: '200px', minWidth: '300px', width: '80vw', height: '80vh' }}>
-          {isLoading && (
-            <div className="text-center">
-              <div className="text-gray-600">{t('calendar.imageViewer.loading')}</div>
-              <div className="text-xs text-gray-400 mt-2 break-all">URL: {src}</div>
-            </div>
-          )}
-          {error && <div className="text-red-600 p-4 text-center whitespace-pre-wrap">{error}</div>}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={src}
-            alt={t('calendar.imageViewer.altText')}
-            className={`w-full h-full object-contain ${isLoading || error ? 'hidden' : ''}`}
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-          />
-          <button
-            onClick={onClose}
-            className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            aria-label={t('calendar.imageViewer.closeAriaLabel')}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function CalendariosPage() {
   const router = useRouter();
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const supabase = createClient();
   const [contribuciones, setContribuciones] = useState<Contribucion[]>([]);  
   const [usuario, setUsuario] = useState<{ id: number; responsable: string } | null>(null);  
@@ -190,64 +136,6 @@ export default function CalendariosPage() {
     return { texto: t('calendar.status.pending'), color: 'text-gray-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
   }, [t]);
 
-  const handleGeneratePDF = useCallback(() => {
-    if (!usuario || filteredAndSortedContribuciones.length === 0) {
-      toast.error(t('calendar.reportNoData')); // Esta clave ya existe
-      return;
-    }
-
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-
-    const generatePdfContent = (doc: jsPDF) => {
-      doc.setFontSize(22);
-      doc.setFont('helvetica', 'bold');
-      doc.text(t('calendar.reportTitle'), pageWidth / 2, 22, { align: 'center' });
-
-      // --- Información del Usuario ---
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text(t('calendar.userData.houseId', { id: usuario.id }), 14, 45);
-      
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text(t('calendar.userData.responsible', { name: usuario.responsable }), 14, 52); // Esta clave ya existe
-
-      // --- Tabla de Aportaciones ---
-      const tableColumn = [t('calendar.table.id'), t('calendar.table.description'), t('calendar.table.dueDate'), t('calendar.table.paid'), t('calendar.table.status')];
-      const tableRows: (string | number)[][] = [];
-
-      // Usar las contribuciones ordenadas para el PDF
-      const contribucionesParaPdf = filteredAndSortedContribuciones.map(c => ({ ...c, estado: getEstado(c).texto }));
-      contribucionesParaPdf.forEach(contrib => {
-        const contribData = [
-          contrib.id_contribucion,
-          contrib.descripcion ?? '',
-          formatDate(contrib.fecha, lang),
-          contrib.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no'),
-          contrib.estado,
-        ];
-        tableRows.push(contribData);
-      });
-
-      autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: 60,
-        theme: 'grid',
-        headStyles: { fillColor: [22, 78, 99], textColor: [255, 255, 255], fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [241, 245, 249] },
-        styles: { font: 'helvetica', fontSize: 10 },
-      });
-
-      doc.save(`Reporte_Aportaciones_Casa_${usuario.id}.pdf`);
-    };
-
-    // --- Encabezado con Logo y Título ---
-    // No es necesario cargar el logo para la funcionalidad básica, se restaura la versión simple.
-    generatePdfContent(doc);
-  }, [usuario, filteredAndSortedContribuciones, t, getEstado, lang]);
-
   return (
     <>
       <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center flex-grow">
@@ -259,8 +147,25 @@ export default function CalendariosPage() {
             <h1 className="text-2xl font-bold text-gray-800 text-center">{t('calendar.title')}</h1>
             <button
               type="button"
-              onClick={handleGeneratePDF}
-              className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              onClick={() => {
+                if (filteredAndSortedContribuciones.length === 0) {
+                  toast.error(t('calendar.reportNoData'));
+                  return;
+                }
+                // Mapear los datos al formato que espera el reporte (CalendarRecord)
+                const reportData = filteredAndSortedContribuciones.map(c => ({
+                  id_contribucion: c.id_contribucion,
+                  descripcion: c.descripcion ?? 'N/A',
+                  fecha_limite: c.fecha,
+                  pagado: c.realizado === 'S',
+                  status: getEstado(c).texto,
+                }));
+
+                // Guardar los datos para que la página del reporte los lea
+                localStorage.setItem('calendarPdfReportData', JSON.stringify(reportData));
+                window.open('/menu/calendarios/report', '_blank');
+              }}
+              className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50"
               aria-label={t('calendar.reportPdfAriaLabel')}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">

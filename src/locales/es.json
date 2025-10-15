@@ -28,7 +28,8 @@
       "users": "Usuarios",
       "catalog_management": "Gestión de Catálogos",
       "project_operation": "Operación de Proyectos",
-      "project_classification_management": "Gestión Clasificación de Proyectos"
+      "project_classification_management": "Gestión Clasificación de Proyectos",
+      "projects_management": "Gestión de Proyectos"
     },
     "logout": {
       "ariaLabel": "Cerrar Sesión"
@@ -46,7 +47,7 @@
   },
   "calendar": {
     "title": "Programación de Aportaciones",
-    "reportTitle": "Reporte de Aportaciones",
+    "reportTitle": "Calendario de Aportaciones",
     "reportNoData": "No hay datos para generar el reporte. Pruebe cambiando los filtros.",
     "reportPdfAriaLabel": "Generar Reporte PDF",
     "table": {
@@ -322,6 +323,86 @@
     "sortMenu": {
       "byName": "Ordenar por Nombre",
       "byOrder": "Ordenar por Orden"
+    }
+  },
+  "projects": {
+    "title": "Gestión de Proyectos",
+    "modals": {
+      "addProject": "Definir Nuevo Proyecto"
+    },
+    "fields": {
+      "description": "Descripción de la Tarea",
+      "details": "Detalle de la Tarea",
+      "estimatedValue": "Valor Estimado (Q)",
+      "suggestedFrequency": "Frecuencia Sugerida",
+      "keyNotes": "Notas Clave",
+      "amount": "Monto"
+    },
+    "alerts": {
+      "fetchError": "Error al cargar proyectos: {message}",
+      "saveSuccess": "¡Proyecto creado exitosamente! Se han generado las cuotas para cada casa.",
+      "saveError": "Error al crear el proyecto: {message}"
+    },
+    "activeProjectsTitle": "Proyectos Activos",
+    "emptyState": {
+      "noActiveProjects": "No hay proyectos activos en este momento."
+    },
+    "contributions": {
+      "title": "Aportes",
+      "emptyState": "No se encontraron aportes para este proyecto.",
+      "paidOn": "Pagado el:",
+      "status": {
+        "PENDIENTE": "Pendiente",
+        "PAGADO": "Pagado"
+      },
+      "buttons": {
+        "markAsPaid": "Pagado",
+        "cancelPayment": "Anular Pago"
+      },
+      "alerts": {
+        "fetchError": "Error al cargar los aportes: {message}",
+        "updateSuccess": "Estado actualizado correctamente.",
+        "updateError": "Error al actualizar el estado: {message}"
+      }
+    },
+    "expenses": {
+      "title": "Gastos",
+      "buttons": {
+        "add": "Agregar Gasto"
+      },
+      "modals": {
+        "add": "Registrar Nuevo Gasto",
+        "edit": "Editar Gasto"
+      },
+      "fields": {
+        "supplier": "Proveedor",
+        "docNumber": "No. Documento",
+        "docDate": "Fecha Documento",
+        "amount": "Monto del Gasto",
+        "description": "Descripción del Gasto"
+      },
+      "placeholders": {
+        "selectSupplier": "Seleccione un proveedor"
+      },
+      "alerts": {
+        "fetchSuppliersError": "Error al cargar proveedores: {message}",
+        "fetchError": "Error al cargar los gastos: {message}",
+        "emptyState": "No se han registrado gastos para este proyecto."
+      }
+    },
+    "summary": {
+      "title": "Resumen",
+      "totalContributions": "Total de Aportes",
+      "totalExpenses": "Total de Gastos",
+      "balance": "Saldo",
+      "noData": "No se pudo cargar el resumen del proyecto.",
+      "reportTitle": "Resumen Financiero de Proyecto",
+      "generatePdf": "Reporte PDF",
+      "downloadPdf": "Descargar PDF",
+      "alerts": {
+        "fetchError": "Error al cargar el resumen: {message}",
+        "noProjectInfo": "No se encontró información del proyecto."
+      }
     }
   }
 }

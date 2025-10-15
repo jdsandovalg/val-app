@@ -16,7 +16,7 @@
     },
     "languageTooltip": {
       "en": "Passer à l'espagnol",
-      "es": "Changer vers l'anglais"
+      "es": "Passer à l'anglais"
     }
   },
   "header": {
@@ -28,7 +28,8 @@
       "users": "Utilisateurs",
       "catalog_management": "Gestion des Catalogues",
       "project_operation": "Opération de Projets",
-      "project_classification_management": "Gestion Classification de Projets"
+      "project_classification_management": "Gestion Classification de Projets",
+      "projects_management": "Gestion de Projets"
     },
     "logout": {
       "ariaLabel": "Se déconnecter"
@@ -46,7 +47,7 @@
   },
   "calendar": {
     "title": "Calendrier des Contributions",
-    "reportTitle": "Rapport des Contributions",
+    "reportTitle": "Calendrier des Contributions",
     "reportNoData": "Aucune donnée pour générer le rapport. Essayez de changer les filtres.",
     "reportPdfAriaLabel": "Générer le rapport PDF",
     "table": {
@@ -69,8 +70,8 @@
       "pending": "En attente"
     },
     "payment": {
-      "reportButton": "Signaler un Paiement",
-      "viewProofButton": "Voir la Preuve",
+      "reportButton": "Signaler le Paiement",
+      "viewProofButton": "Voir le Justificatif",
       "success": "Paiement enregistré avec succès !",
       "error": "Erreur lors de l'enregistrement du paiement : {message}",
       "unknownError": "inconnue"
@@ -78,7 +79,7 @@
     "imageViewer": {
       "loading": "Chargement de l'image...",
       "error": "Impossible de charger l'image. Vérifiez que l'URL est correcte et que le fichier existe dans le bucket.\n\nURL : {url}",
-      "altText": "Preuve de paiement",
+      "altText": "Justificatif de paiement",
       "closeAriaLabel": "Fermer"
     },
     "userData": {
@@ -88,12 +89,12 @@
     "fetchError": "Erreur lors du chargement des données du calendrier :"
   },
   "paymentModal": {
-    "title": "Signaler le Paiement d'une Contribution",
+    "title": "Signaler le Paiement de la Contribution",
     "contribution": "Contribution :",
     "amountPaid": "Montant Payé",
     "amountPlaceholder": "Ex : 150.00",
-    "proof": "Preuve de Paiement",
-    "dropzone": "Faites glisser une image ici, ou cliquez pour en sélectionner une",
+    "proof": "Justificatif de Paiement",
+    "dropzone": "Faites glisser une image ou cliquez pour en sélectionner une",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "selectFileButton": "Sélectionner un fichier",
@@ -107,7 +108,7 @@
     "membersTitle": "Membres du Groupe",
     "house": "Maison",
     "groupTitle": "Groupe #{number}",
-    "status_done": "Terminé",
+    "status_done": "Réalisé",
     "status_pending": "En attente"
   },
   "groupsSortMenu": {
@@ -116,19 +117,19 @@
   },
   "notices": {
     "title": "Avis",
-    "registerPaymentTitle": "Enregistrer un Paiement",
+    "registerPaymentTitle": "Enregistrer le Paiement",
     "loading": "Chargement des avis...",
     "noPending": "Vous n'avez aucun paiement en attente. Vous êtes à jour !",
     "aboutToPay": "Vous êtes sur le point d'enregistrer le paiement pour :",
     "form": {
       "amount": "Montant Payé",
-      "proof": "Preuve de Paiement",
+      "proof": "Justificatif de Paiement",
       "submit": "Enregistrer le Paiement",
       "submitting": "Enregistrement..."
     },
     "alerts": {
       "fillAllFields": "Veuillez remplir tous les champs.",
-      "uploadError": "Erreur lors du téléversement de la preuve : {message}",
+      "uploadError": "Erreur lors du téléversement du justificatif : {message}",
       "dbError": "Erreur lors de l'enregistrement du paiement : {message}",
       "success": "Paiement enregistré avec succès !"
     }
@@ -151,7 +152,7 @@
     },
     "emptyState": {
       "noUsers": "Aucun utilisateur à afficher.",
-      "addUserHint": "Vous pouvez ajouter un nouvel utilisateur avec le bouton '+'."
+      "addUserHint": "Vous pouvez ajouter un nouvel utilisateur en utilisant le bouton '+'."
     },
     "noResults": "Aucun utilisateur trouvé correspondant aux filtres.",
     "filterModal": {
@@ -169,8 +170,8 @@
     },
     "alerts": {
       "saveSuccess": "Utilisateur enregistré avec succès !",
-      "saveError": "Erreur lors de l'enregistrement de l'utilisateur : {message}.\n\nVeuillez vous assurer que l'ID n'est pas dupliqué et que tous les champs obligatoires (ID, Responsable, Mot de passe) ont une valeur.",
-      "validationError": "Les champs ID, Responsable et Mot de passe sont obligatoires.",
+      "saveError": "Erreur lors de l'enregistrement de l'utilisateur : {message}.\n\nVérifiez que l'ID n'est pas dupliqué et que tous les champs obligatoires (ID, Responsable, Mot de passe) ont une valeur.",
+      "validationError": "ID, Responsable et Mot de passe sont des champs obligatoires.",
       "deleteNotImplemented": "La fonctionnalité de suppression n'est pas implémentée dans la base de données."
     }
   },
@@ -178,7 +179,7 @@
     "titleAdd": "Ajouter un Nouvel Utilisateur",
     "titleEdit": "Modifier l'Utilisateur",
     "idLabel": "ID (Maison #)",
-    "idPlaceholder": "Ex: 101",
+    "idPlaceholder": "Ex : 101",
     "responsibleLabel": "Responsable",
     "responsiblePlaceholder": "Nom du propriétaire",
     "passwordLabel": "Mot de passe",
@@ -213,7 +214,7 @@
     },
     "emptyState": {
       "noContributions": "Aucune contribution à afficher.",
-      "addContributionHint": "Vous pouvez ajouter une nouvelle contribution via le menu d'actions."
+      "addContributionHint": "Vous pouvez ajouter une nouvelle contribution en utilisant le menu d'actions."
     },
     "card": {
       "paidAmount": "Montant Payé",
@@ -265,23 +266,22 @@
     "headerAmount": "Montant Payé",
     "headerStatus": "Réalisé",
     "fileName": "Rapport_Contributions.pdf"
-
   },
   "catalog": {
     "title": "Gestion des Catalogues",
     "maintenance_groups": "Groupes de Maintenance",
     "project_types": "Types de Projet",
-    "project_classification": "Classification des Projets",
+    "project_classification": "Classification de Projets",
     "suppliers_nits": "Fournisseurs (NITs)",
     "buttons": {
-      "addGroup": "Ajouter Groupe",
-      "addType": "Ajouter Type",
-      "addSupplier": "Ajouter Fournisseur"
+      "addGroup": "Ajouter un Groupe",
+      "addType": "Ajouter un Type",
+      "addSupplier": "Ajouter un Fournisseur"
     },
     "toggle_groups": "Groupes",
     "toggle_types": "Types de Projet",
     "toggle_suppliers": "Fournisseurs",
-    "toggle_overview": "Aperçu",
+    "toggle_overview": "Vue d'Ensemble",
     "fields": {
       "name": "Nom",
       "order": "Ordre",
@@ -296,7 +296,7 @@
       "noSuppliers": "Aucun fournisseur trouvé."
     },
     "alerts": {
-      "fetchError": "Erreur lors de la récupération de {entity}: {message}",
+      "fetchError": "Erreur lors de la récupération de {entity} : {message}",
       "saveSuccess": "Enregistrement sauvegardé avec succès !",
       "saveError": "Erreur lors de la sauvegarde de l'enregistrement : {message}",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet enregistrement ?",
@@ -315,13 +315,93 @@
     },
     "placeholders": {
       "selectGroup": "Sélectionnez un groupe",
-      "nit": "ex: 1234567-8",
-      "address": "ex: 123 Rue Principale, Ville",
+      "nit": "Ex : 1234567-8",
+      "address": "Ex : 123 Rue Principale, Ville",
       "searchGroup": "Rechercher par nom de groupe..."
     },
     "sortMenu": {
       "byName": "Trier par Nom",
       "byOrder": "Trier par Ordre"
+    }
+  },
+  "projects": {
+    "title": "Gestion de Projets",
+    "modals": {
+      "addProject": "Définir un Nouveau Projet"
+    },
+    "fields": {
+      "description": "Description de la Tâche",
+      "details": "Détails de la Tâche",
+      "estimatedValue": "Valeur Estimée (€)",
+      "suggestedFrequency": "Fréquence Suggérée",
+      "keyNotes": "Notes Clés",
+      "amount": "Montant"
+    },
+    "alerts": {
+      "fetchError": "Erreur lors du chargement des projets : {message}",
+      "saveSuccess": "Projet créé avec succès ! Les contributions ont été générées pour chaque maison.",
+      "saveError": "Erreur lors de la création du projet : {message}"
+    },
+    "activeProjectsTitle": "Projets Actifs",
+    "emptyState": {
+      "noActiveProjects": "Il n'y a pas de projets actifs pour le moment."
+    },
+    "contributions": {
+      "title": "Apports",
+      "emptyState": "Aucun apport trouvé pour ce projet.",
+      "paidOn": "Payé le :",
+      "status": {
+        "PENDIENTE": "En attente",
+        "PAGADO": "Payé"
+      },
+      "buttons": {
+        "markAsPaid": "Marquer comme Payé",
+        "cancelPayment": "Annuler le Paiement"
+      },
+      "alerts": {
+        "fetchError": "Erreur lors du chargement des apports : {message}",
+        "updateSuccess": "Statut mis à jour correctement.",
+        "updateError": "Erreur lors de la mise à jour du statut : {message}"
+      }
+    },
+    "expenses": {
+      "title": "Dépenses",
+      "buttons": {
+        "add": "Ajouter une Dépense"
+      },
+      "modals": {
+        "add": "Enregistrer une Nouvelle Dépense",
+        "edit": "Modifier la Dépense"
+      },
+      "fields": {
+        "supplier": "Fournisseur",
+        "docNumber": "N° de Document",
+        "docDate": "Date du Document",
+        "amount": "Montant de la Dépense",
+        "description": "Description de la Dépense"
+      },
+      "placeholders": {
+        "selectSupplier": "Sélectionnez un fournisseur"
+      },
+      "alerts": {
+        "fetchSuppliersError": "Erreur lors du chargement des fournisseurs : {message}",
+        "fetchError": "Erreur lors du chargement des dépenses : {message}",
+        "emptyState": "Aucune dépense n'a été enregistrée pour ce projet."
+      }
+    },
+    "summary": {
+      "title": "Résumé",
+      "totalContributions": "Total des Apports",
+      "totalExpenses": "Total des Dépenses",
+      "balance": "Solde",
+      "noData": "Impossible de charger le résumé du projet.",
+      "reportTitle": "Résumé Financier du Projet",
+      "generatePdf": "Rapport PDF",
+      "downloadPdf": "Télécharger PDF",
+      "alerts": {
+        "fetchError": "Erreur lors du chargement du résumé : {message}",
+        "noProjectInfo": "Informations sur le projet non trouvées."
+      }
     }
   }
 }

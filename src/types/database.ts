@@ -95,3 +95,12 @@ export interface Database {
 // Tipos extraídos para un uso más sencillo en la aplicación
 export type Usuario = Database['public']['Tables']['usuarios']['Row'];
 export type ContribucionPorCasa = Database['public']['Tables']['contribucionesporcasa']['Row'];
+
+// Tipo para los registros del calendario del usuario
+export type CalendarRecord = {
+  id_contribucion: string;
+  descripcion: string;
+  fecha_limite: string;
+  pagado: boolean;
+  status: string;
+};
