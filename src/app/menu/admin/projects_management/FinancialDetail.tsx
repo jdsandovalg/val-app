@@ -45,7 +45,7 @@ export default function FinancialDetail({ projectId }: FinancialDetailProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <h3 className="text-lg font-semibold mb-2 text-gray-700">{t('projects.contributions.title')}</h3>
-          <div className="bg-green-50 p-3 rounded-lg border border-green-200 shadow-sm max-h-96 overflow-y-auto">
+          <div className="bg-green-50 p-3 rounded-lg border-l-4 border-green-500 shadow-sm max-h-96 overflow-y-auto">
             {aportes.length > 0 ? (
               <ul className="divide-y divide-gray-200">
                 {aportes.map((aporte, index) => (
@@ -60,7 +60,7 @@ export default function FinancialDetail({ projectId }: FinancialDetailProps) {
         </div>
         <div>
           <h3 className="text-lg font-semibold mb-2 text-gray-700">{t('projects.expenses.title')}</h3>
-          <div className="bg-red-50 p-3 rounded-lg border border-red-200 shadow-sm max-h-96 overflow-y-auto">
+          <div className="bg-red-50 p-3 rounded-lg border-l-4 border-red-500 shadow-sm max-h-96 overflow-y-auto">
             {gastos.length > 0 ? (
               <ul className="divide-y divide-gray-200">
                 {gastos.map((gasto, index) => (

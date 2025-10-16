@@ -1,5 +1,7 @@
 {
   "welcome": "Bienvenue à Villas de Alcalá",
+  "shareButton": "Partager",
+  "shareNotSupported": "La fonction de partage n'est pas prise en charge par ce navigateur.",
   "subtitle": "Système de Gestion des Contributions et Services",
   "loading": "Chargement...",
   "navigation": {
@@ -93,7 +95,7 @@
     "contribution": "Contribution :",
     "amountPaid": "Montant Payé",
     "amountPlaceholder": "Ex : 150.00",
-    "proof": "Justificatif de Paiement",
+    "proof": "Justificatifs de Dépense",
     "dropzone": "Faites glisser une image ou cliquez pour en sélectionner une",
     "save": "Enregistrer",
     "cancel": "Annuler",
@@ -402,6 +404,11 @@
         "fetchError": "Erreur lors du chargement du résumé : {message}",
         "noProjectInfo": "Informations sur le projet non trouvées."
       }
+    },
+    "evidenceAppendix": {
+      "title": "Annexe des Preuves",
+      "viewEvidence": "Voir la Preuve",
+      "altText": "Preuve de dépense"
     }
   }
 }

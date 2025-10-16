@@ -1,5 +1,7 @@
 {
   "welcome": "Welcome to Villas de Alcalá",
+  "shareButton": "Share",
+  "shareNotSupported": "The share feature is not supported in this browser.",
   "subtitle": "Contributions and Services Management System",
   "loading": "Loading...",
   "navigation": {
@@ -93,7 +95,7 @@
     "contribution": "Contribution:",
     "amountPaid": "Amount Paid",
     "amountPlaceholder": "Ex: 150.00",
-    "proof": "Payment Proof",
+    "proof": "Expense Evidences",
     "dropzone": "Drag 'n' drop an image here, or click to select one",
     "save": "Save",
     "cancel": "Cancel",
@@ -403,6 +405,11 @@
         "fetchError": "Error loading summary: {message}",
         "noProjectInfo": "Project information not found."
       }
+    },
+    "evidenceAppendix": {
+      "title": "Evidence Appendix",
+      "viewEvidence": "View Evidence",
+      "altText": "Expense evidence"
     }
   }
 }

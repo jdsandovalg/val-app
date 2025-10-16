@@ -83,7 +83,7 @@ export default function ProjectContributions({ projectId }: ProjectContributions
       ) : (
         <div className="space-y-3">
           {contributions.map((contrib) => (
-            <div key={contrib.id_contribucion} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div key={contrib.id_contribucion} className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500 shadow-sm">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-semibold text-gray-800">{contrib.responsable} <span className="text-gray-500 font-normal">(Casa #{contrib.id_casa})</span></p>

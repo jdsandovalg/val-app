@@ -1,3 +1,11 @@
+## I. Tareas Pendientes
+
+### 1. Corregir Visibilidad del Botón en Visor de Evidencias
+- **Objetivo:** Hacer visible el botón de cierre en la página que muestra la imagen de la evidencia de gasto.
+- **Contexto:** La página (`/report/evidence`) y el botón ya existen, pero el botón no es visible debido a un problema de contraste o estilo CSS.
+- **Acción:** Ajustar el CSS del botón para que sea claramente visible sobre el fondo del visor.
+
+---
 # REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
 
 Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
@@ -22,22 +30,47 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 *   **Indicación Explícita de Acción:** Al final de cada respuesta que contenga un cambio de código, debo indicar explícitamente la acción que espero de ti. Por ejemplo: "Ahora, por favor, **compila y verifica** que los cambios se aplican correctamente" o "Ahora, por favor, **sube los cambios a Git** con el siguiente mensaje:".
 
 
+## IV. Normas de Colaboración y Lecciones Aprendidas
+
+Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
+
+### 1. Claridad en los Requerimientos
+
+*   **Lección Aprendida:** Una falta de especificidad en la solicitud inicial (ej. "mejorar el reporte PDF") llevó a una implementación incorrecta (modificar la UI en lugar del PDF).
+*   **Norma de Trabajo:**
+    *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, el asistente de IA debe proponer un plan de trabajo detallado.
+    *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entiendan el objetivo y la estrategia.
+
+### 2. Estrategia de Desarrollo Segura
+
+*   **Lección Aprendida:** La modificación directa de una funcionalidad existente para añadir una mejora compleja introdujo múltiples errores de compilación y bloqueos.
+*   **Norma de Trabajo:**
+    *   **Desarrollo en Paralelo:** Para nuevas funcionalidades de alto riesgo o complejidad (como la generación de un nuevo tipo de reporte), se debe optar por un desarrollo en paralelo.
+    *   **Mecanismo de Respaldo:** Se mantendrá la funcionalidad original (ej. "Reporte PDF Plano") mientras se desarrolla la nueva ("Reporte PDF con Tarjetas"). Esto garantiza que la aplicación siga siendo funcional y proporciona una red de seguridad si la nueva implementación falla.
+
+### 3. Comunicación y Contexto
+
+*   **Lección Aprendida:** El asistente de IA puede perder el hilo de la conversación o el contexto de los archivos si no se le recuerda el objetivo principal.
+*   **Norma de Trabajo:**
+    *   **Referencia a Tareas:** Es útil hacer referencia explícita al archivo `TAREAS_PENDIENTES.md` para re-enfocar la conversación en los objetivos definidos.
+    *   **Feedback Constructivo:** El desarrollador debe señalar claramente cuando el asistente se desvía del plan, permitiendo una rápida corrección del rumbo.
+Estructura de las Tablas:
+
+### Tareas Pendientes postpuestas indefinidamente
+
+- **Objetivo:** Mejorar el reporte PDF en la página de "Calendarios".
+- **Problema:** El reporte actual que se genera desde la vista del usuario es una tabla simple. Se busca un diseño más visual y moderno.
+- **Acción:** Reemplazar la generación de PDF actual con una nueva versión que utilice la librería `react-pdf` para crear un reporte con **tarjetas a color**, similar al nuevo reporte implementado en el área de administración. Esto proporcionará un documento más atractivo y profesional. Dado el bajo volumen de datos (aprox. 50 registros anuales), la generación en el lado del cliente es una estrategia aceptable y eficiente.
+
+### 4. Interpretación del Comando "Revertir"
+
+*   **Lección Aprendida:** La solicitud "revertir cambios" fue interpretada de forma literal y destructiva, eliminando código comentado que estaba guardado intencionadamente como punto de partida.
+*   **NORMA DE TRABAJO (CRÍTICA):**
+    > ### CUANDO SE SOLICITA "REVERTIR CAMBIOS" RELACIONADOS CON UNA TAREA, LA INSTRUCCIÓN SIGNIFICA DESHACER EL INTENTO DE IMPLEMENTACIÓN ACTIVO. **NUNCA SE DEBE ELIMINAR CÓDIGO COMENTADO QUE SIRVE COMO PUNTO DE PARTIDA O RESPALDO.** EL CÓDIGO COMENTADO DEBE PRESERVARSE INTACTO A MENOS QUE SE INDIQUE EXPLÍCITAMENTE LO CONTRARIO.
+
 ---
 
-# TAREAS PENDIENTES - Val App
-
-## I. Tareas Pendientes
-
-### Implementar Evidencias de Gasto en Reporte PDF Financiero
-- **Objetivo:** Incrustar las imágenes de los comprobantes de gasto (facturas, recibos) dentro del reporte PDF financiero. El diseño debe ser una rejilla de 2x2 (cuatro imágenes por página) en una sección de "Anexo de Evidencias" al final del reporte.
-- **Contexto del Intento Fallido (Análisis para Futuro Agente):**
-    - **Problema:** La implementación para mostrar las imágenes de los comprobantes en el PDF no funcionó. La página de anexos se generaba con el título del gasto, pero la imagen no aparecía.
-    - **Causa Raíz del Error:** La estrategia correcta, que consiste en descargar la imagen y convertirla a formato **base64**, se implementó en el componente `FinancialReport.tsx`. Sin embargo, el error final estuvo en el componente `ReportDocument` (dentro del mismo archivo). La línea que renderiza la imagen (`<Image src={...} />`) no se actualizó para usar directamente el string `base64`. En su lugar, seguía intentando construir una URL, pasando el `base64` como si fuera un nombre de archivo. Esto resultaba en un `src` inválido y, por lo tanto, la imagen no se mostraba.
-    - **Estado Actual:** Para evitar que el reporte fallara, toda la lógica relacionada con la carga y visualización de evidencias en `FinancialReport.tsx` ha sido **comentada**, no borrada. El código comentado es el punto de partida correcto para la futura implementación.
-
-Este documento detalla las mejoras pendientes y completadas para el proyecto Val App, según lo determinado por una evaluación de ingeniería de software.
-
-## II. Logros Recientes (Tareas Completadas)
+## II. Logros Recientes (Tareas Completadas)     
 
 *   **Bugs Solucionados:**
     *   ✅ **Carga de Imágenes de Comprobantes:** Se solucionó el problema que impedía visualizar las imágenes de los comprobantes de pago desde Supabase Storage.
@@ -50,6 +83,8 @@ Este documento detalla las mejoras pendientes y completadas para el proyecto Val
     *   ✅ **Estandarización de Tarjeta en "Avisos":** Se asignó un ancho fijo a la tarjeta de avisos para evitar que cambie de tamaño al cambiar de idioma, mejorando la estabilidad de la UI.
     *   ✅ **Ordenamiento en Grupos de Trabajo:** Se añadió un menú para ordenar los grupos por número o fecha en el cliente.
     *   ✅ **Internacionalización de Formatos:** Se estandarizó el formato de fechas y monedas en toda la aplicación usando la API `Intl` para una correcta localización.
+    *   ✅ **Implementación de Anexo de Evidencias en Reporte Financiero:** Se completó la generación de un anexo en el reporte PDF financiero. El anexo muestra tarjetas detalladas para cada gasto con un enlace funcional para visualizar la imagen de la evidencia en una nueva pestaña.
+    *   ✅ **Corrección de Nombres de Archivos PDF:** Se solucionó un problema general que causaba nombres de archivo ilegibles. Ahora, todos los reportes PDF generados en la aplicación tienen un nombre de archivo claro, traducido y seguro para el sistema de archivos.
 
 ---
 
@@ -97,35 +132,3 @@ Para internacionalizar un nuevo componente, el proceso es el siguiente:
 -   **Gestión de Moneda por Entidad:** En un sistema multi-regional más complejo, la moneda podría no depender solo del idioma, sino de la entidad o usuario. En ese caso, el código de la moneda podría venir de la base de datos junto con los datos del usuario y pasarse a la función `formatCurrency`. Para el alcance actual, la configuración por `locale` es la solución más limpia y adecuada.
 
 ---
-
-## IV. Normas de Colaboración y Lecciones Aprendidas
-
-Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
-
-### 1. Claridad en los Requerimientos
-
-*   **Lección Aprendida:** Una falta de especificidad en la solicitud inicial (ej. "mejorar el reporte PDF") llevó a una implementación incorrecta (modificar la UI en lugar del PDF).
-*   **Norma de Trabajo:**
-    *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, el asistente de IA debe proponer un plan de trabajo detallado.
-    *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entiendan el objetivo y la estrategia.
-
-### 2. Estrategia de Desarrollo Segura
-
-*   **Lección Aprendida:** La modificación directa de una funcionalidad existente para añadir una mejora compleja introdujo múltiples errores de compilación y bloqueos.
-*   **Norma de Trabajo:**
-    *   **Desarrollo en Paralelo:** Para nuevas funcionalidades de alto riesgo o complejidad (como la generación de un nuevo tipo de reporte), se debe optar por un desarrollo en paralelo.
-    *   **Mecanismo de Respaldo:** Se mantendrá la funcionalidad original (ej. "Reporte PDF Plano") mientras se desarrolla la nueva ("Reporte PDF con Tarjetas"). Esto garantiza que la aplicación siga siendo funcional y proporciona una red de seguridad si la nueva implementación falla.
-
-### 3. Comunicación y Contexto
-
-*   **Lección Aprendida:** El asistente de IA puede perder el hilo de la conversación o el contexto de los archivos si no se le recuerda el objetivo principal.
-*   **Norma de Trabajo:**
-    *   **Referencia a Tareas:** Es útil hacer referencia explícita al archivo `TAREAS_PENDIENTES.md` para re-enfocar la conversación en los objetivos definidos.
-    *   **Feedback Constructivo:** El desarrollador debe señalar claramente cuando el asistente se desvía del plan, permitiendo una rápida corrección del rumbo.
-Estructura de las Tablas:
-
-### Tareas Pendientes postpuestas indefinidamente
-
-- **Objetivo:** Mejorar el reporte PDF en la página de "Calendarios".
-- **Problema:** El reporte actual que se genera desde la vista del usuario es una tabla simple. Se busca un diseño más visual y moderno.
-- **Acción:** Reemplazar la generación de PDF actual con una nueva versión que utilice la librería `react-pdf` para crear un reporte con **tarjetas a color**, similar al nuevo reporte implementado en el área de administración. Esto proporcionará un documento más atractivo y profesional. Dado el bajo volumen de datos (aprox. 50 registros anuales), la generación en el lado del cliente es una estrategia aceptable y eficiente.

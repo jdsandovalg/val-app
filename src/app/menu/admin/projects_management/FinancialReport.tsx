@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image, Link } from '@react-pdf/renderer';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useFinancialData } from '@/hooks/useFinancialData';
 import { createClient } from '@/utils/supabase/client';
@@ -162,52 +162,57 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  evidenceItem: {
+   evidenceItem: {
     width: '48%',
-    height: '45%',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    minHeight: 120,
+    backgroundColor: '#FFF5F5', // Fondo rosado claro
+    borderLeftWidth: 3,
+    borderLeftColor: '#E53E3E', // Borde rojo oscuro
     marginBottom: '2%',
+    padding: 10,
+    flexDirection: 'column',
+    justifyContent: 'space-between', // Distribuye el espacio verticalmente
   },
-  evidenceTitle: {
-    fontSize: 7,
+  evidenceText: {
+    fontSize: 8,
+    marginBottom: 2,
+  },
+  evidenceDescription: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  evidenceLink: {
+    flexGrow: 1, // Ocupa el espacio central
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#9B2C2C', // Rojo oscuro, consistente con los gastos
+    color: '#FFFFFF',
+    borderRadius: 4,
     textAlign: 'center',
-    padding: 2,
+    fontSize: 10,
+    textDecoration: 'none',
+    padding: 10, // Padding para que el texto no toque los bordes
+  },
+  evidenceAmount: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#9B2C2C', // Rojo oscuro
+    textAlign: 'right',
+    marginTop: 4,
   },
   tableContainer: {
     width: '48%',
   },
 });
 
-// --- Helper functions moved outside the component to prevent re-creation on render ---
-
-// // Función para convertir un Blob a base64
-// const blobToBase64 = (blob: Blob): Promise<string> => {
-//   return new Promise((resolve, reject) => {
-//     const reader = new FileReader();
-//     reader.onloadend = () => resolve(reader.result as string);
-//     reader.onerror = reject;
-//     reader.readAsDataURL(blob);
-//   });
-// };
-
-// // Función para obtener las imágenes de los comprobantes como base64
-// const getEvidenceImagesAsBase64 = async (gastos: DetailRow[]) => {
-//   const imagePromises = gastos
-//     .filter(g => g.url_documento)
-//     .map(async (gasto) => {
-//       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/comprobantes-gastos/${gasto.url_documento}`);
-//       const blob = await response.blob();
-//       return { ...gasto, url_documento_base64: await blobToBase64(blob) };
-//     });
-//   return Promise.all(imagePromises);
-// };
-
 export const ReportDocument = ({ summary, details, projectInfo, t, locale, currency, logoBase64 }: ReportDocumentProps) => {
   const aportes = details.filter((d: DetailRow) => d.tipo_registro === 'aporte');
   const gastos = details.filter((d: DetailRow) => d.tipo_registro === 'gasto');
+  const gastosConEvidencia = gastos.filter(d => d.url_documento);
   return (
-  <Document>
+  <Document title={`${t('projects.summary.reportTitle')} - ${projectInfo.descripcion_tarea}`}>
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.header}>
         {/* eslint-disable-next-line jsx-a11y/alt-text -- La prop 'alt' no es aplicable en react-pdf */}
@@ -278,6 +283,27 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
         </View>
       </View>
     </Page>
+    {gastosConEvidencia.length > 0 && (
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <Text style={styles.sectionTitle}>{t('projects.evidenceAppendix.title')}</Text>
+        <View style={styles.evidenceGrid} wrap>
+          {gastosConEvidencia.map((item, i) => (
+            <View key={i} style={styles.evidenceItem} debug={false}>
+              <View>
+                <Text style={styles.evidenceText}>{item.nombre_proveedor || 'N/A'}</Text>
+                {/* La dirección no está en los datos, se puede añadir aquí */}
+                <Text style={styles.evidenceDescription}>{item.descripcion_gasto || 'Gasto sin descripción'}</Text>
+                <Text style={styles.evidenceText}>{formatDate(item.fecha, locale)}</Text>
+              </View>
+              <Link style={styles.evidenceLink} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/comprobantes-gastos/${item.url_documento!}`}>
+                {t('projects.evidenceAppendix.viewEvidence')}
+              </Link>
+              <Text style={styles.evidenceAmount}>-{formatCurrency(item.monto, locale, currency)}</Text>
+            </View>
+          ))}
+        </View>
+      </Page>
+    )}
   </Document>
   );
 };
@@ -294,35 +320,33 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
     try {
       // Refrescar los datos financieros y obtener la información del proyecto
       await refetch();
-      const projectInfoPromise = supabase.rpc('get_project_info', { p_id_proyecto: projectId });
-
-      const projectInfoResult = await projectInfoPromise;
-      if (projectInfoResult.error) throw projectInfoResult.error;
-
-      const projectInfoData = projectInfoResult.data?.[0];
+      const { data: projectInfoResult, error } = await supabase.rpc('get_project_info', { p_id_proyecto: projectId });
+      if (error) throw error;
+      
+      const projectInfoData = projectInfoResult?.[0];
       if (!projectInfoData || !summary || !details) {
         toast.error(t('projects.summary.alerts.fetchError', { message: 'Incomplete data' }));
-        setIsGenerating(false); return;
+        setIsGenerating(false);
+        return;
       }
-
+      
       const reportPayload = {
-        summary: summary,
-        details: details, // Usar los detalles originales sin procesar imágenes
+        summary,
+        details,
         projectInfo: projectInfoData,
       };
 
       localStorage.setItem('financialReportData', JSON.stringify(reportPayload));
-      window.open('/menu/admin/projects_management/report', '_blank');
+      window.open('/menu/admin/projects_management/report', '_blank', 'noopener,noreferrer');
     } catch (error: unknown) {
       let errorMessage = t('calendar.payment.unknownError');
-      if (typeof error === 'object' && error !== null && 'message' in error) {
+      if (error instanceof Error) {
         errorMessage = (error as { message: string }).message;
       }
       console.error("Error generating report data:", error);
       toast.error(t('projects.summary.alerts.fetchError', { message: errorMessage }));
-      setIsGenerating(false);
     } finally {
-      // Permitir que el usuario genere el reporte de nuevo sin recargar
+      // Permitir que el usuario genere el reporte de nuevo sin recargar.
       setIsGenerating(false);
     }
   }, [projectId, supabase, t, refetch, summary, details]);

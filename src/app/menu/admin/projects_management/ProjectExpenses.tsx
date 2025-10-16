@@ -172,7 +172,7 @@ export default function ProjectExpenses({ projectId }: ProjectExpensesProps) {
       ) : (
         <div className="space-y-3">
           {expenses.map((expense) => (
-            <div key={expense.id_gasto} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div key={expense.id_gasto} className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500 shadow-sm">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-semibold text-gray-800">{expense.nombre_proveedor}</p>

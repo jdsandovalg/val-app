@@ -4,6 +4,7 @@ import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 
 type DetailRow = {
+  id_gasto?: number | null; // Añadido para la unión de datos
   tipo_registro: 'aporte' | 'gasto';
   fecha: string;
   descripcion: string;
@@ -32,11 +33,11 @@ export function useFinancialData(projectId: number | null) {
 
   const fetchData = useCallback(async () => {
     if (!projectId) {
-      setSummary(null);
       setDetails([]);
       return;
     }
     setLoading(true);
+    console.log(`[QA Log] useFinancialData: Iniciando fetch para projectId: ${projectId}`);
     try {
       const summaryPromise = supabase.rpc('get_project_financials', {
         p_id_proyecto: projectId,
@@ -52,19 +53,23 @@ export function useFinancialData(projectId: number | null) {
       if (summaryResult.error) throw summaryResult.error;
       if (detailsResult.error) throw detailsResult.error;
 
+      console.log('[QA Log] useFinancialData: Datos crudos recibidos de Supabase', { summary: summaryResult.data, details: detailsResult.data });
+
       const summaryData = summaryResult.data?.[0];
 
       setSummary(summaryData ? { total_aportes: summaryData.total_aportes, total_gastos: summaryData.total_gastos } : { total_aportes: 0, total_gastos: 0 });
 
-      // CORRECCIÓN: La función de BD devuelve el monto del gasto en la columna 'total_gastos' para los registros de tipo 'gasto'.
-      // Aquí lo reasignamos a la columna 'monto' para que el resto de la app funcione correctamente.
+      // 2024-07-26: Cambio para alinear con la función de BD de producción.
+      // La función `get_project_financials` devuelve el monto del gasto en la columna `total_gastos` para los registros de tipo 'gasto'.
+      // Esta corrección reasigna ese valor a la columna `monto` para asegurar la consistencia de datos en toda la aplicación.
       const correctedDetails = (detailsResult.data as FinancialsRpcResult[] || []).map((d) => {
         if (d.tipo_registro === 'gasto') {
-          return { ...d, monto: d.total_gastos ?? 0, url_documento: d.url_documento };
+          return { ...d, monto: d.total_gastos ?? 0 };
         }
         return d;
       });
       setDetails(correctedDetails);
+      console.log('[QA Log] useFinancialData: Estado actualizado con datos procesados.');
 
     } catch (error: unknown) {
       let errorMessage = t('calendar.payment.unknownError');

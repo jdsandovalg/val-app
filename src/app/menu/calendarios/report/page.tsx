@@ -15,7 +15,7 @@ Font.register({
   ]
 });
 
-// Estilos del PDF
+// Estilos del PDF y función de sanitización
 const styles = StyleSheet.create({
   page: {
     paddingTop: 35,
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const ReportDocument = ({ records, t, locale, logoBase64 }: { records: CalendarRecord[], t: (key: string) => string, locale: string, logoBase64: string | null }) => (
+const ReportDocument = ({ records, t, locale, logoBase64 }: { records: CalendarRecord[], t: (key: string, params?: Record<string, string | number>) => string, locale: string, logoBase64: string | null }) => (
   <Document title={t('calendar.reportTitle')}>
     <Page size="LETTER" style={styles.page} wrap>
       {/* Header */}
@@ -116,8 +116,22 @@ export default function CalendarReportViewerPage() {
   }
 
   return (
-    <PDFViewer style={{ width: '100%', height: '100vh' }}>
-      <ReportDocument records={records} t={t} locale={locale} logoBase64={logoBase64} />
-    </PDFViewer>
+    <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+      <PDFViewer style={{ width: '100%', height: '100%' }}>
+        <ReportDocument records={records} t={t} locale={locale} logoBase64={logoBase64} />
+      </PDFViewer>
+      <button
+        onClick={() => window.close()}
+        style={{
+          position: 'fixed', top: '15px', right: '15px', zIndex: 10,
+          background: 'rgba(0, 0, 0, 0.5)', color: 'white',
+          border: 'none', borderRadius: '50%', width: '40px', height: '40px',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}
+        title={t('userModal.cancelButton')}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '24px', height: '24px' }}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
   );
 }

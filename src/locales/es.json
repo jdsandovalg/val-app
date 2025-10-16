@@ -1,5 +1,7 @@
 {
   "welcome": "Bienvenido a Villas de Alcalá",
+  "shareButton": "Compartir",
+  "shareNotSupported": "La función de compartir no es compatible con este navegador.",
   "subtitle": "Sistema de Gestión de Aportaciones y Servicios",
   "loading": "Cargando...",
   "navigation": {
@@ -93,7 +95,7 @@
     "contribution": "Aportación:",
     "amountPaid": "Monto Pagado",
     "amountPlaceholder": "Ej: 150.00",
-    "proof": "Comprobante de Pago",
+    "proof": "Evidencias del Gasto",
     "dropzone": "Arrastra una imagen o haz clic para seleccionar",
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -403,6 +405,11 @@
         "fetchError": "Error al cargar el resumen: {message}",
         "noProjectInfo": "No se encontró información del proyecto."
       }
+    },
+    "evidenceAppendix": {
+      "title": "Anexo de Evidencias",
+      "viewEvidence": "Ver Evidencia",
+      "altText": "Evidencia de gasto"
     }
   }
 }
