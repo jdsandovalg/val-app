@@ -1,11 +1,3 @@
-## I. Tareas Pendientes
-
-### 1. Corregir Visibilidad del Botón en Visor de Evidencias
-- **Objetivo:** Hacer visible el botón de cierre en la página que muestra la imagen de la evidencia de gasto.
-- **Contexto:** La página (`/report/evidence`) y el botón ya existen, pero el botón no es visible debido a un problema de contraste o estilo CSS.
-- **Acción:** Ajustar el CSS del botón para que sea claramente visible sobre el fondo del visor.
-
----
 # REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
 
 Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
@@ -30,43 +22,41 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 *   **Indicación Explícita de Acción:** Al final de cada respuesta que contenga un cambio de código, debo indicar explícitamente la acción que espero de ti. Por ejemplo: "Ahora, por favor, **compila y verifica** que los cambios se aplican correctamente" o "Ahora, por favor, **sube los cambios a Git** con el siguiente mensaje:".
 
 
-## IV. Normas de Colaboración y Lecciones Aprendidas
+*   **Nivel de Servicio 'Pro' y Verificación (Compromiso del Asistente):** Se establece que la cuenta del desarrollador es de nivel "Pro". Esto implica un compromiso inquebrantable por parte del asistente de IA de adherirse a todas las reglas y flujos de trabajo definidos en este documento. El asistente debe verificar cada paso y no asumir intenciones. Cualquier desviación de este principio se considerará una falta grave al nivel de servicio acordado.
 
-Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
 
-### 1. Claridad en los Requerimientos
+---
 
-*   **Lección Aprendida:** Una falta de especificidad en la solicitud inicial (ej. "mejorar el reporte PDF") llevó a una implementación incorrecta (modificar la UI en lugar del PDF).
-*   **Norma de Trabajo:**
-    *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, el asistente de IA debe proponer un plan de trabajo detallado.
-    *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entiendan el objetivo y la estrategia.
+## I. Tareas Pendientes
 
-### 2. Estrategia de Desarrollo Segura
+### 1. Corregir Visibilidad del Botón en Visor de Evidencias
+- **Objetivo:** Hacer visible el botón de cierre en la página que muestra la imagen de la evidencia de gasto.
+- **Contexto:** La página (`/report/evidence`) y el botón ya existen, pero el botón no es visible debido a un problema de contraste o estilo CSS.
+- **Acción:** Ajustar el CSS del botón para que sea claramente visible sobre el fondo del visor.
 
-*   **Lección Aprendida:** La modificación directa de una funcionalidad existente para añadir una mejora compleja introdujo múltiples errores de compilación y bloqueos.
-*   **Norma de Trabajo:**
-    *   **Desarrollo en Paralelo:** Para nuevas funcionalidades de alto riesgo o complejidad (como la generación de un nuevo tipo de reporte), se debe optar por un desarrollo en paralelo.
-    *   **Mecanismo de Respaldo:** Se mantendrá la funcionalidad original (ej. "Reporte PDF Plano") mientras se desarrolla la nueva ("Reporte PDF con Tarjetas"). Esto garantiza que la aplicación siga siendo funcional y proporciona una red de seguridad si la nueva implementación falla.
+### 2. Problema de Navegación en Reporte PDF en Móvil
+- **Objetivo:** Permitir la navegación entre páginas en los reportes PDF cuando se visualizan en dispositivos móviles.
+- **Contexto:** Actualmente, en la vista de reportes PDF (ej. Resumen Financiero), si el reporte tiene más de una página, en dispositivos móviles solo se muestra la primera. No hay controles visibles (scroll, botones) para acceder a las páginas siguientes. En PC, el scroll funciona correctamente.
+- **Acción:** Investigar el comportamiento del componente `PDFViewer` de `@react-pdf/renderer` en navegadores móviles y encontrar una solución para habilitar el scroll o añadir controles de paginación.
 
-### 3. Comunicación y Contexto
+### 3. Colores Faltantes en Reporte PDF del Calendario
+- **Objetivo:** Asegurar que el reporte PDF generado desde la página principal del calendario (`/menu/calendarios`) muestre los colores de estado en las tarjetas, tal como se ven en la pantalla.
+- **Contexto:** La implementación actual del reporte PDF con tarjetas (usando `react-pdf`) no está renderizando los colores de borde y fondo que indican el estado de la aportación (ej. verde para pagado, rojo para vencido), mostrando las tarjetas en blanco y negro.
+- **Acción:** Investigar el componente `PdfCalendarCard` y los estilos aplicados en `/menu/calendarios/report/page.tsx` para corregir por qué los colores no se están aplicando en el PDF final.
 
-*   **Lección Aprendida:** El asistente de IA puede perder el hilo de la conversación o el contexto de los archivos si no se le recuerda el objetivo principal.
-*   **Norma de Trabajo:**
-    *   **Referencia a Tareas:** Es útil hacer referencia explícita al archivo `TAREAS_PENDIENTES.md` para re-enfocar la conversación en los objetivos definidos.
-    *   **Feedback Constructivo:** El desarrollador debe señalar claramente cuando el asistente se desvía del plan, permitiendo una rápida corrección del rumbo.
-Estructura de las Tablas:
+### 5. Añadir Filtros y Ordenamiento Avanzado a "Grupos de Trabajo"
+- **Objetivo:** Implementar funcionalidades de filtrado y ordenamiento más completas en la página de "Grupos de Trabajo" (`/menu/grupos-de-trabajo`).
+- **Contexto:** La página actual solo tiene un menú de ordenamiento básico y carece de filtros. Para mejorar la usabilidad, se necesita una capacidad de filtrado similar a la que existe en la sección administrativa de "Gestionar Aportaciones".
+- **Acción:**
+    - Añadir un botón de "Filtros" que abra un modal para filtrar por casa, responsable, fecha, etc.
+    - Mejorar el menú de ordenamiento si es necesario.
+    - Adaptar la lógica de la página para aplicar estos filtros a los datos mostrados.
 
 ### Tareas Pendientes postpuestas indefinidamente
 
 - **Objetivo:** Mejorar el reporte PDF en la página de "Calendarios".
 - **Problema:** El reporte actual que se genera desde la vista del usuario es una tabla simple. Se busca un diseño más visual y moderno.
 - **Acción:** Reemplazar la generación de PDF actual con una nueva versión que utilice la librería `react-pdf` para crear un reporte con **tarjetas a color**, similar al nuevo reporte implementado en el área de administración. Esto proporcionará un documento más atractivo y profesional. Dado el bajo volumen de datos (aprox. 50 registros anuales), la generación en el lado del cliente es una estrategia aceptable y eficiente.
-
-### 4. Interpretación del Comando "Revertir"
-
-*   **Lección Aprendida:** La solicitud "revertir cambios" fue interpretada de forma literal y destructiva, eliminando código comentado que estaba guardado intencionadamente como punto de partida.
-*   **NORMA DE TRABAJO (CRÍTICA):**
-    > ### CUANDO SE SOLICITA "REVERTIR CAMBIOS" RELACIONADOS CON UNA TAREA, LA INSTRUCCIÓN SIGNIFICA DESHACER EL INTENTO DE IMPLEMENTACIÓN ACTIVO. **NUNCA SE DEBE ELIMINAR CÓDIGO COMENTADO QUE SIRVE COMO PUNTO DE PARTIDA O RESPALDO.** EL CÓDIGO COMENTADO DEBE PRESERVARSE INTACTO A MENOS QUE SE INDIQUE EXPLÍCITAMENTE LO CONTRARIO.
 
 ---
 
@@ -75,6 +65,8 @@ Estructura de las Tablas:
 *   **Bugs Solucionados:**
     *   ✅ **Carga de Imágenes de Comprobantes:** Se solucionó el problema que impedía visualizar las imágenes de los comprobantes de pago desde Supabase Storage.
     *   ✅ **Visualización del Logo en Vercel:** Solucionado. El problema era que el archivo `logo.png` no se había publicado correctamente.
+    *   ✅ **Lógica Incorrecta en "Avisos":** Solucionado. Se modificó la función RPC `get_proximo_compromiso` en la base de datos para que solo devuelva pagos pendientes dentro de los próximos 15 días, haciendo los avisos más relevantes.
+    *   ✅ **Colores y Orden en Reporte PDF del Calendario:** Solucionado. El reporte PDF del calendario ahora muestra los colores de estado correctos y ordena los registros por fecha.
 *   **Mejoras de UI/UX:**
     *   ✅ **Unificación de Interfaz a "Mobile-Only":** Se eliminaron las vistas de tabla de escritorio en las páginas de administración y calendario, dejando únicamente la vista de tarjetas para una experiencia consistente.
     *   ✅ **Diseño de Tarjeta de Avisos:** Se actualizó el diseño de la tarjeta en la página de "Avisos" para que sea consistente con el estilo moderno de la aplicación.
@@ -132,3 +124,29 @@ Para internacionalizar un nuevo componente, el proceso es el siguiente:
 -   **Gestión de Moneda por Entidad:** En un sistema multi-regional más complejo, la moneda podría no depender solo del idioma, sino de la entidad o usuario. En ese caso, el código de la moneda podría venir de la base de datos junto con los datos del usuario y pasarse a la función `formatCurrency`. Para el alcance actual, la configuración por `locale` es la solución más limpia y adecuada.
 
 ---
+
+## IV. Normas de Colaboración y Lecciones Aprendidas
+
+Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
+
+### 1. Claridad en los Requerimientos
+
+*   **Lección Aprendida:** Una falta de especificidad en la solicitud inicial (ej. "mejorar el reporte PDF") llevó a una implementación incorrecta (modificar la UI en lugar del PDF).
+*   **Norma de Trabajo:**
+    *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, el asistente de IA debe proponer un plan de trabajo detallado.
+    *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entiendan el objetivo y la estrategia.
+
+### 2. Estrategia de Desarrollo Segura
+
+*   **Lección Aprendida:** La modificación directa de una funcionalidad existente para añadir una mejora compleja introdujo múltiples errores de compilación y bloqueos.
+*   **Norma de Trabajo:**
+    *   **Desarrollo en Paralelo:** Para nuevas funcionalidades de alto riesgo o complejidad (como la generación de un nuevo tipo de reporte), se debe optar por un desarrollo en paralelo.
+    *   **Mecanismo de Respaldo:** Se mantendrá la funcionalidad original (ej. "Reporte PDF Plano") mientras se desarrolla la nueva ("Reporte PDF con Tarjetas"). Esto garantiza que la aplicación siga siendo funcional y proporciona una red de seguridad si la nueva implementación falla.
+
+### 3. Comunicación y Contexto
+
+*   **Lección Aprendida:** El asistente de IA puede perder el hilo de la conversación o el contexto de los archivos si no se le recuerda el objetivo principal.
+*   **Norma de Trabajo:**
+    *   **Referencia a Tareas:** Es útil hacer referencia explícita al archivo `TAREAS_PENDIENTES.md` para re-enfocar la conversación en los objetivos definidos.
+    *   **Feedback Constructivo:** El desarrollador debe señalar claramente cuando el asistente se desvía del plan, permitiendo una rápida corrección del rumbo.
+Estructura de las Tablas:
