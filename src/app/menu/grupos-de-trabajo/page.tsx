@@ -101,19 +101,33 @@ export default function GruposDeTrabajoPage() {
   };
 
   const sortedGrupos = useMemo(() => {
-    return grupos.map(contribucion => {
+    // Primero, ordena los grupos internos de cada contribución
+    const gruposConSubgruposOrdenados = grupos.map(contribucion => {
       const sortedInnerGrupos = [...contribucion.grupos].sort((a, b) => {
         const aValue = sortConfig.key === 'id_grupo' ? a.id_grupo : a.fechas[0]?.fecha;
         const bValue = sortConfig.key === 'id_grupo' ? b.id_grupo : b.fechas[0]?.fecha;
-
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
-
-        if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+        
+        const valA = aValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
+        const valB = bValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
+        
+        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
         return 0;
       });
       return { ...contribucion, grupos: sortedInnerGrupos };
+    });
+
+    // Ahora, ordena las contribuciones principales
+    return gruposConSubgruposOrdenados.sort((a, b) => {
+      const aValue = sortConfig.key === 'id_grupo' ? a.grupos[0]?.id_grupo : a.grupos[0]?.fechas[0]?.fecha;
+      const bValue = sortConfig.key === 'id_grupo' ? b.grupos[0]?.id_grupo : b.grupos[0]?.fechas[0]?.fecha;
+
+      const valA = aValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
+      const valB = bValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
+
+      if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+      return 0;
     });
   }, [grupos, sortConfig]);
 
