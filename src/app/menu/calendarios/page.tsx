@@ -119,21 +119,21 @@ export default function CalendariosPage() {
     }
   };
 
-  const getEstado = useCallback((row: Contribucion): { texto: string; icon: React.ReactNode | null; color: string } => {
+  const getEstado = useCallback((row: Contribucion): { texto: string; icon: React.ReactNode | null; color: string; key: string } => {
     if (row.realizado === 'S') {
-      return { texto: t('calendar.status.paid'), color: 'text-green-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-green-600"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
+      return { texto: t('calendar.status.paid'), key: 'paid', color: 'text-green-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-green-600"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
     }
     if (typeof row.dias_restantes === 'number') {
       if (row.dias_restantes >= 0) {
-        return { texto: t('calendar.status.overdue'), color: 'text-red-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-red-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg> };
+        return { texto: t('calendar.status.overdue'), key: 'overdue', color: 'text-red-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-red-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg> };
       } else {
         const diasFuturo = Math.abs(row.dias_restantes);
         const textColor = diasFuturo <= 7 ? 'text-yellow-700' : 'text-blue-700';
         const iconColor = diasFuturo <= 7 ? 'text-yellow-500' : 'text-blue-500';
-        return { texto: t('calendar.status.scheduled', { days: diasFuturo }), color: textColor, icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${iconColor}`}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
+        return { texto: t('calendar.status.scheduled', { days: diasFuturo }), key: 'scheduled', color: textColor, icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${iconColor}`}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
       }
     }
-    return { texto: t('calendar.status.pending'), color: 'text-gray-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
+    return { texto: t('calendar.status.pending'), key: 'pending', color: 'text-gray-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
   }, [t]);
 
   return (
@@ -152,13 +152,16 @@ export default function CalendariosPage() {
                   toast.error(t('calendar.reportNoData'));
                   return;
                 }
-                // Mapear los datos al formato que espera el reporte (CalendarRecord)
-                const reportData = filteredAndSortedContribuciones.map(c => ({
+                // Mapear y ordenar los datos para el reporte PDF.
+                const reportData = filteredAndSortedContribuciones
+                .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()) // Ordenar por fecha ascendente
+                .map(c => ({
                   id_contribucion: c.id_contribucion,
                   descripcion: c.descripcion ?? 'N/A',
                   fecha_limite: c.fecha,
                   pagado: c.realizado === 'S',
                   status: getEstado(c).texto,
+                  statusKey: getEstado(c).key,
                 }));
 
                 // Guardar los datos para que la página del reporte los lea

@@ -7,6 +7,7 @@ import { formatDate } from '@/utils/format';
 
 interface PdfCalendarCardProps {
   record: CalendarRecord;
+  statusKey: string;
   t: (key: string, params?: { [key: string]: string | number }) => string;
   locale: string;
 }
@@ -18,8 +19,18 @@ const statusColors: { [key: string]: string } = {
   pending: '#6B7280', // gray-500
 };
 
-const PdfCalendarCard: React.FC<PdfCalendarCardProps> = ({ record, t, locale }) => {
-  const statusKey = record.status.toLowerCase().split(' ')[0];
+const PdfCalendarCard: React.FC<PdfCalendarCardProps> = ({ record, statusKey, t, locale }) => {
+  // Función para obtener el texto del estado traducido.
+  const getStatusText = () => {
+    if (statusKey === 'scheduled') {
+      const daysMatch = record.status.match(/\((\d+)/);
+      const days = daysMatch ? parseInt(daysMatch[1], 10) : 0;
+      return t('calendar.status.scheduled', { days });
+    }
+    // Busca la traducción usando la clave, ej: 'calendar.status.paid'
+    return t(`calendar.status.${statusKey}`);
+  };
+
   const statusColor = statusColors[statusKey] || statusColors.pending;
 
   const styles = StyleSheet.create({
@@ -81,7 +92,7 @@ const PdfCalendarCard: React.FC<PdfCalendarCardProps> = ({ record, t, locale }) 
           <Text style={styles.bodyLabel}>{t('calendar.table.dueDate')}</Text>
           <Text style={styles.bodyValue}>{formatDate(record.fecha_limite, locale)}</Text>
         </View>
-        <Text style={styles.status}>{record.status}</Text>
+        <Text style={styles.status}>{getStatusText()}</Text>
       </View>
     </View>
   );
