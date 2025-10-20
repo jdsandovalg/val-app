@@ -24,7 +24,7 @@ const PdfCalendarCard: React.FC<PdfCalendarCardProps> = ({ record, t, locale }) 
 
   // Función para obtener el texto del estado traducido.
   const getStatusText = () => {
-    if (record.status === 'scheduled') {
+    if (record.statusKey === 'scheduled') {
       const daysMatch = record.status.match(/\((\d+)/);
       const days = daysMatch ? parseInt(daysMatch[1], 10) : 0;
       return t('calendar.status.scheduled', { days });
