@@ -74,7 +74,7 @@ const ReportDocument = ({ records, t, locale, logoBase64 }: { records: CalendarR
       {/* Contenido */}
       <View style={styles.cardContainer}>
         {records.map((record) => (
-          <PdfCalendarCard key={`${record.id_contribucion}-${record.fecha_limite}`} record={record} statusKey={record.statusKey} t={t} locale={locale} />
+          <PdfCalendarCard key={`${record.id_contribucion}-${record.fecha_limite}`} record={record} t={t} locale={locale} />
         ))}
       </View>
 

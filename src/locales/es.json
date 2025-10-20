@@ -82,7 +82,8 @@
       "loading": "Cargando imagen...",
       "error": "No se pudo cargar la imagen. Verifique que la URL es correcta y que el archivo existe en el bucket.\n\nURL: {url}",
       "altText": "Comprobante de pago",
-      "closeAriaLabel": "Cerrar"
+      "closeAriaLabel": "Cerrar",
+      "closeTooltip": "Click para cerrar"
     },
     "userData": {
       "houseId": "Casa: {id}",

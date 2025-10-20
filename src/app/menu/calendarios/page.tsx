@@ -160,7 +160,7 @@ export default function CalendariosPage() {
                   descripcion: c.descripcion ?? 'N/A',
                   fecha_limite: c.fecha,
                   pagado: c.realizado === 'S',
-                  status: getEstado(c).texto,
+                  status: getEstado(c).texto, // El texto para mostrar
                   statusKey: getEstado(c).key,
                 }));
 

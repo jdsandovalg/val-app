@@ -7,7 +7,6 @@ import { formatDate } from '@/utils/format';
 
 interface PdfCalendarCardProps {
   record: CalendarRecord;
-  statusKey: string;
   t: (key: string, params?: { [key: string]: string | number }) => string;
   locale: string;
 }
@@ -19,19 +18,20 @@ const statusColors: { [key: string]: string } = {
   pending: '#6B7280', // gray-500
 };
 
-const PdfCalendarCard: React.FC<PdfCalendarCardProps> = ({ record, statusKey, t, locale }) => {
+const PdfCalendarCard: React.FC<PdfCalendarCardProps> = ({ record, t, locale }) => {
+  // Extraer la clave de estado y los días si existen.
+  const statusColor = statusColors[record.statusKey] || statusColors.pending;
+
   // Función para obtener el texto del estado traducido.
   const getStatusText = () => {
-    if (statusKey === 'scheduled') {
+    if (record.status === 'scheduled') {
       const daysMatch = record.status.match(/\((\d+)/);
       const days = daysMatch ? parseInt(daysMatch[1], 10) : 0;
       return t('calendar.status.scheduled', { days });
     }
     // Busca la traducción usando la clave, ej: 'calendar.status.paid'
-    return t(`calendar.status.${statusKey}`);
+    return t(`calendar.status.${record.statusKey}`);
   };
-
-  const statusColor = statusColors[statusKey] || statusColors.pending;
 
   const styles = StyleSheet.create({
     card: {

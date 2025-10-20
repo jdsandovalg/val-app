@@ -42,6 +42,7 @@ type ContribucionAgrupada = {
   }[];
 };
 
+
 export default function GruposDeTrabajoPage() {
   const supabase = createClient();
   const router = useRouter();

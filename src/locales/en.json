@@ -82,7 +82,8 @@
       "loading": "Loading image...",
       "error": "Could not load image. Verify the URL is correct and the file exists in the bucket.\n\nURL: {url}",
       "altText": "Payment proof",
-      "closeAriaLabel": "Close"
+      "closeAriaLabel": "Close",
+      "closeTooltip": "Click to close"
     },
     "userData": {
       "houseId": "House: {id}",

@@ -103,4 +103,5 @@ export type CalendarRecord = {
   fecha_limite: string;
   pagado: boolean;
   status: string;
+  statusKey: string
 };
