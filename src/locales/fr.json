@@ -111,8 +111,9 @@
     "membersTitle": "Membres du Groupe",
     "house": "Maison",
     "groupTitle": "Groupe #{number}",
-    "status_done": "Réalisé",
-    "status_pending": "En attente"
+    "status_done": "Réalisé", 
+    "status_pending": "En attente",
+    "status_overdue": "En retard"
   },
   "groupsSortMenu": {
     "byGroup": "Trier par Groupe",
@@ -120,21 +121,24 @@
   },
   "notices": {
     "title": "Avis",
-    "registerPaymentTitle": "Enregistrer le Paiement",
     "loading": "Chargement des avis...",
     "noPending": "Vous n'avez aucun paiement en attente. Vous êtes à jour !",
-    "aboutToPay": "Vous êtes sur le point d'enregistrer le paiement pour :",
-    "form": {
-      "amount": "Montant Payé",
-      "proof": "Justificatif de Paiement",
-      "submit": "Enregistrer le Paiement",
-      "submitting": "Enregistrement..."
+    "tabs": {
+      "upcomingTitle": "Prochains",
+      "upcomingRange": "(0-30 jours)",
+      "midTermTitle": "Moyen Terme",
+      "midTermRange": "(31-180 jours)",
+      "longTermTitle": "Long Terme",
+      "longTermRange": "(+181 jours)",
+      "rangeWithCount": "{range} ({count})"
     },
     "alerts": {
-      "fillAllFields": "Veuillez remplir tous les champs.",
-      "uploadError": "Erreur lors du téléversement du justificatif : {message}",
       "dbError": "Erreur lors de l'enregistrement du paiement : {message}",
       "success": "Paiement enregistré avec succès !"
+    },
+    "card": {
+      "daysRemaining": "{count, plural, =0 {Échéance aujourd'hui} =1 {Échéance dans 1 jour} other {Échéance dans # jours}}",
+      "noNoticesInCategory": "Aucun avis dans cette catégorie."
     }
   },
   "manageUsers": {
@@ -397,6 +401,10 @@
       "totalContributions": "Total des Apports",
       "totalExpenses": "Total des Dépenses",
       "balance": "Solde",
+      "surplus": "Excédent du Projet",
+      "surplusPerHouse": "Excédent par Maison",
+      "deficitPerHouse": "Déficit par Maison",
+      "participatingHouses": "Maisons Participantes",
       "noData": "Impossible de charger le résumé du projet.",
       "reportTitle": "Résumé Financier du Projet",
       "generatePdf": "Rapport PDF",
@@ -411,5 +419,15 @@
       "viewEvidence": "Voir la Preuve",
       "altText": "Preuve de dépense"
     }
+  },
+  "projectStatus": {
+    "title": "État du Projet",
+    "abierto": "Ouvert",
+    "en_votacion": "En Votation",
+    "aprobado": "Approuvé",
+    "rechazado": "Rejeté",
+    "en_progreso": "En Cours",
+    "terminado": "Terminé",
+    "cancelado": "Annulé"
   }
 }

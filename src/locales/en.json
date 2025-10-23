@@ -111,8 +111,9 @@
     "membersTitle": "Group Members",
     "house": "House",
     "groupTitle": "Group #{number}",
-    "status_done": "Done",
-    "status_pending": "Pending"
+    "status_done": "Done", 
+    "status_pending": "Pending",
+    "status_overdue": "Overdue"
   },
   "groupsSortMenu": {
     "byGroup": "Sort by Group",
@@ -120,21 +121,24 @@
   },
   "notices": {
     "title": "Notices",
-    "registerPaymentTitle": "Register Payment",
     "loading": "Loading notices...",
     "noPending": "You have no pending payments. You are up to date!",
-    "aboutToPay": "You are about to register the payment for:",
-    "form": {
-      "amount": "Amount Paid",
-      "proof": "Payment Proof",
-      "submit": "Save Payment",
-      "submitting": "Saving..."
+    "tabs": {
+      "upcomingTitle": "Upcoming",
+      "upcomingRange": "(0-30 days)",
+      "midTermTitle": "Mid-Term",
+      "midTermRange": "(31-180 days)",
+      "longTermTitle": "Long-Term",
+      "longTermRange": "(+181 days)",
+      "rangeWithCount": "{range} ({count})"
     },
     "alerts": {
-      "fillAllFields": "Please, fill all the fields.",
-      "uploadError": "Error uploading proof: {message}",
       "dbError": "Error registering payment: {message}",
       "success": "Payment registered successfully!"
+    },
+    "card": {
+      "daysRemaining": "{count, plural, =0 {Due today} =1 {Due in 1 day} other {Due in # days}}",
+      "noNoticesInCategory": "No notices in this category."
     }
   },
   "manageUsers": {
@@ -398,6 +402,10 @@
       "totalContributions": "Total Contributions",
       "totalExpenses": "Total Expenses",
       "balance": "Balance",
+      "surplus": "Project Surplus",
+      "surplusPerHouse": "Surplus per House",
+      "deficitPerHouse": "Deficit per House",
+      "participatingHouses": "Participating Houses",
       "noData": "Could not load project summary.",
       "reportTitle": "Project Financial Summary",
       "generatePdf": "PDF Report",
@@ -412,5 +420,15 @@
       "viewEvidence": "View Evidence",
       "altText": "Expense evidence"
     }
+  },
+  "projectStatus": {
+    "title": "Project Status",
+    "abierto": "Open",
+    "en_votacion": "In Voting",
+    "aprobado": "Approved",
+    "rechazado": "Rejected",
+    "en_progreso": "In Progress",
+    "terminado": "Finished",
+    "cancelado": "Canceled"
   }
 }

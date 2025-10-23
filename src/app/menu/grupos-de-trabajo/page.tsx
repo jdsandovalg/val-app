@@ -16,8 +16,8 @@ import type { Usuario } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
-import { formatDate } from '@/utils/format';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'; 
+import TaskCard from './components/TaskCard';
 
 type SortableKeys = 'id_grupo' | 'fecha_contribucion';
 
@@ -47,7 +47,7 @@ export default function GruposDeTrabajoPage() {
   const supabase = createClient();
   const router = useRouter();
   const [grupos, setGrupos] = useState<ContribucionAgrupada[]>([]);
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -160,7 +160,7 @@ export default function GruposDeTrabajoPage() {
       <div className="space-y-6">
         {!loading && sortedGrupos.length > 0 ? (
           sortedGrupos.map((contribucion) => (
-            <div key={contribucion.descripcion} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+            <div key={contribucion.descripcion} className="bg-slate-50 p-4 sm:p-6 rounded-xl shadow-lg border border-slate-200">
               <h2 className="text-xl font-bold text-blue-800 border-b pb-2 mb-4">{contribucion.descripcion}</h2>
               {contribucion.grupos.map((grupo) => (
                 <div key={grupo.id_grupo ?? 'default-group'} className="mb-6 last:mb-0">
@@ -169,25 +169,9 @@ export default function GruposDeTrabajoPage() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {grupo.fechas.map((fechaInfo) => (
-                      <div key={`${fechaInfo.fecha}-${fechaInfo.casas[0]?.id || 0}`} className="border rounded-lg p-3 bg-gray-50">
-                        <div className="flex justify-between items-center mb-2">                          <p className="text-sm font-medium text-gray-600">{formatDate(fechaInfo.fecha, lang)}</p>
-                          <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
-                            fechaInfo.realizado === 'S' ? 'bg-green-100 text-green-800' :
-                            fechaInfo.dias_restantes >= 0 ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800' 
-                          }`}>
-                            {fechaInfo.realizado === 'S' ? t('groups.status_done') : t('groups.status_pending')}
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500 space-y-1">
-                          {fechaInfo.casas.map(casa => (
-                            <div key={casa.id} className="flex justify-between">
-                              <span>{t('groups.house')} {casa.id}</span>
-                              <span className="font-medium text-gray-700">{casa.responsable}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      <TaskCard 
+                        key={`${fechaInfo.fecha}-${fechaInfo.casas[0]?.id || 0}`}
+                        fechaInfo={fechaInfo} />
                     ))}
                   </div>
                 </div>

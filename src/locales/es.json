@@ -111,8 +111,9 @@
     "membersTitle": "Miembros del Grupo",
     "house": "Casa",
     "groupTitle": "Grupo #{number}",
-    "status_done": "Realizado",
-    "status_pending": "Pendiente"
+    "status_done": "Realizado", 
+    "status_pending": "Pendiente",
+    "status_overdue": "Vencido"
   },
   "groupsSortMenu": {
     "byGroup": "Ordenar por Grupo",
@@ -120,21 +121,24 @@
   },
   "notices": {
     "title": "Avisos",
-    "registerPaymentTitle": "Registrar Pago",
     "loading": "Cargando avisos...",
     "noPending": "No tienes compromisos de pago pendientes. ¡Estás al día!",
-    "aboutToPay": "Estás a punto de registrar el pago para:",
-    "form": {
-      "amount": "Monto Pagado",
-      "proof": "Comprobante de Pago",
-      "submit": "Guardar Pago",
-      "submitting": "Guardando..."
+    "tabs": {
+      "upcomingTitle": "Próximos",
+      "upcomingRange": "(0-30 días)",
+      "midTermTitle": "Medio Plazo",
+      "midTermRange": "(31-180 días)",
+      "longTermTitle": "Largo Plazo",
+      "longTermRange": "(+181 días)",
+      "rangeWithCount": "{range} ({count})"
     },
     "alerts": {
-      "fillAllFields": "Por favor, complete todos los campos.",
-      "uploadError": "Error al subir el comprobante: {message}",
       "dbError": "Error al registrar el pago: {message}",
       "success": "¡Pago registrado exitosamente!"
+    },
+    "card": {
+      "daysRemaining": "{count, plural, =0 {Vence hoy} =1 {Vence en 1 día} other {Vence en # días}}",
+      "noNoticesInCategory": "No hay avisos en esta categoría."
     }
   },
   "manageUsers": {
@@ -398,6 +402,10 @@
       "totalContributions": "Total de Aportes",
       "totalExpenses": "Total de Gastos",
       "balance": "Saldo",
+      "surplus": "Sobrante del Proyecto",
+      "surplusPerHouse": "Sobrante por Casa",
+      "deficitPerHouse": "Déficit por Casa",
+      "participatingHouses": "Casas Participantes",
       "noData": "No se pudo cargar el resumen del proyecto.",
       "reportTitle": "Resumen Financiero de Proyecto",
       "generatePdf": "Reporte PDF",
@@ -412,5 +420,15 @@
       "viewEvidence": "Ver Evidencia",
       "altText": "Evidencia de gasto"
     }
+  },
+  "projectStatus": {
+    "title": "Estado del Proyecto",
+    "abierto": "Abierto",
+    "en_votacion": "En Votación",
+    "aprobado": "Aprobado",
+    "rechazado": "Rechazado",
+    "en_progreso": "En Progreso",
+    "terminado": "Terminado",
+    "cancelado": "Cancelado"
   }
 }

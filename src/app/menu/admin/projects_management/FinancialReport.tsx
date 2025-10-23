@@ -11,12 +11,18 @@ import { createClient } from '@/utils/supabase/client';
 type SummaryData = {
   total_aportes: number;
   total_gastos: number;
+  balance?: number;
+  participatingHouses?: number;
+  surplusPerHouse?: number;
 };
+
+type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 
 type ProjectInfo = {
   descripcion_tarea: string;
   tipo_proyecto: string;
   grupo_mantenimiento: string;
+  estado: ProjectStatus;
 };
 
 type DetailRow = {
@@ -73,11 +79,25 @@ const styles = StyleSheet.create({
     color: '#2D3748',
   },
   projectInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     backgroundColor: '#F7FAFC',
     border: '1px solid #E2E8F0',
     borderRadius: 5,
     padding: 10,
     marginBottom: 20,
+  },
+  projectInfoDetails: {
+    width: '70%',
+  },
+  statusCard: {
+    width: '28%',
+    padding: 8,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
   },
   projectInfoText: {
     fontSize: 9,
@@ -91,7 +111,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     padding: 10,
     borderRadius: 5,
-    width: '30%',
+    width: '32%', // Ancho ajustado para 3 tarjetas
     alignItems: 'center',
   },
   summaryTitle: {
@@ -103,6 +123,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  surplusContainer: {
+    marginTop: -10,
+    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  surplusCard: {
+    padding: 10,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+    backgroundColor: '#E6FFFA', // Verde claro por defecto
+    borderLeft: '3px solid #38B2AC',
+  },
+  deficitCard: {
+    padding: 10,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+    backgroundColor: '#F3E8FF', // Un tono morado claro
+    borderLeft: '3px solid #805AD5',
+  },
+  surplusTitle: { fontSize: 10, marginBottom: 5, fontWeight: 'bold', color: '#553C9A' },
+  surplusAmount: { fontSize: 14, fontWeight: 'bold', color: '#553C9A' },
+  surplusSubText: { fontSize: 8, color: '#6B46C1', marginTop: 2 },
+
   sectionTitle: {
     fontSize: 14,
     fontWeight: 'bold',
@@ -212,6 +258,8 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
   const gastos = details.filter((d: DetailRow) => d.tipo_registro === 'gasto');
   const gastosConEvidencia = gastos.filter(d => d.url_documento);
   return (
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
   <Document title={`${t('projects.summary.reportTitle')} - ${projectInfo.descripcion_tarea}`}>
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.header}>
@@ -224,9 +272,15 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
       </View>
 
       <View style={styles.projectInfo}>
-        <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('catalog.fields.group')}:</Text> {projectInfo.grupo_mantenimiento}</Text>
-        <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('catalog.toggle_types')}:</Text> {projectInfo.tipo_proyecto}</Text>
-        <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('projects.fields.description')}:</Text> {projectInfo.descripcion_tarea}</Text>
+        <View style={styles.projectInfoDetails}>
+          <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('catalog.fields.group')}:</Text> {projectInfo.grupo_mantenimiento}</Text>
+          <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('catalog.toggle_types')}:</Text> {projectInfo.tipo_proyecto}</Text>
+          <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('projects.fields.description')}:</Text> {projectInfo.descripcion_tarea}</Text>
+        </View>
+        <View style={[styles.statusCard, { backgroundColor: '#FEFCE8', borderLeft: '3px solid #D97706' }]}>
+          <Text style={[styles.summaryTitle, { color: '#92400E', marginBottom: 2 }]}>{t('projectStatus.title')}</Text>
+          <Text style={[styles.summaryAmount, { color: '#92400E', fontSize: 11 }]}>{t(`projectStatus.${projectInfo.estado}`)}</Text>
+        </View>
       </View>
 
       <View style={styles.summaryContainer}>
@@ -238,11 +292,35 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
           <Text style={[styles.summaryTitle, { color: '#9B2C2C' }]}>{t('projects.summary.totalExpenses')}</Text>
           <Text style={[styles.summaryAmount, { color: '#9B2C2C' }]}>{formatCurrency(summary.total_gastos, locale, currency)}</Text>
         </View>
-        <View style={[styles.summaryCard, { backgroundColor: '#EBF8FF', borderLeft: '3px solid #4299E1' }]}>
-          <Text style={[styles.summaryTitle, { color: '#2B6CB0' }]}>{t('projects.summary.balance')}</Text>
-          <Text style={[styles.summaryAmount, { color: '#2B6CB0' }]}>{formatCurrency(summary.total_aportes - summary.total_gastos, locale, currency)}</Text>
+        <View style={[styles.summaryCard, summary.balance && summary.balance >= 0 ? { backgroundColor: '#EBF8FF', borderLeft: '3px solid #4299E1' } : { backgroundColor: '#FFF5F5', borderLeft: '3px solid #E53E3E' }]}>
+          <Text style={[styles.summaryTitle, summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#9B2C2C' }]}>{t('projects.summary.balance')}</Text>
+          <Text style={[styles.summaryAmount, summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#9B2C2C' }]}>{formatCurrency(summary.balance || 0, locale, currency)}</Text>
         </View>
       </View>
+
+      {/* --- INICIO: Tarjeta de Sobrante --- */}
+      {summary.balance && summary.balance !== 0 && (
+        <View style={styles.surplusContainer}>
+          {summary.balance && summary.balance > 0 ? (
+            <View style={styles.surplusCard}>
+              <Text style={[styles.surplusTitle, { color: '#2C7A7B' }]}>{t('projects.summary.surplusPerHouse')}</Text>
+              <Text style={[styles.surplusAmount, { color: '#2C7A7B' }]}>
+                {formatCurrency(summary.surplusPerHouse || 0, locale, currency)}
+              </Text>
+              <Text style={[styles.surplusSubText, { color: '#2C7A7B' }]}>({summary.participatingHouses} {t('projects.summary.participatingHouses')})</Text>
+            </View>
+          ) : (
+            <View style={[styles.surplusCard, { backgroundColor: '#FFF5F5', borderLeftColor: '#E53E3E' }]}>
+              <Text style={[styles.surplusTitle, { color: '#9B2C2C' }]}>{t('projects.summary.deficitPerHouse')}</Text>
+              <Text style={[styles.surplusAmount, { color: '#9B2C2C' }]}>
+                {formatCurrency(Math.abs(summary.surplusPerHouse || 0), locale, currency)}
+              </Text>
+              <Text style={[styles.surplusSubText, { color: '#9B2C2C' }]}>({summary.participatingHouses} {t('projects.summary.participatingHouses')})</Text>
+            </View>
+          )}
+        </View>
+      )}
+      {/* --- FIN: Tarjeta de Sobrante --- */}
 
       <View style={styles.tablesContainer}>
         <View style={styles.tableContainer}>
@@ -320,7 +398,11 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
     try {
       // Refrescar los datos financieros y obtener la información del proyecto
       await refetch();
-      const { data: projectInfoResult, error } = await supabase.rpc('get_project_info', { p_id_proyecto: projectId });
+      // Usamos la función RPC que es más robusta y devuelve un objeto plano.
+      const { data: projectInfoResult, error } = await supabase.rpc('get_project_info_with_status', {
+        p_id_proyecto: projectId,
+      });
+
       if (error) throw error;
       
       const projectInfoData = projectInfoResult?.[0];
@@ -329,18 +411,35 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
         setIsGenerating(false);
         return;
       }
+
+      const formattedProjectInfo = {
+        ...projectInfoData
+      };
       
+      // --- INICIO: Lógica para calcular el sobrante ---
+      const balance = summary.total_aportes - summary.total_gastos;
+      const aportes = details.filter(d => d.tipo_registro === 'aporte');
+      const participatingHouses = aportes.length;
+
+      const summaryWithSurplus: SummaryData = {
+        ...summary,
+        balance,
+        participatingHouses,
+        surplusPerHouse: participatingHouses > 0 ? balance / participatingHouses : 0,
+      };
+      // --- FIN: Lógica para calcular el sobrante ---
+
       const reportPayload = {
-        summary,
+        summary: summaryWithSurplus,
         details,
-        projectInfo: projectInfoData,
+        projectInfo: formattedProjectInfo,
       };
 
       localStorage.setItem('financialReportData', JSON.stringify(reportPayload));
       window.open('/menu/admin/projects_management/report', '_blank', 'noopener,noreferrer');
     } catch (error: unknown) {
-      let errorMessage = t('calendar.payment.unknownError');
-      if (error instanceof Error) {
+      let errorMessage = t('projects.summary.alerts.fetchError', { message: t('calendar.payment.unknownError') });
+      if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
       }
       console.error("Error generating report data:", error);

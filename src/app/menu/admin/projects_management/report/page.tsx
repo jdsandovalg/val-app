@@ -6,8 +6,9 @@ import { useI18n } from '@/app/i18n-provider';
 import { ReportDocument } from '../FinancialReport'; // Importamos el componente del documento
 
 // Tipos que necesita el componente ReportDocument
+type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 type SummaryData = { total_aportes: number; total_gastos: number; };
-type ProjectInfo = { descripcion_tarea: string; tipo_proyecto: string; grupo_mantenimiento: string; };
+type ProjectInfo = { descripcion_tarea: string; tipo_proyecto: string; grupo_mantenimiento: string; estado: ProjectStatus; };
 type DetailRow = { tipo_registro: 'aporte' | 'gasto'; fecha: string; descripcion: string; monto: number; nombre_proveedor?: string; descripcion_gasto?: string; url_documento?: string | null; };
 
 // Registrar fuentes para el PDF

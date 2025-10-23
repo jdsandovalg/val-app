@@ -164,7 +164,6 @@ export default function CalendariosPage() {
                   statusKey: getEstado(c).key,
                 }));
 
-                // Guardar los datos para que la página del reporte los lea
                 localStorage.setItem('calendarPdfReportData', JSON.stringify(reportData));
                 window.open('/menu/calendarios/report', '_blank');
               }}

@@ -29,40 +29,14 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ## I. Tareas Pendientes
 
-### 1. Corregir Visibilidad del Botón en Visor de Evidencias
-- **Objetivo:** Hacer visible el botón de cierre en la página que muestra la imagen de la evidencia de gasto.
-- **Contexto:** La página (`/report/evidence`) y el botón ya existen, pero el botón no es visible debido a un problema de contraste o estilo CSS.
-- **Acción:** Ajustar el CSS del botón para que sea claramente visible sobre el fondo del visor.
-
-### 2. Problema de Navegación en Reporte PDF en Móvil
-- **Objetivo:** Permitir la navegación entre páginas en los reportes PDF cuando se visualizan en dispositivos móviles.
-- **Contexto:** Actualmente, en la vista de reportes PDF (ej. Resumen Financiero), si el reporte tiene más de una página, en dispositivos móviles solo se muestra la primera. No hay controles visibles (scroll, botones) para acceder a las páginas siguientes. En PC, el scroll funciona correctamente.
-- **Acción:** Investigar el comportamiento del componente `PDFViewer` de `@react-pdf/renderer` en navegadores móviles y encontrar una solución para habilitar el scroll o añadir controles de paginación.
-
-### 3. Colores Faltantes en Reporte PDF del Calendario
-- **Objetivo:** Asegurar que el reporte PDF generado desde la página principal del calendario (`/menu/calendarios`) muestre los colores de estado en las tarjetas, tal como se ven en la pantalla.
-- **Contexto:** La implementación actual del reporte PDF con tarjetas (usando `react-pdf`) no está renderizando los colores de borde y fondo que indican el estado de la aportación (ej. verde para pagado, rojo para vencido), mostrando las tarjetas en blanco y negro.
-- **Acción:** Investigar el componente `PdfCalendarCard` y los estilos aplicados en `/menu/calendarios/report/page.tsx` para corregir por qué los colores no se están aplicando en el PDF final.
-
-### 5. Añadir Filtros y Ordenamiento Avanzado a "Grupos de Trabajo"
-- **Objetivo:** Implementar funcionalidades de filtrado y ordenamiento más completas en la página de "Grupos de Trabajo" (`/menu/grupos-de-trabajo`).
-- **Contexto:** La página actual solo tiene un menú de ordenamiento básico y carece de filtros. Para mejorar la usabilidad, se necesita una capacidad de filtrado similar a la que existe en la sección administrativa de "Gestionar Aportaciones".
-- **Acción:**
-    - Añadir un botón de "Filtros" que abra un modal para filtrar por casa, responsable, fecha, etc.
-    - Mejorar el menú de ordenamiento si es necesario.
-    - Adaptar la lógica de la página para aplicar estos filtros a los datos mostrados.
-
-### Tareas Pendientes postpuestas indefinidamente
-
-- **Objetivo:** Mejorar el reporte PDF en la página de "Calendarios".
-- **Problema:** El reporte actual que se genera desde la vista del usuario es una tabla simple. Se busca un diseño más visual y moderno.
-- **Acción:** Reemplazar la generación de PDF actual con una nueva versión que utilice la librería `react-pdf` para crear un reporte con **tarjetas a color**, similar al nuevo reporte implementado en el área de administración. Esto proporcionará un documento más atractivo y profesional. Dado el bajo volumen de datos (aprox. 50 registros anuales), la generación en el lado del cliente es una estrategia aceptable y eficiente.
+*No hay tareas pendientes en este momento.*
 
 ---
 
 ## II. Logros Recientes (Tareas Completadas)     
 
 *   **Bugs Solucionados:**
+    *   ✅ **Colores Faltantes en Reporte PDF del Calendario:** Solucionado. El reporte PDF generado desde la página principal del calendario (`/menu/calendarios`) ahora muestra los colores de estado en las tarjetas.
     *   ✅ **Carga de Imágenes de Comprobantes:** Se solucionó el problema que impedía visualizar las imágenes de los comprobantes de pago desde Supabase Storage.
     *   ✅ **Visualización del Logo en Vercel:** Solucionado. El problema era que el archivo `logo.png` no se había publicado correctamente.
     *   ✅ **Lógica Incorrecta en "Avisos":** Solucionado. Se modificó la función RPC `get_proximo_compromiso` en la base de datos para que solo devuelva pagos pendientes dentro de los próximos 15 días, haciendo los avisos más relevantes.
@@ -77,6 +51,68 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
     *   ✅ **Internacionalización de Formatos:** Se estandarizó el formato de fechas y monedas en toda la aplicación usando la API `Intl` para una correcta localización.
     *   ✅ **Implementación de Anexo de Evidencias en Reporte Financiero:** Se completó la generación de un anexo en el reporte PDF financiero. El anexo muestra tarjetas detalladas para cada gasto con un enlace funcional para visualizar la imagen de la evidencia en una nueva pestaña.
     *   ✅ **Corrección de Nombres de Archivos PDF:** Se solucionó un problema general que causaba nombres de archivo ilegibles. Ahora, todos los reportes PDF generados en la aplicación tienen un nombre de archivo claro, traducido y seguro para el sistema de archivos.
+
+*   **Rediseño de Avisos y Grupos de Trabajo:**
+    *   ✅ **Rediseño de la Página de "Avisos":**
+        *   Se implementó una nueva función RPC (`get_avisos_categorizados`) para obtener todos los avisos pendientes.
+        *   Se rediseñó la interfaz con un sistema de pestañas para categorizar los avisos por urgencia (Próximos, Medio Plazo, Largo Plazo).
+        *   Se aplicó un código de colores (verde, amarillo, rojo) a las pestañas y tarjetas para mejorar la comunicación visual y se añadió un contador de avisos a cada pestaña.
+    *   ✅ **Modernización de la UI en "Grupos de Trabajo":**
+        *   Se refactorizó la vista para usar un componente de tarjeta reutilizable (`TaskCard.tsx`).
+        *   Se estandarizó el diseño de las tarjetas de tareas para que coincida con el resto de la aplicación, usando un borde de color que indica el estado (Realizado, Pendiente, Vencido).
+        *   Se mejoró el estilo de la tarjeta contenedora para una mejor jerarquía visual.
+    *   ✅ **Corrección de Errores de Compilación y Warnings:**
+        *   Se solucionaron advertencias de ESLint por variables no utilizadas.
+        *   Se corrigió un error de tipo crítico al sincronizar la estructura de los archivos de traducción (`i18n`).
+
+---
+
+## III. Normas de Colaboración y Lecciones Aprendidas
+
+Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
+
+### 1. Claridad en los Requerimientos
+
+*   **Lección Aprendida:** Una falta de especificidad en la solicitud inicial (ej. "mejorar el reporte PDF") llevó a una implementación incorrecta (modificar la UI en lugar del PDF).
+*   **Norma de Trabajo:**
+    *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, el asistente de IA debe proponer un plan de trabajo detallado.
+    *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entiendan el objetivo y la estrategia.
+
+### 2. Estrategia de Desarrollo Segura
+
+*   **Lección Aprendida:** La modificación directa de una funcionalidad existente para añadir una mejora compleja introdujo múltiples errores de compilación y bloqueos.
+*   **Norma de Trabajo:**
+    *   **Desarrollo en Paralelo:** Para nuevas funcionalidades de alto riesgo o complejidad (como la generación de un nuevo tipo de reporte), se debe optar por un desarrollo en paralelo.
+    *   **Mecanismo de Respaldo:** Se mantendrá la funcionalidad original (ej. "Reporte PDF Plano") mientras se desarrolla la nueva ("Reporte PDF con Tarjetas"). Esto garantiza que la aplicación siga siendo funcional y proporciona una red de seguridad si la nueva implementación falla.
+
+### 3. Comunicación y Contexto
+
+*   **Lección Aprendida:** El asistente de IA puede perder el hilo de la conversación o el contexto de los archivos si no se le recuerda el objetivo principal.
+*   **Norma de Trabajo:**
+    *   **Referencia a Tareas:** Es útil hacer referencia explícita al archivo `TAREAS_PENDIENTES.md` para re-enfocar la conversación en los objetivos definidos.
+    *   **Feedback Constructivo:** El desarrollador debe señalar claramente cuando el asistente se desvía del plan, permitiendo una rápida corrección del rumbo.
+
+
+
+## Tareas Canceladas
+
+Las siguientes tareas se han cancelado y no se trabajarán.
+
+*   **Motivo de Cancelación:** Confusión en las soluciones propuestas, lo que ha generado retrabajo y errores.
+
+### 1. Corregir Visibilidad del Botón en Visor de Evidencias
+- **Objetivo:** Hacer visible el botón de cierre en la página que muestra la imagen de la evidencia de gasto.
+- **Contexto:** La página (`/report/evidence`) y el botón ya existen, pero el botón no es visible debido a un problema de contraste o estilo CSS.
+
+### 2. Problema de Navegación en Reporte PDF en Móvil
+- **Objetivo:** Permitir la navegación entre páginas en los reportes PDF cuando se visualizan en dispositivos móviles.
+- **Contexto:** Actualmente, en la vista de reportes PDF (ej. Resumen Financiero), si el reporte tiene más de una página, en dispositivos móviles solo se muestra la primera.
+
+### 5. Añadir Filtros y Ordenamiento Avanzado a "Grupos de Trabajo"
+- **Objetivo:** Implementar funcionalidades de filtrado y ordenamiento más completas en la página de "Grupos de Trabajo" (`/menu/grupos-de-trabajo`).
+- **Contexto:** La página actual solo tiene un menú de ordenamiento básico y carece de filtros.
+
+
 
 ---
 
@@ -124,29 +160,3 @@ Para internacionalizar un nuevo componente, el proceso es el siguiente:
 -   **Gestión de Moneda por Entidad:** En un sistema multi-regional más complejo, la moneda podría no depender solo del idioma, sino de la entidad o usuario. En ese caso, el código de la moneda podría venir de la base de datos junto con los datos del usuario y pasarse a la función `formatCurrency`. Para el alcance actual, la configuración por `locale` es la solución más limpia y adecuada.
 
 ---
-
-## IV. Normas de Colaboración y Lecciones Aprendidas
-
-Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
-
-### 1. Claridad en los Requerimientos
-
-*   **Lección Aprendida:** Una falta de especificidad en la solicitud inicial (ej. "mejorar el reporte PDF") llevó a una implementación incorrecta (modificar la UI en lugar del PDF).
-*   **Norma de Trabajo:**
-    *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, el asistente de IA debe proponer un plan de trabajo detallado.
-    *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entiendan el objetivo y la estrategia.
-
-### 2. Estrategia de Desarrollo Segura
-
-*   **Lección Aprendida:** La modificación directa de una funcionalidad existente para añadir una mejora compleja introdujo múltiples errores de compilación y bloqueos.
-*   **Norma de Trabajo:**
-    *   **Desarrollo en Paralelo:** Para nuevas funcionalidades de alto riesgo o complejidad (como la generación de un nuevo tipo de reporte), se debe optar por un desarrollo en paralelo.
-    *   **Mecanismo de Respaldo:** Se mantendrá la funcionalidad original (ej. "Reporte PDF Plano") mientras se desarrolla la nueva ("Reporte PDF con Tarjetas"). Esto garantiza que la aplicación siga siendo funcional y proporciona una red de seguridad si la nueva implementación falla.
-
-### 3. Comunicación y Contexto
-
-*   **Lección Aprendida:** El asistente de IA puede perder el hilo de la conversación o el contexto de los archivos si no se le recuerda el objetivo principal.
-*   **Norma de Trabajo:**
-    *   **Referencia a Tareas:** Es útil hacer referencia explícita al archivo `TAREAS_PENDIENTES.md` para re-enfocar la conversación en los objetivos definidos.
-    *   **Feedback Constructivo:** El desarrollador debe señalar claramente cuando el asistente se desvía del plan, permitiendo una rápida corrección del rumbo.
-Estructura de las Tablas:
