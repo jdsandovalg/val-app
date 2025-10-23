@@ -14,6 +14,20 @@ import ProjectExpenses from './ProjectExpenses';
 import FinancialDetail from './FinancialDetail';
 import FinancialReport from './FinancialReport';
 
+type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
+
+type Proyecto = {
+  id_proyecto: number;
+  id_tipo_proyecto: number;
+  descripcion_tarea: string;
+  detalle_tarea: string | null;
+  frecuencia_sugerida: string | null;
+  notas_clave: string | null;
+  valor_estimado: number | null;
+  activo: boolean;
+  estado: ProjectStatus;
+};
+
 type ProyectoPayload = {
   id_tipo_proyecto: number;
   descripcion_tarea: string;
@@ -30,7 +44,7 @@ export default function ProjectClassificationManagementPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Proyecto | null>(null);
 
   const handleOpenModal = useCallback((typeId: number) => {
     setSelectedTypeId(typeId);
@@ -42,8 +56,16 @@ export default function ProjectClassificationManagementPage() {
     setSelectedTypeId(null);
   }, []);
 
-  const handleProjectSelect = useCallback((projectId: number) => {
-    setSelectedProjectId(prevId => {
+  const handleProjectSelect = useCallback((project: Proyecto | null) => {
+    setSelectedProject(prevProject => {
+      if (!project) {
+        setActiveView('projects');
+        return null;
+      }
+
+      const projectId = project.id_proyecto;
+      const prevId = prevProject?.id_proyecto;
+
       // Si se hace clic en el mismo proyecto, se deselecciona.
       if (prevId === projectId) {
         // Si ya estamos en una vista de detalle, no cambiamos la vista, solo deseleccionamos.
@@ -52,25 +74,31 @@ export default function ProjectClassificationManagementPage() {
         }
         return null;
       }
-      return projectId;
+      return project;
     });
   }, [activeView, setActiveView]);
 
   const handleSaveProject = useCallback(async (projectData: ProyectoPayload) => {
     try {
+      // Lógica de "toggle" implícito:
+      // Si hay un valor estimado, usamos el flujo antiguo.
+      // Si no, usamos el nuevo flujo de propuestas.
+      const action = projectData.valor_estimado && projectData.valor_estimado > 0 ? 'INSERT' : 'INSERT_PROPOSAL';
+      const successMessageKey = action === 'INSERT' ? 'projects.alerts.saveSuccess' : 'projects.alerts.proposalSaveSuccess'; // Necesitaremos una nueva clave de i18n
+
       const { error } = await supabase.rpc('gestionar_proyectos', {
-        p_action: 'INSERT',
+        p_action: action,
         p_id_tipo_proyecto: projectData.id_tipo_proyecto,
         p_descripcion_tarea: projectData.descripcion_tarea,
         p_detalle_tarea: projectData.detalle_tarea,
         p_frecuencia_sugerida: projectData.frecuencia_sugerida,
         p_notas_clave: projectData.notas_clave,
-        p_valor_estimado: projectData.valor_estimado,
+        p_valor_estimado: action === 'INSERT' ? projectData.valor_estimado : null, // Solo pasamos el valor en el flujo antiguo
       });
 
       if (error) throw error;
 
-      toast.success(t('projects.alerts.saveSuccess'));
+      toast.success(t(successMessageKey));
       handleCloseModal();
       // Forzamos un refresh para que ProjectList y otros componentes se actualicen.
       // Una mejora futura podría ser actualizar el estado localmente.
@@ -81,6 +109,10 @@ export default function ProjectClassificationManagementPage() {
       toast.error(t('projects.alerts.saveError', { message }));
     }
   }, [supabase, t, handleCloseModal]);
+
+  // Lógica para deshabilitar botones según el estado del proyecto
+  const isFinancialViewDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
+  const selectedProjectId = selectedProject?.id_proyecto ?? null;
 
   return (
     <div>
@@ -101,7 +133,7 @@ export default function ProjectClassificationManagementPage() {
               </button>
               <button
                 onClick={() => setActiveView('contributions')}
-                disabled={!selectedProjectId}
+                disabled={isFinancialViewDisabled}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                   activeView === 'contributions' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -110,7 +142,7 @@ export default function ProjectClassificationManagementPage() {
               </button>
               <button
                 onClick={() => setActiveView('expenses')}
-                disabled={!selectedProjectId}
+                disabled={isFinancialViewDisabled}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                   activeView === 'expenses' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -119,14 +151,14 @@ export default function ProjectClassificationManagementPage() {
               </button>
               <button
                 onClick={() => setActiveView('summary')}
-                disabled={!selectedProjectId}
+                disabled={isFinancialViewDisabled}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                   activeView === 'summary' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {t('projects.summary.title')}
               </button>
-              <FinancialReport projectId={selectedProjectId} />
+              <FinancialReport projectId={isFinancialViewDisabled ? null : selectedProjectId} />
               <button
                 onClick={() => setActiveView('overview')}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
@@ -137,7 +169,7 @@ export default function ProjectClassificationManagementPage() {
               </button>
             </div>
           </div>
-          {activeView === 'projects' && <ProjectList onProjectSelect={handleProjectSelect} selectedProjectId={selectedProjectId} />}
+          {activeView === 'projects' && <ProjectList onProjectSelect={handleProjectSelect} selectedProject={selectedProject} />}
           {activeView === 'suppliers' && <SupplierManagement />}
           {activeView === 'overview' && <RelationshipView onTypeClick={handleOpenModal} />}
           {activeView === 'contributions' && <ProjectContributions projectId={selectedProjectId} />}

@@ -335,7 +335,11 @@
   "projects": {
     "title": "Project Management",
     "modals": {
-      "addProject": "Define New Project"
+      "addProject": "Define New Project",
+      "tabs": {
+        "newProject": "Project Proposal",
+        "projectWithCosts": "Project with Costs (Legacy)"
+      }
     },
     "fields": {
       "description": "Task Description",
@@ -347,7 +351,8 @@
     },
     "alerts": {
       "fetchError": "Error loading projects: {message}",
-      "saveSuccess": "Project created successfully! Contributions have been generated for each house.",
+      "saveSuccess": "Project with contributions created successfully!",
+      "proposalSaveSuccess": "Project proposal created successfully!",
       "saveError": "Error creating project: {message}"
     },
     "activeProjectsTitle": "Active Projects",

@@ -27,13 +27,51 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
-## I. Tareas Pendientes
+## I. Tareas Pendientes (Siguiente Fase)
 
-*No hay tareas pendientes en este momento.*
+### Fase 2: Preparación de Propuestas (Cotización y Rubros)
+
+Ahora que un proyecto puede existir en estado `'abierto'`, el siguiente paso es darle al administrador las herramientas para trabajar sobre él. El objetivo es construir la vista donde se puedan **añadir los rubros (líneas de costo) y las cotizaciones (documentos de respaldo)**.
+
+**Propuesta:** Crear una nueva vista de detalle que se muestre cuando un proyecto en estado `'abierto'` es seleccionado.
+
+#### Paso 1: Crear la Vista de Detalle de la Propuesta
+
+1.  **Crear un Nuevo Componente: `ProposalDetail.tsx`**
+    *   Este componente se mostrará en el área principal cuando `selectedProject.estado === 'abierto'`.
+    *   Tendrá un diseño claro con varias secciones:
+        *   **Información General:** Mostrará los detalles del proyecto (descripción, notas, etc.).
+        *   **Sección de Rubros:** Una tabla o lista donde el administrador podrá añadir, editar y eliminar las líneas de costo del proyecto (ej. "Pintura: Q500", "Mano de obra: Q1000").
+        *   **Sección de Cotizaciones:** Un área para subir los archivos (PDF, imágenes) que respaldan los costos.
+        *   **Resumen de Costos:** Una tarjeta que mostrará el `valor_estimado` total, calculado automáticamente como la suma de todos los rubros.
+        *   **Botón de Acción:** Un botón principal como "Enviar a Votación" que cambiará el estado del proyecto a `'en_votacion'`.
+
+2.  **Modificar la Página Principal (`page.tsx`)**
+    *   Ajustaremos la lógica para que, cuando `activeView` sea `'projects'` y se seleccione un proyecto, se renderice condicionalmente:
+        *   Si `selectedProject.estado === 'abierto'`, mostrar el nuevo componente `ProposalDetail.tsx`.
+        *   Si no, no mostrar nada o un mensaje indicando que se debe seleccionar una de las vistas de detalle (Aportes, Gastos, etc.).
 
 ---
 
-## II. Logros Recientes (Tareas Completadas)     
+## II. Logros Recientes (Tareas Completadas)
+
+**1. Mejoras Sustanciales al Reporte Financiero (PDF):**
+*   ✅ **Cálculo de Sobrante/Déficit:** Se implementó la lógica para calcular y mostrar el sobrante o déficit por casa al finalizar un proyecto.
+*   ✅ **Tarjeta de Resumen Dinámica:** Se añadió una tarjeta en el PDF que cambia de color (verde para sobrante, rojo para déficit) y texto para una comunicación visual clara.
+*   ✅ **Tarjeta de Estado del Proyecto:** Se agregó una tarjeta de estado en la sección de información general del proyecto, con un color distintivo para saber su estatus de un vistazo.
+*   ✅ **Diseño Homogéneo:** Se reajustó el diseño de las tarjetas de resumen para que sean visualmente consistentes.
+*   ✅ **Robustez en la Obtención de Datos:** Se creó y utilizó una nueva función RPC (`get_project_info_with_status`) para obtener los datos del reporte de forma segura y predecible, solucionando errores de compilación.
+
+**2. Implementación del Nuevo Flujo de "Propuestas de Proyecto":**
+*   ✅ **Doble Flujo de Creación:** Se modificó la lógica para permitir dos caminos al crear un proyecto:
+    *   **Propuesta (Nuevo):** Sin costos, crea un proyecto en estado `'abierto'`.
+    *   **Con Costos (Heredado):** Con un valor estimado, crea el proyecto y genera las cuotas inmediatamente.
+*   ✅ **Modal con Pestañas:** Se rediseñó el modal de creación (`ProjectModal.tsx`) con pestañas para que el usuario elija explícitamente qué tipo de proyecto desea crear.
+*   ✅ **Backend Adaptado:** Se actualizó la función RPC `gestionar_proyectos` para soportar la nueva acción `INSERT_PROPOSAL` sin afectar la lógica existente.
+
+**3. Mejoras en la Interfaz de Gestión de Proyectos:**
+*   ✅ **Visualización de Estados:** La lista de proyectos (`ProjectList.tsx`) ahora muestra una "píldora" de color y un borde lateral que indica el estado actual de cada proyecto (`Abierto`, `En Progreso`, etc.).
+*   ✅ **Lógica de Navegación Inteligente:** Los botones de navegación superior ("Aportes", "Gastos", "Resumen") ahora se habilitan o deshabilitan correctamente según el `estado` del proyecto seleccionado, previniendo acciones inválidas.
 
 *   **Bugs Solucionados:**
     *   ✅ **Colores Faltantes en Reporte PDF del Calendario:** Solucionado. El reporte PDF generado desde la página principal del calendario (`/menu/calendarios`) ahora muestra los colores de estado en las tarjetas.

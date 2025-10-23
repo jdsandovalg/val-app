@@ -334,7 +334,11 @@
   "projects": {
     "title": "Gestion de Projets",
     "modals": {
-      "addProject": "Définir un Nouveau Projet"
+      "addProject": "Définir un Nouveau Projet",
+      "tabs": {
+        "newProject": "Proposition de Projet",
+        "projectWithCosts": "Projet avec Coûts (Hérité)"
+      }
     },
     "fields": {
       "description": "Description de la Tâche",
@@ -346,7 +350,8 @@
     },
     "alerts": {
       "fetchError": "Erreur lors du chargement des projets : {message}",
-      "saveSuccess": "Projet créé avec succès ! Les contributions ont été générées pour chaque maison.",
+      "saveSuccess": "Projet avec contributions créé avec succès !",
+      "proposalSaveSuccess": "Proposition de projet créée avec succès !",
       "saveError": "Erreur lors de la création du projet : {message}"
     },
     "activeProjectsTitle": "Projets Actifs",
