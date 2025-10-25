@@ -11,7 +11,7 @@ import ProjectList from './ProjectList';
 import ProjectModal from './ProjectModal';
 import ProjectContributions from './ProjectContributions';
 import ProjectExpenses from './ProjectExpenses';
-
+import ProposalDetail from './components/ProposalDetail';
 import FinancialDetail from './FinancialDetail';
 import FinancialReport from './FinancialReport';
 
@@ -112,7 +112,10 @@ export default function ProjectClassificationManagementPage() {
   }, [supabase, t, handleCloseModal]);
 
   // Lógica para deshabilitar botones según el estado del proyecto
-  const isFinancialViewDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
+  const isContributionsDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
+  // El botón de gastos ahora se habilita para 'abierto' (propuesta) y los estados financieros.
+  const isExpensesDisabled = !selectedProject || ['en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
+  const isSummaryDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
   const selectedProjectId = selectedProject?.id_proyecto ?? null;
 
   return (
@@ -134,7 +137,7 @@ export default function ProjectClassificationManagementPage() {
               </button>
               <button
                 onClick={() => setActiveView('contributions')}
-                disabled={isFinancialViewDisabled}
+                disabled={isContributionsDisabled}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                   activeView === 'contributions' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -142,24 +145,32 @@ export default function ProjectClassificationManagementPage() {
                 {t('projects.contributions.title')}
               </button>
               <button
-                onClick={() => setActiveView('expenses')}
-                disabled={isFinancialViewDisabled}
+                onClick={() => {
+                  if (selectedProject?.estado === 'abierto') {
+                    setActiveView('proposal_detail');
+                  } else {
+                    setActiveView('expenses');
+                  }
+                }}
+                disabled={isExpensesDisabled}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
-                  activeView === 'expenses' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  activeView === 'expenses' || activeView === 'proposal_detail' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {t('projects.expenses.title')}
+                {selectedProject?.estado === 'abierto'
+                  ? t('projects.proposalDetail.title')
+                  : t('projects.expenses.title')}
               </button>
               <button
                 onClick={() => setActiveView('summary')}
-                disabled={isFinancialViewDisabled}
+                disabled={isSummaryDisabled}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                   activeView === 'summary' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {t('projects.summary.title')}
               </button>
-              <FinancialReport projectId={isFinancialViewDisabled ? null : selectedProjectId} />
+              <FinancialReport projectId={isSummaryDisabled ? null : selectedProjectId} />
               <button
                 onClick={() => setActiveView('overview')}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
@@ -178,6 +189,7 @@ export default function ProjectClassificationManagementPage() {
           {activeView === 'contributions' && <ProjectContributions projectId={selectedProjectId} />}
           {activeView === 'expenses' && <ProjectExpenses projectId={selectedProjectId} />}
           {activeView === 'summary' && <FinancialDetail projectId={selectedProjectId} />}
+          {activeView === 'proposal_detail' && selectedProject && <ProposalDetail project={selectedProject} />}
         </div>
       </div>
 

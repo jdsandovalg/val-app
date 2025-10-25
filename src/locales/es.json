@@ -428,6 +428,7 @@
       "altText": "Evidencia de gasto"
     },
     "proposalDetail": {
+      "title": "Rubros",
       "noRubros": "Aún no se han añadido rubros a este proyecto.",
       "addRubroTitle": "Añadir Rubro",
       "selectRubro": "Seleccione un rubro...",

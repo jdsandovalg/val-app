@@ -211,11 +211,9 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
         {/* Columna Izquierda: Rubros y Cotizaciones */}
         <div className="md:col-span-2 space-y-6">
           {/* Sección de Rubros */}
-          <div className="p-4 border rounded-lg bg-gray-10 min-h-[200px]">
-            <h3 className="text-base font-semibold text-gray-700 mb-3">{t('projects.expenses.title')}</h3>
-            
+          <div className="min-h-[200px]">
             {/* Formulario para añadir rubro */}
-            <form onSubmit={handleAddRubro} className="mb-4 p-3 border rounded-md bg-white">
+            <form onSubmit={handleAddRubro} className="mb-6 p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded-lg shadow-sm">
               <h4 className="font-semibold text-gray-600 mb-2">{t('projects.proposalDetail.addRubroTitle')}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
                 <div className="sm:col-span-2 relative">
@@ -264,9 +262,9 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
 
             {/* Tabla de rubros existentes */}
             {proyectoRubros.length > 0 && (
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="space-y-4">
                 {proyectoRubros.map((item) => (
-                  <div key={item.id_proyecto_rubro} className="bg-white p-4 border-b border-gray-200 last:border-b-0">
+                  <div key={item.id_proyecto_rubro} className="bg-green-100 p-4 rounded-lg shadow-md border-l-4 border-green-500">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-3 items-center">
                       {/* Info Principal */}
                       <div className="sm:col-span-2">

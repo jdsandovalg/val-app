@@ -286,7 +286,6 @@
       "addGroup": "Ajouter un Groupe",
       "addType": "Ajouter un Type",
       "addSupplier": "Ajouter un Fournisseur"
-    },
     "toggle_groups": "Groupes",
     "toggle_types": "Types de Projet",
     "toggle_suppliers": "Fournisseurs",
@@ -301,14 +300,12 @@
     },
     "emptyState": {
       "noGroups": "Aucun groupe de maintenance trouvé.",
-      "noTypes": "Aucun type de projet trouvé.",
       "noSuppliers": "Aucun fournisseur trouvé."
     },
     "alerts": {
       "fetchError": "Erreur lors de la récupération de {entity} : {message}",
       "saveSuccess": "Enregistrement sauvegardé avec succès !",
       "saveError": "Erreur lors de la sauvegarde de l'enregistrement : {message}",
-      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet enregistrement ?",
       "deleteSuccess": "Enregistrement supprimé avec succès.",
       "deleteError": "Erreur lors de la suppression de l'enregistrement : {message}",
       "nameRequired": "Le nom est un champ obligatoire.",
@@ -328,7 +325,6 @@
       "address": "Ex : 123 Rue Principale, Ville",
       "searchGroup": "Rechercher par nom de groupe..."
     },
-    "sortMenu": {
       "byName": "Trier par Nom",
       "byOrder": "Trier par Ordre"
     }
@@ -419,7 +415,8 @@
       "alerts": {
         "fetchError": "Erreur lors du chargement du résumé : {message}",
         "noProjectInfo": "Informations sur le projet non trouvées."
-      }
+      }os dentro de proyectos
+
     },
     "evidenceAppendix": {
       "title": "Annexe des Preuves",
@@ -427,6 +424,7 @@
       "altText": "Preuve de dépense"
     },
     "proposalDetail": {
+      "title": "Postes de Coût",
       "noRubros": "Aucun poste de coût n'a encore été ajouté à ce projet.",
       "addRubroTitle": "Ajouter un Poste de Coût",
       "selectRubro": "Sélectionnez un poste...",

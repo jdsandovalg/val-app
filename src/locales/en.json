@@ -428,6 +428,7 @@
       "altText": "Expense evidence"
     },
     "proposalDetail": {
+      "title": "Line Items",
       "noRubros": "No line items have been added to this project yet.",
       "addRubroTitle": "Add Line Item",
       "selectRubro": "Select a line item...",
