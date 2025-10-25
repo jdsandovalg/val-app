@@ -284,17 +284,21 @@
     "project_classification": "Clasificación de Proyectos",
     "suppliers_nits": "Proveedores (NITs)",
     "rubros_catalog": "Catálogo de Rubros",
+    "rubro_categories": "Categorías de Rubros",
     "buttons": {
       "addGroup": "Agregar Grupo",
       "addType": "Agregar Tipo",
       "addSupplier": "Agregar Proveedor",
-      "addRubro": "Agregar Rubro"
+      "addRubro": "Agregar Rubro",
+      "addRubroCategory": "Agregar Categoría",
+      "clearFilter": "Limpiar Filtro"
     },
     "toggle_groups": "Grupos",
     "toggle_types": "Tipos de Proyecto",
     "toggle_suppliers": "Proveedores",
     "toggle_overview": "Vista General",
     "toggle_rubros": "Rubros",
+    "toggle_rubro_categories": "Cat. Rubros",
     "fields": {
       "name": "Nombre",
       "order": "Orden",
@@ -308,7 +312,8 @@
       "noGroups": "No se encontraron grupos de mantenimiento.",
       "noTypes": "No se encontraron tipos de proyecto.",
       "noSuppliers": "No se encontraron proveedores.",
-      "noRubros": "No se encontraron rubros."
+      "noRubros": "No se encontraron rubros.",
+      "noRubroCategories": "No se encontraron categorías de rubros."
     },
     "alerts": {
       "fetchError": "Error al obtener {entity}: {message}",
@@ -318,7 +323,8 @@
       "deleteSuccess": "Registro eliminado exitosamente.",
       "deleteError": "Error al eliminar el registro: {message}",
       "nameRequired": "El nombre es un campo obligatorio.",
-      "allFieldsRequired": "Por favor, complete todos los campos obligatorios."
+      "allFieldsRequired": "Por favor, complete todos los campos obligatorios.",
+      "filteringBy": "Filtrando por: {category}"
     },
     "modals": {
       "addGroup": "Agregar Nuevo Grupo de Mantenimiento",
@@ -328,7 +334,9 @@
       "addSupplier": "Agregar Nuevo Proveedor",
       "editSupplier": "Editar Proveedor",
       "addRubro": "Agregar Nuevo Rubro",
-      "editRubro": "Editar Rubro"
+      "editRubro": "Editar Rubro",
+      "addRubroCategory": "Agregar Categoría de Rubro",
+      "editRubroCategory": "Editar Categoría de Rubro"
     },
     "placeholders": {
       "selectGroup": "Seleccione un grupo",

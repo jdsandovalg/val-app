@@ -37,7 +37,11 @@ const typeColors = [
   'border-cyan-400',
 ];
 
-export default function RelationshipView() {
+type RelationshipViewProps = {
+  onTypeClick: (typeId: number, typeName: string) => void;
+};
+
+export default function RelationshipView({ onTypeClick }: RelationshipViewProps) {
   const { t } = useI18n();
   const supabase = createClient();
   const [relationshipData, setRelationshipData] = useState<GrupoMantenimiento[]>([]);
@@ -145,7 +149,11 @@ export default function RelationshipView() {
               {openGroupId === group.id_grupo && (
                 <div className="pl-4 sm:pl-8 pt-2 space-y-2">
                   {group.tipos.map((type, typeIndex) => (
-                    <div key={type.id_tipo} className={`rounded-lg border bg-white p-3 border-l-4 ${typeColors[typeIndex % typeColors.length]}`}>
+                    <div
+                      key={type.id_tipo}
+                      className={`rounded-lg border bg-white p-3 border-l-4 ${typeColors[typeIndex % typeColors.length]} cursor-pointer hover:bg-gray-50 transition-colors`}
+                      onClick={() => onTypeClick(type.id_tipo, type.nombre_tipo)}
+                    >
                       <p className="font-medium">{type.nombre_tipo}</p>
                     </div>
                   ))}

@@ -283,17 +283,21 @@
     "project_classification": "Classification de Projets",
     "suppliers_nits": "Fournisseurs (NITs)",
     "rubros_catalog": "Catalogue des Postes de Coût",
+    "rubro_categories": "Catégories de Postes",
     "buttons": {
       "addGroup": "Ajouter un Groupe",
       "addType": "Ajouter un Type",
       "addSupplier": "Ajouter un Fournisseur",
-      "addRubro": "Ajouter un Poste"
+      "addRubro": "Ajouter un Poste",
+      "addRubroCategory": "Ajouter Catégorie",
+      "clearFilter": "Effacer le Filtre"
     },
     "toggle_groups": "Groupes",
     "toggle_types": "Types de Projet",
     "toggle_suppliers": "Fournisseurs",
     "toggle_overview": "Vue d'Ensemble",
     "toggle_rubros": "Postes",
+    "toggle_rubro_categories": "Cat. Postes",
     "fields": {
       "name": "Nom",
       "order": "Ordre",
@@ -307,7 +311,8 @@
       "noGroups": "Aucun groupe de maintenance trouvé.",
       "noTypes": "Aucun type de projet trouvé.",
       "noSuppliers": "Aucun fournisseur trouvé.",
-      "noRubros": "Aucun poste de coût trouvé."
+      "noRubros": "Aucun poste de coût trouvé.",
+      "noRubroCategories": "Aucune catégorie de poste de coût trouvée."
     },
     "alerts": {
       "fetchError": "Erreur lors de la récupération de {entity} : {message}",
@@ -317,7 +322,8 @@
       "deleteSuccess": "Enregistrement supprimé avec succès.",
       "deleteError": "Erreur lors de la suppression de l'enregistrement : {message}",
       "nameRequired": "Le nom est un champ obligatoire.",
-      "allFieldsRequired": "Veuillez remplir tous les champs obligatoires."
+      "allFieldsRequired": "Veuillez remplir tous les champs obligatoires.",
+      "filteringBy": "Filtrage par : {category}"
     },
     "modals": {
       "addGroup": "Ajouter un Nouveau Groupe de Maintenance",
@@ -327,7 +333,9 @@
       "addSupplier": "Ajouter un Nouveau Fournisseur",
       "editSupplier": "Modifier le Fournisseur",
       "addRubro": "Ajouter un Nouveau Poste de Coût",
-      "editRubro": "Modifier le Poste de Coût"
+      "editRubro": "Modifier le Poste de Coût",
+      "addRubroCategory": "Ajouter une Catégorie de Poste",
+      "editRubroCategory": "Modifier la Catégorie de Poste"
     },
     "placeholders": {
       "selectGroup": "Sélectionnez un groupe",

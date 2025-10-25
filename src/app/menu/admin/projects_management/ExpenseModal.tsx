@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'react-hot-toast';
-import SupplierModal from './SupplierModal'; // Reutilizamos el modal de proveedores
+import SupplierModal from '../projects_catalogs/SupplierModal'; // Reutilizamos el modal de proveedores
 
 type Gasto = {
   id_gasto?: number;

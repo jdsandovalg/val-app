@@ -284,17 +284,21 @@
     "project_classification": "Project Classification",
     "suppliers_nits": "Suppliers (NITs)",
     "rubros_catalog": "Rubros Catalog",
+    "rubro_categories": "Rubro Categories",
     "buttons": {
       "addGroup": "Add Group",
       "addType": "Add Type",
       "addSupplier": "Add Supplier",
-      "addRubro": "Add Rubro"
+      "addRubro": "Add Rubro",
+      "addRubroCategory": "Add Category",
+      "clearFilter": "Clear Filter"
     },
     "toggle_groups": "Groups",
     "toggle_types": "Project Types",
     "toggle_suppliers": "Suppliers",
     "toggle_overview": "Overview",
     "toggle_rubros": "Rubros",
+    "toggle_rubro_categories": "Rubro Cats.",
     "fields": {
       "name": "Name",
       "order": "Order",
@@ -308,7 +312,8 @@
       "noGroups": "No maintenance groups found.",
       "noTypes": "No project types found.",
       "noSuppliers": "No suppliers found.",
-      "noRubros": "No rubros found."
+      "noRubros": "No rubros found.",
+      "noRubroCategories": "No rubro categories found."
     },
     "alerts": {
       "fetchError": "Error fetching {entity}: {message}",
@@ -318,7 +323,8 @@
       "deleteSuccess": "Record deleted successfully.",
       "deleteError": "Error deleting record: {message}",
       "nameRequired": "Name is a required field.",
-      "allFieldsRequired": "Please fill in all required fields."
+      "allFieldsRequired": "Please fill in all required fields.",
+      "filteringBy": "Filtering by: {category}"
     },
     "modals": {
       "addGroup": "Add New Maintenance Group",
@@ -328,7 +334,9 @@
       "addSupplier": "Add New Supplier",
       "editSupplier": "Edit Supplier",
       "addRubro": "Add New Rubro",
-      "editRubro": "Edit Rubro"
+      "editRubro": "Edit Rubro",
+      "addRubroCategory": "Add Rubro Category",
+      "editRubroCategory": "Edit Rubro Category"
     },
     "placeholders": {
       "selectGroup": "Select a group",

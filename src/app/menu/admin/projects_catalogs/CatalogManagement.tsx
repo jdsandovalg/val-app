@@ -36,6 +36,8 @@ type CatalogManagementProps<T, TModalProps = object> = {
   renderCardContent: (item: T) => ReactNode;
   // Función para obtener los parámetros para la RPC de guardado
   getSaveParams: (item: Partial<T>, isEditing: boolean) => object;
+  // Handler opcional para el clic en la tarjeta
+  onCardClick?: (item: T) => void;
 };
 
 export default function CatalogManagement<T extends BaseItem, TModalProps>({
@@ -50,6 +52,7 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
   additionalModalProps = {} as TModalProps,
   renderCardContent,
   getSaveParams,
+  onCardClick,
 }: CatalogManagementProps<T, TModalProps>) {
   const { t } = useI18n();
   const supabase = createClient();
@@ -65,8 +68,11 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
       if (error) throw error;
       setItems(data || []);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      toast.error(t('catalog.alerts.fetchError', { entity: t(entityNameKey), message }));
+      let errorMessage = t('calendar.payment.unknownError');
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      }
+      toast.error(t('catalog.alerts.fetchError', { entity: t(entityNameKey), message: errorMessage }));
     } finally {
       setLoading(false);
     }
@@ -138,7 +144,12 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
       {loading ? <p className="text-center text-gray-500">{t('loading')}</p> : items.length === 0 ? <p className="text-center text-gray-500">{t(i18nKeys.emptyState)}</p> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {items.map((item, index) => (
-            <CatalogCard key={item[idKey] as React.Key} colorClass={colorPalette[index % colorPalette.length]} onEdit={() => handleOpenModal(item)} onDelete={() => handleDelete(item)}>
+            <CatalogCard
+              key={item[idKey] as React.Key}
+              colorClass={colorPalette[index % colorPalette.length]}
+              onEdit={() => handleOpenModal(item)}
+              onDelete={() => handleDelete(item)}
+              onCardClick={onCardClick ? () => onCardClick(item) : undefined}>
               {renderCardContent(item)}
             </CatalogCard>
           ))}

@@ -1,63 +1,72 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useI18n } from '@/app/i18n-provider';
+import { createClient } from '@/utils/supabase/client';
 import GroupManagement from './GroupManagement';
 import TypeManagement from './TypeManagement';
 import SupplierManagement from './SupplierManagement';
 import RelationshipView from './RelationshipView';
+import RubroManagement from './RubroManagement';
+import RubroCategoryManagement from './RubroCategoryManagement';
+import { toast } from 'react-hot-toast';
 
 export default function ProjectClassificationManagementPage() {
   const { t } = useI18n();
   const [activeView, setActiveView] = useState('overview');
+  const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
+  const [rubroCategorias, setRubroCategorias] = useState<{ id_categoria: number; nombre: string }[]>([]);
+  const supabase = createClient();
+
+  const fetchRubroCategorias = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.rpc('fn_get_rubro_categorias');
+      if (error) throw error;
+      setRubroCategorias(data || []);
+    } catch (error: unknown) {
+      let errorMessage = t('calendar.payment.unknownError');
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      }
+      toast.error(t('catalog.alerts.fetchError', { entity: t('catalog.rubro_categories'), message: errorMessage }));
+    }
+  }, [supabase, t]);
+
+  useEffect(() => {
+    fetchRubroCategorias();
+  }, [fetchRubroCategorias]);
+
+  const handleCategoryClick = (category: { id_categoria: number }) => {
+    setCategoryFilter(category.id_categoria);
+    setActiveView('rubros');
+  };
+
+  const views: { [key: string]: { component: React.ReactNode; label: string } } = {
+    overview: { component: <RelationshipView onTypeClick={() => {}} />, label: t('catalog.toggle_overview') },
+    groups: { component: <GroupManagement />, label: t('catalog.toggle_groups') },
+    types: { component: <TypeManagement />, label: t('catalog.toggle_types') },
+    suppliers: { component: <SupplierManagement />, label: t('catalog.toggle_suppliers') },
+    rubros: { component: <RubroManagement categoryFilter={categoryFilter} onClearFilter={() => setCategoryFilter(null)} categorias={rubroCategorias} />, label: t('catalog.toggle_rubros') },
+    rubro_categories: { component: <RubroCategoryManagement onCardClick={handleCategoryClick} />, label: t('catalog.toggle_rubro_categories') },
+  };
 
   return (
     <div>
       <div className="rounded-xl border bg-card text-card-foreground shadow">
         <div className="flex flex-col space-y-1.5 p-6">
-          <h3 className="font-semibold leading-none tracking-tight">{t('header.admin.project_classification_management')}</h3>
+          <h3 className="font-semibold leading-none tracking-tight">{t('header.admin.catalog_management')}</h3>
         </div>
         <div className="p-6 pt-0">
           <div className="flex justify-center mb-6">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setActiveView('groups')}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  activeView === 'groups' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('catalog.toggle_groups')}
-              </button>
-              <button
-                onClick={() => setActiveView('types')}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  activeView === 'types' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('catalog.toggle_types')}
-              </button>
-              <button
-                onClick={() => setActiveView('suppliers')}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  activeView === 'suppliers' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('catalog.toggle_suppliers')}
-              </button>
-              <button
-                onClick={() => setActiveView('overview')}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  activeView === 'overview' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('catalog.toggle_overview')}
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              {Object.keys(views).map(key => (
+                <button key={key} onClick={() => setActiveView(key)} className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors ${ activeView === key ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50' }`}>
+                  {views[key].label}
+                </button>
+              ))}
             </div>
           </div>
-          {activeView === 'groups' && <GroupManagement />}
-          {activeView === 'types' && <TypeManagement />}
-          {activeView === 'suppliers' && <SupplierManagement />}
-          {activeView === 'overview' && <RelationshipView />}
+          {views[activeView] && views[activeView].component}
         </div>
       </div>
     </div>
