@@ -11,7 +11,7 @@ import ProjectList from './ProjectList';
 import ProjectModal from './ProjectModal';
 import ProjectContributions from './ProjectContributions';
 import ProjectExpenses from './ProjectExpenses';
-import ProposalDetail from './components/ProposalDetail';
+
 import FinancialDetail from './FinancialDetail';
 import FinancialReport from './FinancialReport';
 
@@ -171,10 +171,7 @@ export default function ProjectClassificationManagementPage() {
             </div>
           </div>
           {activeView === 'projects' && (
-            <>
-              <ProjectList onProjectSelect={handleProjectSelect} selectedProject={selectedProject} />
-              {selectedProject && selectedProject.estado === 'abierto' && <ProposalDetail project={selectedProject} />}
-            </>
+            <ProjectList onProjectSelect={handleProjectSelect} selectedProject={selectedProject} />
           )}
           {activeView === 'suppliers' && <SupplierManagement />}
           {activeView === 'overview' && <RelationshipView onTypeClick={handleOpenModal} />}

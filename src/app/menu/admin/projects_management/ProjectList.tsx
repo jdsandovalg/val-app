@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
+import ProposalDetail from './components/ProposalDetail';
 
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 
@@ -80,27 +81,32 @@ export default function ProjectList({ onProjectSelect, selectedProject }: Projec
         <p className="text-center text-gray-500 py-4 bg-gray-100 rounded-lg">{t('projects.emptyState.noActiveProjects')}</p>
       ) : (
         <div className="space-y-3">
-          {projects.map((project) => (
-            <div
-              key={project.id_proyecto}
-              onClick={() => handleSelect(project)}
-              className={`p-4 rounded-lg border-l-4 shadow-sm cursor-pointer transition-all ${
-                selectedProject?.id_proyecto === project.id_proyecto
-                  ? `bg-blue-50 ${statusStyles[project.estado]?.border || 'border-gray-400'} ring-2 ring-blue-300`
-                  : `bg-white ${statusStyles[project.estado]?.border || 'border-gray-400'} hover:bg-gray-50`
-              }`}
-            >
-              <div className="flex justify-between items-start">
-                <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
-                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
-                  {t(`projectStatus.${project.estado}`)}
-                </span>
+          {projects.map(project => {
+            const isSelected = selectedProject?.id_proyecto === project.id_proyecto;
+            return (
+              <div key={project.id_proyecto} className="bg-white rounded-lg shadow-sm">
+                <div
+                  onClick={() => handleSelect(project)}
+                  className={`p-4 border-l-4 cursor-pointer transition-all ${
+                    isSelected
+                      ? `bg-blue-50 ${statusStyles[project.estado]?.border || 'border-gray-400'} rounded-t-lg`
+                      : `bg-white ${statusStyles[project.estado]?.border || 'border-gray-400'} hover:bg-gray-50 rounded-lg`
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
+                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
+                      {t(`projectStatus.${project.estado}`)}
+                    </span>
+                  </div>
+                  {project.notas_clave && <p className="text-sm text-gray-600 mt-2">{project.notas_clave}</p>}
+                </div>
+                {isSelected && project.estado === 'abierto' && (
+                  <div className="p-4 border-t border-gray-200"><ProposalDetail project={project} /></div>
+                )}
               </div>
-              {project.notas_clave && (
-                <p className="text-sm text-gray-600 mt-2">{project.notas_clave}</p>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

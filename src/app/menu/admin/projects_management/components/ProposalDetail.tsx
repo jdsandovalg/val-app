@@ -206,17 +206,13 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
 
 
   return (
-    <div className="mt-6 p-4 bg-white rounded-lg shadow-md border border-gray-200 animate-fade-in">
-      <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-        {t('projects.modals.tabs.newProject')}: <span className="font-normal">{project.descripcion_tarea}</span>
-      </h2>
-
+    <div className="mt-2 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Columna Izquierda: Rubros y Cotizaciones */}
         <div className="md:col-span-2 space-y-6">
           {/* Sección de Rubros */}
-          <div className="p-4 border rounded-lg bg-gray-50 min-h-[200px]">
-            <h3 className="text-lg font-semibold text-gray-700 mb-3">{t('projects.expenses.title')}</h3>
+          <div className="p-4 border rounded-lg bg-gray-10 min-h-[200px]">
+            <h3 className="text-base font-semibold text-gray-700 mb-3">{t('projects.expenses.title')}</h3>
             
             {/* Formulario para añadir rubro */}
             <form onSubmit={handleAddRubro} className="mb-4 p-3 border rounded-md bg-white">
@@ -268,13 +264,13 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
 
             {/* Tabla de rubros existentes */}
             {proyectoRubros.length > 0 && (
-              <div className="space-y-3">
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
                 {proyectoRubros.map((item) => (
-                  <div key={item.id_proyecto_rubro} className="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
+                  <div key={item.id_proyecto_rubro} className="bg-white p-4 border-b border-gray-200 last:border-b-0">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-3 items-center">
                       {/* Info Principal */}
                       <div className="sm:col-span-2">
-                        <p className="font-semibold text-gray-800">{item.rubro_nombre || 'Rubro no encontrado'}</p>
+                        <p className="font-semibold text-gray-800 text-sm">{item.rubro_nombre || 'Rubro no encontrado'}</p>
                         <p className="text-xs text-gray-500">{item.rubro_categoria || 'N/A'}</p>
                       </div>
                       <input
@@ -282,7 +278,7 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
                         step="0.01"
                         value={Number(item.monto).toFixed(2)}
                         onChange={(e) => handleUpdateRubroField(item.id_proyecto_rubro, 'monto', parseFloat(e.target.value) || 0)}
-                        className="p-2 border border-gray-300 rounded-md text-sm w-full text-right font-bold text-lg bg-gray-50"
+                        className="p-2 border border-gray-300 rounded-md text-sm w-full text-right font-bold text-base bg-gray-50"
                       />
 
                       {/* Campos de Edición */}
