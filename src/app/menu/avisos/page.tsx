@@ -64,6 +64,24 @@ export default function AvisosPage() {
     fetchAvisoData();
   }, [fetchAvisoData]);
 
+  // Helper function to format days remaining message using Intl.PluralRules
+  const getDaysRemainingMessage = useCallback((count: number, currentLocale: string) => {
+    const pluralRules = new Intl.PluralRules(currentLocale);
+    const rule = pluralRules.select(count); // 'zero', 'one', 'other' for Spanish/English
+
+    switch (rule) {
+      case 'zero':
+        return t('notices.card.daysRemaining_zero');
+      case 'one':
+        return t('notices.card.daysRemaining_one');
+      case 'other':
+        return t('notices.card.daysRemaining_other', { count: count });
+      default:
+        // Fallback, should not be reached for 'es' or 'en'
+        return t('notices.card.daysRemaining_other', { count: count });
+    }
+  }, [t]);
+
   const filteredAvisos = avisos.filter(aviso => aviso.categoria === activeTab);
 
   if (isLoading) {
@@ -144,7 +162,7 @@ export default function AvisosPage() {
                   <span className="text-sm font-medium text-gray-600">{formatDate(aviso.fecha, lang)}</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
-                  {t('notices.card.daysRemaining', { count: aviso.dias_restantes })}
+                  {getDaysRemainingMessage(aviso.dias_restantes, lang)}
                 </p>
               </div>
             ))}

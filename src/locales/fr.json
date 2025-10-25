@@ -137,7 +137,9 @@
       "success": "Paiement enregistré avec succès !"
     },
     "card": {
-      "daysRemaining": "{count, plural, =0 {Échéance aujourd'hui} =1 {Échéance dans 1 jour} other {Échéance dans # jours}}",
+      "daysRemaining_zero": "Échéance aujourd'hui",
+      "daysRemaining_one": "Échéance dans 1 jour",
+      "daysRemaining_other": "Échéance dans {count} jours",
       "noNoticesInCategory": "Aucun avis dans cette catégorie."
     }
   },
@@ -423,12 +425,32 @@
       "title": "Annexe des Preuves",
       "viewEvidence": "Voir la Preuve",
       "altText": "Preuve de dépense"
+    },
+    "proposalDetail": {
+      "noRubros": "Aucun poste de coût n'a encore été ajouté à ce projet.",
+      "addRubroTitle": "Ajouter un Poste de Coût",
+      "selectRubro": "Sélectionnez un poste...",
+      "searchRubro": "Recherchez ou sélectionnez un poste...",
+      "amountPlaceholder": "Montant",
+      "descriptionLabel": "Description (nom, entreprise)",
+      "referenceLabel": "Référence (Fixe, Mobile)",
+      "addButton": "Ajouter",
+      "updateButton": "Mettre à jour",
+      "tableCategory": "Catégorie",
+      "tableAmount": "Montant",
+      "tableDescription": "Description",
+      "tableReference": "Référence",
+      "alerts": {
+        "addSuccess": "Poste de coût ajouté avec succès.",
+        "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce poste de coût ?",
+        "deleteSuccess": "Poste de coût supprimé avec succès."
+      }
     }
   },
   "projectStatus": {
     "title": "État du Projet",
     "abierto": "Ouvert",
-    "en_votacion": "En Votation",
+    "en_votacion": "En Vote",
     "aprobado": "Approuvé",
     "rechazado": "Rejeté",
     "en_progreso": "En Cours",

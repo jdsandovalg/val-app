@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
-import { formatCurrency } from '@/utils/format';
 
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 
@@ -27,7 +26,7 @@ type ProjectListProps = {
 
 export default function ProjectList({ onProjectSelect, selectedProject }: ProjectListProps) {
   const supabase = createClient();
-  const { t, locale, currency } = useI18n();
+  const { t } = useI18n();
   const [projects, setProjects] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(true);
 

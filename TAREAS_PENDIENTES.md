@@ -5,6 +5,7 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 ## Principios de Arquitectura y Decisiones Clave
 *   **Verificación de Dependencias Cruzadas:** Al modificar un archivo central (como un proveedor de contexto, una utilidad global o un archivo de configuración), se debe identificar y revisar explícitamente todos los archivos que lo importan. Esto se hará para anticipar y corregir errores de compilación o efectos secundarios de manera proactiva, en lugar de reactiva.
 *   **Fuente de Datos:** Las funciones de base de datos **NO DEBEN** depender de vistas (`VIEW`). Toda la lógica debe operar directamente sobre las **tablas base** (`usuarios`, `contribucionesporcasa`, etc.).
+*   **Abstracción de Base de Datos:** Toda la interacción con la base de datos (lectura y escritura) **DEBE** realizarse a través de funciones RPC (`supabase.rpc('nombre_funcion', ...)`). **NO SE DEBE** consultar tablas directamente desde el frontend (ej. `supabase.from('tabla').select()`). Esto centraliza la lógica de negocio en la base de datos y mejora la seguridad.
 *   **Enfoque "Mobile-Only":** La aplicación se desarrollará y diseñará exclusivamente para una experiencia móvil (WebApp). Se eliminarán las vistas y componentes específicos para escritorio (como tablas complejas) para simplificar el código, reducir el mantenimiento y alinear el producto con su objetivo primario.
 *   **Autenticación:** El inicio de sesión se realiza **únicamente** a través de la función RPC `login_user`, que valida contra la tabla `public.usuarios`. **NO SE UTILIZA** el sistema de autenticación de Supabase (`supabase.auth`).
 *   **Rendimiento en "Grupos de Trabajo":** La página de "Grupos de Trabajo" **DEBE** usar la función RPC `get_grupos_trabajo_usuario` para delegar la agrupación de datos al servidor. No se debe realizar la agrupación en el cliente.
@@ -45,6 +46,13 @@ Ahora que un proyecto puede existir en estado `'abierto'`, el siguiente paso es 
         *   **Sección de Cotizaciones:** Un área para subir los archivos (PDF, imágenes) que respaldan los costos.
         *   **Resumen de Costos:** Una tarjeta que mostrará el `valor_estimado` total, calculado automáticamente como la suma de todos los rubros.
         *   **Botón de Acción:** Un botón principal como "Enviar a Votación" que cambiará el estado del proyecto a `'en_votacion'`.
+
+#### Paso 1.5 (Deuda Técnica): Refactorizar Consultas a RPC
+*   **Problema:** Las consultas para leer y escribir en las tablas `rubros` y `proyecto_rubros` se están haciendo directamente desde el frontend (`supabase.from(...)`), lo cual viola el principio de abstracción de la base de datos.
+*   **Solución:**
+    *   Crear una nueva función RPC `gestionar_rubros_catalogo` para el CRUD de la tabla `rubros`.
+    *   Crear una nueva función RPC `gestionar_proyecto_rubros` para el CRUD de la tabla `proyecto_rubros`.
+    *   Refactorizar los componentes `ProposalDetail.tsx` y el futuro `RubroManagement.tsx` para que utilicen exclusivamente estas funciones RPC.
 
 2.  **Modificar la Página Principal (`page.tsx`)**
     *   Ajustaremos la lógica para que, cuando `activeView` sea `'projects'` y se seleccione un proyecto, se renderice condicionalmente:

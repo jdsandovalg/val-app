@@ -137,7 +137,9 @@
       "success": "¡Pago registrado exitosamente!"
     },
     "card": {
-      "daysRemaining": "{count, plural, =0 {Vence hoy} =1 {Vence en 1 día} other {Vence en # días}}",
+      "daysRemaining_zero": "Vence hoy",
+      "daysRemaining_one": "Vence en 1 día",
+      "daysRemaining_other": "Vence en {count} días",
       "noNoticesInCategory": "No hay avisos en esta categoría."
     }
   },
@@ -424,6 +426,26 @@
       "title": "Anexo de Evidencias",
       "viewEvidence": "Ver Evidencia",
       "altText": "Evidencia de gasto"
+    },
+    "proposalDetail": {
+      "noRubros": "Aún no se han añadido rubros a este proyecto.",
+      "addRubroTitle": "Añadir Rubro",
+      "selectRubro": "Seleccione un rubro...",
+      "searchRubro": "Busque o seleccione un rubro...",
+      "amountPlaceholder": "Monto",
+      "descriptionLabel": "Descripción (nombre, empresa)",
+      "referenceLabel": "Referencia (Teléfono Fijo, Móvil)",
+      "addButton": "Añadir",
+      "updateButton": "Actualizar",
+      "tableCategory": "Categoría",
+      "tableAmount": "Monto",
+      "tableDescription": "Descripción",
+      "tableReference": "Referencia",
+      "alerts": {
+        "addSuccess": "Rubro añadido exitosamente.",
+        "deleteConfirm": "¿Estás seguro de que quieres eliminar este rubro?",
+        "deleteSuccess": "Rubro eliminado exitosamente."
+      }
     }
   },
   "projectStatus": {
