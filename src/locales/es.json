@@ -283,27 +283,32 @@
     "project_types": "Tipos de Proyecto",
     "project_classification": "Clasificación de Proyectos",
     "suppliers_nits": "Proveedores (NITs)",
+    "rubros_catalog": "Catálogo de Rubros",
     "buttons": {
       "addGroup": "Agregar Grupo",
       "addType": "Agregar Tipo",
-      "addSupplier": "Agregar Proveedor"
+      "addSupplier": "Agregar Proveedor",
+      "addRubro": "Agregar Rubro"
     },
     "toggle_groups": "Grupos",
     "toggle_types": "Tipos de Proyecto",
     "toggle_suppliers": "Proveedores",
     "toggle_overview": "Vista General",
+    "toggle_rubros": "Rubros",
     "fields": {
       "name": "Nombre",
       "order": "Orden",
       "group": "Grupo",
       "noGroup": "Sin grupo asignado",
       "nit": "NIT",
-      "address": "Dirección"
+      "address": "Dirección",
+      "category": "Categoría"
     },
     "emptyState": {
       "noGroups": "No se encontraron grupos de mantenimiento.",
       "noTypes": "No se encontraron tipos de proyecto.",
-      "noSuppliers": "No se encontraron proveedores."
+      "noSuppliers": "No se encontraron proveedores.",
+      "noRubros": "No se encontraron rubros."
     },
     "alerts": {
       "fetchError": "Error al obtener {entity}: {message}",
@@ -321,10 +326,13 @@
       "addType": "Agregar Nuevo Tipo de Proyecto",
       "editType": "Editar Tipo de Proyecto",
       "addSupplier": "Agregar Nuevo Proveedor",
-      "editSupplier": "Editar Proveedor"
+      "editSupplier": "Editar Proveedor",
+      "addRubro": "Agregar Nuevo Rubro",
+      "editRubro": "Editar Rubro"
     },
     "placeholders": {
       "selectGroup": "Seleccione un grupo",
+      "selectCategory": "Seleccione una categoría",
       "nit": "Ej: 1234567-8",
       "address": "Ej: Av. Principal 123, Ciudad",
       "searchGroup": "Buscar por nombre de grupo..."

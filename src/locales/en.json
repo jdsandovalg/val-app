@@ -283,27 +283,32 @@
     "project_types": "Project Types",
     "project_classification": "Project Classification",
     "suppliers_nits": "Suppliers (NITs)",
+    "rubros_catalog": "Rubros Catalog",
     "buttons": {
       "addGroup": "Add Group",
       "addType": "Add Type",
-      "addSupplier": "Add Supplier"
+      "addSupplier": "Add Supplier",
+      "addRubro": "Add Rubro"
     },
     "toggle_groups": "Groups",
     "toggle_types": "Project Types",
     "toggle_suppliers": "Suppliers",
     "toggle_overview": "Overview",
+    "toggle_rubros": "Rubros",
     "fields": {
       "name": "Name",
       "order": "Order",
       "group": "Group",
       "noGroup": "No group assigned",
       "nit": "NIT/ID",
-      "address": "Address"
+      "address": "Address",
+      "category": "Category"
     },
     "emptyState": {
       "noGroups": "No maintenance groups found.",
       "noTypes": "No project types found.",
-      "noSuppliers": "No suppliers found."
+      "noSuppliers": "No suppliers found.",
+      "noRubros": "No rubros found."
     },
     "alerts": {
       "fetchError": "Error fetching {entity}: {message}",
@@ -321,10 +326,13 @@
       "addType": "Add New Project Type",
       "editType": "Edit Project Type",
       "addSupplier": "Add New Supplier",
-      "editSupplier": "Edit Supplier"
+      "editSupplier": "Edit Supplier",
+      "addRubro": "Add New Rubro",
+      "editRubro": "Edit Rubro"
     },
     "placeholders": {
       "selectGroup": "Select a group",
+      "selectCategory": "Select a category",
       "nit": "e.g. 1234567-8",
       "address": "e.g. 123 Main St, City",
       "searchGroup": "Search by group name..."

@@ -282,30 +282,38 @@
     "project_types": "Types de Projet",
     "project_classification": "Classification de Projets",
     "suppliers_nits": "Fournisseurs (NITs)",
+    "rubros_catalog": "Catalogue des Postes de Coût",
     "buttons": {
       "addGroup": "Ajouter un Groupe",
       "addType": "Ajouter un Type",
-      "addSupplier": "Ajouter un Fournisseur"
+      "addSupplier": "Ajouter un Fournisseur",
+      "addRubro": "Ajouter un Poste"
+    },
     "toggle_groups": "Groupes",
     "toggle_types": "Types de Projet",
     "toggle_suppliers": "Fournisseurs",
     "toggle_overview": "Vue d'Ensemble",
+    "toggle_rubros": "Postes",
     "fields": {
       "name": "Nom",
       "order": "Ordre",
       "group": "Groupe",
       "noGroup": "Aucun groupe assigné",
       "nit": "NIT/ID",
-      "address": "Adresse"
+      "address": "Adresse",
+      "category": "Catégorie"
     },
     "emptyState": {
       "noGroups": "Aucun groupe de maintenance trouvé.",
-      "noSuppliers": "Aucun fournisseur trouvé."
+      "noTypes": "Aucun type de projet trouvé.",
+      "noSuppliers": "Aucun fournisseur trouvé.",
+      "noRubros": "Aucun poste de coût trouvé."
     },
     "alerts": {
       "fetchError": "Erreur lors de la récupération de {entity} : {message}",
       "saveSuccess": "Enregistrement sauvegardé avec succès !",
       "saveError": "Erreur lors de la sauvegarde de l'enregistrement : {message}",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet enregistrement ?",
       "deleteSuccess": "Enregistrement supprimé avec succès.",
       "deleteError": "Erreur lors de la suppression de l'enregistrement : {message}",
       "nameRequired": "Le nom est un champ obligatoire.",
@@ -317,14 +325,18 @@
       "addType": "Ajouter un Nouveau Type de Projet",
       "editType": "Modifier le Type de Projet",
       "addSupplier": "Ajouter un Nouveau Fournisseur",
-      "editSupplier": "Modifier le Fournisseur"
+      "editSupplier": "Modifier le Fournisseur",
+      "addRubro": "Ajouter un Nouveau Poste de Coût",
+      "editRubro": "Modifier le Poste de Coût"
     },
     "placeholders": {
       "selectGroup": "Sélectionnez un groupe",
+      "selectCategory": "Sélectionnez une catégorie",
       "nit": "Ex : 1234567-8",
       "address": "Ex : 123 Rue Principale, Ville",
       "searchGroup": "Rechercher par nom de groupe..."
     },
+    "sortMenu": {
       "byName": "Trier par Nom",
       "byOrder": "Trier par Ordre"
     }
@@ -415,8 +427,7 @@
       "alerts": {
         "fetchError": "Erreur lors du chargement du résumé : {message}",
         "noProjectInfo": "Informations sur le projet non trouvées."
-      }os dentro de proyectos
-
+      }
     },
     "evidenceAppendix": {
       "title": "Annexe des Preuves",
