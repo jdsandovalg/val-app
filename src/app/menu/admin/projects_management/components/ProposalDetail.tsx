@@ -62,6 +62,7 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
   const [selectedRubroId, setSelectedRubroId] = useState<string>('');
   const [newMonto, setNewMonto] = useState<string>('');
   const [isAdding, setIsAdding] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [rubroToDeleteId, setRubroToDeleteId] = useState<number | null>(null);
 
@@ -97,6 +98,12 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
 
     const selectedRubro = masterRubros.find(r => r.nombre === inputValue);
     setSelectedRubroId(selectedRubro ? String(selectedRubro.id_rubro) : '');
+  };
+
+  const handleRubroSelect = (rubro: Rubro) => {
+    setRubroInput(rubro.nombre);
+    setSelectedRubroId(String(rubro.id_rubro));
+    setIsSearchFocused(false);
   };
 
   const handleAddRubro = async (e: React.FormEvent) => {
@@ -215,20 +222,32 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
             <form onSubmit={handleAddRubro} className="mb-4 p-3 border rounded-md bg-white">
               <h4 className="font-semibold text-gray-600 mb-2">{t('projects.proposalDetail.addRubroTitle')}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
-                <div className="sm:col-span-2">
+                <div className="sm:col-span-2 relative">
                   <input
-                    list="rubros-list"
                     value={rubroInput}
                     onChange={handleRubroInputChange}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)} // Delay to allow click on results
                     placeholder={t('projects.proposalDetail.searchRubro')}
                     className="p-2 border border-gray-300 rounded-md text-sm w-full"
                     disabled={isAdding}
+                    autoComplete="off"
                   />
-                  <datalist id="rubros-list">
-                    {masterRubros.map(rubro => (
-                      <option key={rubro.id_rubro} value={rubro.nombre} />
-                    ))}
-                  </datalist>
+                  {isSearchFocused && rubroInput && (
+                    <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-48 overflow-y-auto shadow-lg">
+                      {masterRubros
+                        .filter(r => r.nombre.toLowerCase().includes(rubroInput.toLowerCase()))
+                        .map(rubro => (
+                          <div
+                            key={rubro.id_rubro}
+                            onMouseDown={() => handleRubroSelect(rubro)}
+                            className="p-2 text-sm hover:bg-blue-50 cursor-pointer"
+                          >
+                            {rubro.nombre}
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
                 <input
                   type="number"

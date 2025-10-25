@@ -47,6 +47,22 @@ Ahora que un proyecto puede existir en estado `'abierto'`, el siguiente paso es 
         *   **Resumen de Costos:** Una tarjeta que mostrará el `valor_estimado` total, calculado automáticamente como la suma de todos los rubros.
         *   **Botón de Acción:** Un botón principal como "Enviar a Votación" que cambiará el estado del proyecto a `'en_votacion'`.
 
+#### Paso 1.2: Gestión del Catálogo de Rubros
+*   **Objetivo:** Crear una interfaz administrativa para el CRUD (Crear, Leer, Actualizar, Eliminar) del catálogo maestro de `rubros`.
+*   **Solución:**
+    *   **Backend:** Extender la función RPC `fn_gestionar_rubros_catalogo` para que soporte las acciones `INSERT`, `UPDATE` y `DELETE`.
+    *   **Frontend:**
+        *   Crear un nuevo componente `RubroManagement.tsx` que utilice la función RPC anterior.
+        *   Integrar este componente en la página `projects_management/page.tsx` con un nuevo botón de acceso.
+        *   Añadir las traducciones necesarias.
+
+#### Paso 1.3 (Deuda Técnica): Normalización de Categorías de Rubros
+*   **Problema:** La columna `categoria` en la tabla `rubros` es un campo de texto libre, lo que puede llevar a inconsistencias.
+*   **Solución Propuesta:**
+    *   Crear una nueva tabla `rubro_categorias` (`id_categoria`, `nombre`).
+    *   Reemplazar la columna `categoria` en `rubros` por una clave foránea `id_categoria` que apunte a la nueva tabla.
+    *   Actualizar las funciones RPC y el frontend para reflejar este cambio estructural.
+
 #### Paso 1.5 (Deuda Técnica): Refactorizar Consultas a RPC
 *   **Problema:** Las consultas para leer y escribir en las tablas `rubros` y `proyecto_rubros` se están haciendo directamente desde el frontend (`supabase.from(...)`), lo cual viola el principio de abstracción de la base de datos.
 *   **Solución:**
