@@ -13,6 +13,7 @@ import ProjectContributions from './ProjectContributions';
 import ProjectExpenses from './ProjectExpenses';
 import ProposalDetail from './components/ProposalDetail';
 import FinancialDetail from './FinancialDetail';
+import EvidenceManagement from './components/EvidenceManagement';
 import FinancialReport from './FinancialReport';
 
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
@@ -112,7 +113,7 @@ export default function ProjectClassificationManagementPage() {
   }, [supabase, t, handleCloseModal]);
 
   // Lógica para deshabilitar botones según el estado del proyecto
-  const isContributionsDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
+  const isContributionsDisabled = !selectedProject || ['en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
   // El botón de gastos ahora se habilita para 'abierto' (propuesta) y los estados financieros.
   const isExpensesDisabled = !selectedProject || ['en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
   const isSummaryDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
@@ -136,13 +137,21 @@ export default function ProjectClassificationManagementPage() {
                 {t('projects.activeProjectsTitle')}
               </button>
               <button
-                onClick={() => setActiveView('contributions')}
+                onClick={() => {
+                  if (selectedProject?.estado === 'abierto') {
+                    setActiveView('evidence_management');
+                  } else {
+                    setActiveView('contributions');
+                  }
+                }}
                 disabled={isContributionsDisabled}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
-                  activeView === 'contributions' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  activeView === 'contributions' || activeView === 'evidence_management' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {t('projects.contributions.title')}
+                {selectedProject?.estado === 'abierto'
+                  ? t('projects.evidenceAppendix.title')
+                  : t('projects.contributions.title')}
               </button>
               <button
                 onClick={() => {
@@ -188,6 +197,7 @@ export default function ProjectClassificationManagementPage() {
           {activeView === 'contributions' && <ProjectContributions projectId={selectedProjectId} />}
           {activeView === 'expenses' && <ProjectExpenses projectId={selectedProjectId} />}
           {activeView === 'summary' && <FinancialDetail projectId={selectedProjectId} />}
+          {activeView === 'evidence_management' && <EvidenceManagement />}
           {activeView === 'proposal_detail' && selectedProject && <ProposalDetail project={selectedProject} />}
         </div>
       </div>

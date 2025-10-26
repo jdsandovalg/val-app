@@ -28,56 +28,31 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
-## I. Tareas Pendientes (Siguiente Fase)
+## I. Tareas Pendientes (Deuda Técnica y Refinamiento)
 
-### Fase 2: Preparación de Propuestas (Cotización y Rubros)
+Ahora que la funcionalidad principal de la Fase 2 está implementada, nos centraremos en refinar el código, pagar la deuda técnica y mejorar la experiencia de usuario.
 
-Ahora que un proyecto puede existir en estado `'abierto'`, el siguiente paso es darle al administrador las herramientas para trabajar sobre él. El objetivo es construir la vista donde se puedan **añadir los rubros (líneas de costo) y las cotizaciones (documentos de respaldo)**.
+### 1. Optimizar Carga de Datos en `ProposalDetail`
+*   **Problema:** El componente `ProposalDetail.tsx` realiza una llamada RPC (`fn_gestionar_rubros_catalogo`) para obtener el catálogo maestro de rubros. Esta llamada es redundante, ya que la página principal podría obtener estos datos una sola vez.
+*   **Solución Propuesta:** Modificar la página `projects_management/page.tsx` para que obtenga el catálogo maestro y lo pase como `prop` a `ProposalDetail.tsx`, eliminando la llamada duplicada y mejorando el rendimiento.
 
-**Propuesta:** Crear una nueva vista de detalle que se muestre cuando un proyecto en estado `'abierto'` es seleccionado.
-
-#### Paso 1: Crear la Vista de Detalle de la Propuesta
-
-1.  **Crear un Nuevo Componente: `ProposalDetail.tsx`**
-    *   Este componente se mostrará en el área principal cuando `selectedProject.estado === 'abierto'`.
-    *   Tendrá un diseño claro con varias secciones:
-        *   **Información General:** Mostrará los detalles del proyecto (descripción, notas, etc.).
-        *   **Sección de Rubros:** Una tabla o lista donde el administrador podrá añadir, editar y eliminar las líneas de costo del proyecto (ej. "Pintura: Q500", "Mano de obra: Q1000").
-        *   **Sección de Cotizaciones:** Un área para subir los archivos (PDF, imágenes) que respaldan los costos.
-        *   **Resumen de Costos:** Una tarjeta que mostrará el `valor_estimado` total, calculado automáticamente como la suma de todos los rubros.
-        *   **Botón de Acción:** Un botón principal como "Enviar a Votación" que cambiará el estado del proyecto a `'en_votacion'`.
-
-#### Paso 1.2: Gestión del Catálogo de Rubros
-*   **Objetivo:** Crear una interfaz administrativa para el CRUD (Crear, Leer, Actualizar, Eliminar) del catálogo maestro de `rubros`.
-*   **Solución:**
-    *   **Backend:** Extender la función RPC `fn_gestionar_rubros_catalogo` para que soporte las acciones `INSERT`, `UPDATE` y `DELETE`.
-    *   **Frontend:**
-        *   Crear un nuevo componente `RubroManagement.tsx` que utilice la función RPC anterior.
-        *   Integrar este componente en la página `projects_management/page.tsx` con un nuevo botón de acceso.
-        *   Añadir las traducciones necesarias.
-
-#### Paso 1.3 (Deuda Técnica): Normalización de Categorías de Rubros
-*   **Problema:** La columna `categoria` en la tabla `rubros` es un campo de texto libre, lo que puede llevar a inconsistencias.
-*   **Solución Propuesta:**
-    *   Crear una nueva tabla `rubro_categorias` (`id_categoria`, `nombre`).
-    *   Reemplazar la columna `categoria` en `rubros` por una clave foránea `id_categoria` que apunte a la nueva tabla.
-    *   Actualizar las funciones RPC y el frontend para reflejar este cambio estructural.
-
-#### Paso 1.5 (Deuda Técnica): Refactorizar Consultas a RPC
-*   **Problema:** Las consultas para leer y escribir en las tablas `rubros` y `proyecto_rubros` se están haciendo directamente desde el frontend (`supabase.from(...)`), lo cual viola el principio de abstracción de la base de datos.
-*   **Solución:**
-    *   Crear una nueva función RPC `gestionar_rubros_catalogo` para el CRUD de la tabla `rubros`.
-    *   Crear una nueva función RPC `gestionar_proyecto_rubros` para el CRUD de la tabla `proyecto_rubros`.
-    *   Refactorizar los componentes `ProposalDetail.tsx` y el futuro `RubroManagement.tsx` para que utilicen exclusivamente estas funciones RPC.
-
-2.  **Modificar la Página Principal (`page.tsx`)**
-    *   Ajustaremos la lógica para que, cuando `activeView` sea `'projects'` y se seleccione un proyecto, se renderice condicionalmente:
-        *   Si `selectedProject.estado === 'abierto'`, mostrar el nuevo componente `ProposalDetail.tsx`.
-        *   Si no, no mostrar nada o un mensaje indicando que se debe seleccionar una de las vistas de detalle (Aportes, Gastos, etc.).
+### 2. Mejorar la Experiencia de Usuario (UX) en `ProposalDetail`
+*   **Problema:** Después de añadir, actualizar o eliminar un rubro en `ProposalDetail.tsx`, se vuelve a llamar a la base de datos para recargar toda la lista (`fetchProyectoRubros()`). Esto genera un parpadeo en la UI y un consumo de red innecesario.
+*   **Solución Propuesta:** Refactorizar las funciones de guardado, actualización y borrado para que manipulen el estado local de React (`proyectoRubros`). Esto proporcionará una actualización instantánea y fluida (Optimistic UI) y solo se recurrirá a una recarga completa si la operación falla.
 
 ---
 
 ## II. Logros Recientes (Tareas Completadas)
+
+**2. Refactorización de la Interfaz de Propuestas**
+*   ✅ **Navegación Optimizada:** Se refactorizó la navegación principal para proyectos en estado "abierto". El botón "Aportes" se reutiliza inteligentemente, cambiando su nombre a "Evidencias" y apuntando a una nueva vista dedicada.
+*   ✅ **Limpieza de UI:** Se eliminó la tarjeta estática de "Anexo de Evidencias" del componente `ProposalDetail.tsx`, ya que su funcionalidad fue reemplazada por el nuevo botón de navegación, resultando en una interfaz más limpia y coherente.
+
+**1. Finalización de la Fase 2: Preparación de Propuestas**
+*   ✅ **Vista de Detalle de Propuesta (`ProposalDetail.tsx`):** Se implementó con éxito el componente que permite a los administradores gestionar los rubros (líneas de costo) de un proyecto en estado "abierto". Incluye funcionalidades de CRUD, búsqueda con autocompletado y cálculo de totales.
+*   ✅ **Integración en Flujo de Proyectos:** Se ajustó la página principal de gestión de proyectos para mostrar la nueva vista `ProposalDetail.tsx` cuando se selecciona un proyecto "abierto", integrando la nueva funcionalidad de forma coherente en la UI existente.
+*   ✅ **Gestión Completa de Catálogos:** Se finalizó la sección de "Gestión de Catálogos", permitiendo el CRUD completo para `rubros` y `rubro_categorias`. Se añadió un filtro interactivo que mejora significativamente la usabilidad.
+*   ✅ **Normalización y Refactorización:** Se pagó la deuda técnica relacionada con los catálogos, normalizando la estructura de la base de datos (creando `rubro_categorias`) y asegurando que toda la interacción con la BD se realice a través de funciones RPC, en línea con nuestros principios de arquitectura.
 
 **1. Mejoras Sustanciales al Reporte Financiero (PDF):**
 *   ✅ **Cálculo de Sobrante/Déficit:** Se implementó la lógica para calcular y mostrar el sobrante o déficit por casa al finalizar un proyecto.

@@ -41,12 +41,17 @@ export default function ProjectClassificationManagementPage() {
     setActiveView('rubros');
   };
 
+  const handleClearFilter = () => {
+    setCategoryFilter(null);
+    setActiveView('rubro_categories');
+  };
+
   const views: { [key: string]: { component: React.ReactNode; label: string } } = {
     overview: { component: <RelationshipView onTypeClick={() => {}} />, label: t('catalog.toggle_overview') },
     groups: { component: <GroupManagement />, label: t('catalog.toggle_groups') },
     types: { component: <TypeManagement />, label: t('catalog.toggle_types') },
     suppliers: { component: <SupplierManagement />, label: t('catalog.toggle_suppliers') },
-    rubros: { component: <RubroManagement categoryFilter={categoryFilter} onClearFilter={() => setCategoryFilter(null)} categorias={rubroCategorias} />, label: t('catalog.toggle_rubros') },
+    rubros: { component: <RubroManagement categoryFilter={categoryFilter} onClearFilter={handleClearFilter} categorias={rubroCategorias} />, label: t('catalog.toggle_rubros') },
     rubro_categories: { component: <RubroCategoryManagement onCardClick={handleCategoryClick} />, label: t('catalog.toggle_rubro_categories') },
   };
 

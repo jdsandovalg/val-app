@@ -317,14 +317,6 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
             )}
           </div>
 
-          {/* Sección de Cotizaciones */}
-          <div className="p-4 border rounded-lg bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-700 mb-3">{t('projects.evidenceAppendix.title')} (Cotizaciones)</h3>
-            <div className="text-center text-gray-500 py-8">
-              <p>{/* Aquí irá el área para subir archivos */}</p>
-              <p className="text-sm mt-2">Próximamente: Carga de documentos PDF e imágenes.</p>
-            </div>
-          </div>
         </div>
 
         {/* Columna Derecha: Resumen y Acciones */}

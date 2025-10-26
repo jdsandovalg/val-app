@@ -28,13 +28,21 @@ type RubroManagementProps = {
 export default function RubroManagement({ categoryFilter, onClearFilter, categorias }: RubroManagementProps) {
   const { t } = useI18n();
  
-  const filterName = useMemo(() => categoryFilter ? categorias.find(c => c.id_categoria === categoryFilter)?.nombre : null, [categoryFilter, categorias]);
+  const filterName = useMemo(
+    () => (categoryFilter ? categorias.find(c => c.id_categoria === categoryFilter)?.nombre : null),
+    [categoryFilter, categorias]
+  );
+
+  const fetchRpcConfig = useMemo(() => ({
+    name: 'fn_gestionar_rubros_catalogo',
+    params: { p_accion: 'SELECT', p_id_categoria: categoryFilter }
+  }), [categoryFilter]);
 
   return (
     <div>
       {filterName && (
         <div className="flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg mb-4">
-          <span className="font-medium">{t('catalog.filteringBy', { category: filterName })}</span>
+          <span className="font-medium">{t('catalog.alerts.filteringBy', { category: filterName })}</span>
           <button onClick={onClearFilter} className="text-sm font-semibold hover:underline">
             {t('catalog.buttons.clearFilter')}
           </button>
@@ -44,10 +52,7 @@ export default function RubroManagement({ categoryFilter, onClearFilter, categor
         entityNameKey="catalog.rubros_catalog"
         idKey="id_rubro"
         colorPalette={['border-rose-400', 'border-amber-500', 'border-teal-400', 'border-indigo-400', 'border-lime-500']}
-        fetchRpc={{ 
-          name: 'fn_gestionar_rubros_catalogo',
-          params: { p_accion: 'SELECT', p_id_categoria: categoryFilter }
-        }}
+        fetchRpc={fetchRpcConfig}
         saveRpcName="fn_gestionar_rubros_catalogo"
         deleteRpcName="fn_gestionar_rubros_catalogo"
         i18nKeys={{ add: 'catalog.buttons.addRubro', emptyState: 'catalog.emptyState.noRubros' }}
