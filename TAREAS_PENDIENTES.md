@@ -30,13 +30,23 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ## I. Tareas Pendientes (Deuda Técnica y Refinamiento)
 
-Ahora que la funcionalidad principal de la Fase 2 está implementada, nos centraremos en refinar el código, pagar la deuda técnica y mejorar la experiencia de usuario.
+### 1. Implementar Gestión de Evidencias
+*   **Prioridad:** Alta.
+*   **Objetivo:** Desarrollar la funcionalidad para que los administradores puedan subir y gestionar archivos (PDF, imágenes) como evidencia o cotizaciones para un proyecto en estado "abierto".
+*   **Detalle Clave de Implementación:** La visualización de las evidencias se realizará mediante tarjetas. Cada tarjeta mostrará la información del archivo y un **enlace público** para verlo o descargarlo. Esto sigue el patrón implementado en el reporte financiero y evita sobrecargar la interfaz o los reportes con archivos incrustados.
+*   **Solución Propuesta:**
+    *   **Paso 1 (Backend):** Crear la infraestructura en la base de datos. Esto incluye una nueva tabla `proyecto_evidencias` para almacenar los metadatos de los archivos y una nueva función RPC `fn_gestionar_proyecto_evidencias` para manejar las operaciones CRUD.
+    *   **Paso 2 (Frontend):** Implementar la interfaz de usuario en `EvidenceManagement.tsx`. Se mostrará una lista de las evidencias existentes y se añadirá un formulario para subir nuevos archivos.
 
-### 1. Optimizar Carga de Datos en `ProposalDetail`
+---
+
+### 2. Optimizar Carga de Datos en `ProposalDetail` (Deuda Técnica)
+*   **Prioridad:** Baja.
 *   **Problema:** El componente `ProposalDetail.tsx` realiza una llamada RPC (`fn_gestionar_rubros_catalogo`) para obtener el catálogo maestro de rubros. Esta llamada es redundante, ya que la página principal podría obtener estos datos una sola vez.
 *   **Solución Propuesta:** Modificar la página `projects_management/page.tsx` para que obtenga el catálogo maestro y lo pase como `prop` a `ProposalDetail.tsx`, eliminando la llamada duplicada y mejorando el rendimiento.
 
-### 2. Mejorar la Experiencia de Usuario (UX) en `ProposalDetail`
+### 3. Mejorar la Experiencia de Usuario (UX) en `ProposalDetail` (Deuda Técnica)
+*   **Prioridad:** Baja.
 *   **Problema:** Después de añadir, actualizar o eliminar un rubro en `ProposalDetail.tsx`, se vuelve a llamar a la base de datos para recargar toda la lista (`fetchProyectoRubros()`). Esto genera un parpadeo en la UI y un consumo de red innecesario.
 *   **Solución Propuesta:** Refactorizar las funciones de guardado, actualización y borrado para que manipulen el estado local de React (`proyectoRubros`). Esto proporcionará una actualización instantánea y fluida (Optimistic UI) y solo se recurrirá a una recarga completa si la operación falla.
 
@@ -209,3 +219,37 @@ Hemos finalizado una serie de mejoras importantes en la **Gestión de Catálogos
 *   ✅ **Estabilización y Depuración:** Se resolvieron múltiples errores de compilación, advertencias de ESLint y bugs de tiempo de ejecución que surgieron durante la refactorización. Esto incluyó la sincronización precisa de los tipos de datos y parámetros entre los componentes de React y las funciones RPC de la base de datos.
 
 Con la gestión de catálogos finalizada, estamos listos para continuar con el objetivo principal.
+
+
+---
+
+## IV. Roadmap y Consideraciones Futuras
+
+### 1. Migración a Aplicación Móvil Nativa (iOS/Android) con Capacitor.js
+
+*   **Prioridad:** Mediana (Post-implementación de funcionalidades web clave).
+*   **Objetivo:** Empaquetar la aplicación web actual (Next.js) en una aplicación móvil nativa para iOS y Android, permitiendo su distribución en la App Store y Google Play Store.
+*   **Tecnología Propuesta:** **Capacitor.js**. Es un runtime que permite tomar una aplicación web existente y darle acceso a funcionalidades nativas del dispositivo.
+
+*   **Análisis de Viabilidad:**
+    *   **Pros (Ventajas):**
+        *   **Reutilización de Código:** Se reutilizaría ~95% del código React ya desarrollado, incluyendo componentes, lógica de negocio y conexión con Supabase.
+        *   **Acceso Nativo:** Desbloquearía funcionalidades clave para tareas pendientes, como el uso directo de la **cámara** para la "Gestión de Evidencias".
+        *   **Mantenimiento Centralizado:** Un solo proyecto y base de código para web, iOS y Android, reduciendo costos y tiempos de desarrollo a largo plazo.
+    *   **Contras (Consideraciones):**
+        *   **Complejidad de Configuración:** No es un proceso transparente. Requiere configurar y mantener proyectos nativos en Xcode (para iOS) y Android Studio (para Android).
+        *   **Proceso de Compilación:** Se necesitaría un nuevo flujo de trabajo para compilar, firmar y desplegar los binarios (`.ipa` y `.aab`) a las tiendas, adicional al despliegue web actual.
+        *   **Adaptación de Next.js:** Capacitor funciona con Aplicaciones de una Sola Página (SPA). Para integrar nuestra app, se usaría `next export`, lo que significa que se perderían las capacidades de renderizado en el servidor (SSR) dentro de la app móvil. Sin embargo, dado que la app ya funciona en gran medida como una SPA, el impacto sería mínimo.
+
+*   **Plan de Acción Propuesto:**
+    1.  **Fase 1 (Actual):** Finalizar las funcionalidades web pendientes para consolidar el producto base.
+    2.  **Fase 2 (Futuro):** Abordar la integración de Capacitor.js. Esto incluirá la configuración inicial de los proyectos nativos y el aprendizaje del nuevo flujo de compilación y despliegue para las tiendas de aplicaciones.
+
+---
+
+
+
+## Tareas Canceladas
+
+Las siguientes tareas se han cancelado y no se trabajarán.
+

@@ -50,7 +50,12 @@ export default function RubroModal({ isOpen, onClose, onSave, item, categorias }
       toast.error(t('catalog.alerts.nameRequired'));
       return;
     }
-    onSave({ ...item, ...formData });
+    const dataToSave = {
+      ...item,
+      ...formData,
+      id_categoria: formData.id_categoria === 0 ? null : formData.id_categoria,
+    };
+    onSave(dataToSave);
   };
 
   if (!isOpen) return null;

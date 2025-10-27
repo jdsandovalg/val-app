@@ -73,6 +73,10 @@ export default function RubroManagement({ categoryFilter, onClearFilter, categor
           p_categoria: null, // No se gestiona desde la UI, se pasa null
           p_id_categoria: item.id_categoria === 0 ? null : item.id_categoria,
         })}
+        getDeleteParams={(item) => ({
+          p_accion: 'DELETE',
+          p_id_rubro: item.id_rubro,
+        })}
       />
     </div>
   );

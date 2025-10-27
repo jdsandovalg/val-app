@@ -47,12 +47,12 @@ export default function ProjectClassificationManagementPage() {
   };
 
   const views: { [key: string]: { component: React.ReactNode; label: string } } = {
-    overview: { component: <RelationshipView onTypeClick={() => {}} />, label: t('catalog.toggle_overview') },
-    groups: { component: <GroupManagement />, label: t('catalog.toggle_groups') },
-    types: { component: <TypeManagement />, label: t('catalog.toggle_types') },
-    suppliers: { component: <SupplierManagement />, label: t('catalog.toggle_suppliers') },
-    rubros: { component: <RubroManagement categoryFilter={categoryFilter} onClearFilter={handleClearFilter} categorias={rubroCategorias} />, label: t('catalog.toggle_rubros') },
-    rubro_categories: { component: <RubroCategoryManagement onCardClick={handleCategoryClick} />, label: t('catalog.toggle_rubro_categories') },
+    overview: { component: <RelationshipView onTypeClick={() => {}} />, label: t('catalog.toggle_overview') }, // 1
+    suppliers: { component: <SupplierManagement />, label: t('catalog.toggle_suppliers') }, // 2
+    groups: { component: <GroupManagement />, label: t('catalog.toggle_groups') }, // 3
+    types: { component: <TypeManagement />, label: t('catalog.toggle_types') }, // 4
+    rubro_categories: { component: <RubroCategoryManagement onCardClick={handleCategoryClick} />, label: t('catalog.toggle_rubro_categories') }, // 5
+    rubros: { component: <RubroManagement categoryFilter={categoryFilter} onClearFilter={handleClearFilter} categorias={rubroCategorias} />, label: t('catalog.toggle_rubros') }, // 6
   };
 
   return (

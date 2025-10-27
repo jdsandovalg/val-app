@@ -36,6 +36,8 @@ type CatalogManagementProps<T, TModalProps = object> = {
   renderCardContent: (item: T) => ReactNode;
   // Función para obtener los parámetros para la RPC de guardado
   getSaveParams: (item: Partial<T>, isEditing: boolean) => object;
+  // Función para obtener los parámetros para la RPC de borrado (opcional)
+  getDeleteParams?: (item: T) => object;
   // Handler opcional para el clic en la tarjeta
   onCardClick?: (item: T) => void;
 };
@@ -52,6 +54,7 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
   additionalModalProps = {} as TModalProps,
   renderCardContent,
   getSaveParams,
+  getDeleteParams,
   onCardClick,
 }: CatalogManagementProps<T, TModalProps>) {
   const { t } = useI18n();
@@ -117,7 +120,11 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
             <button className="px-3 py-1 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700" onClick={async () => {
                 toast.dismiss(toastInstance.id);
                 try {
-                  const { error } = await supabase.rpc(deleteRpcName, { [`p_${String(idKey)}`]: item[idKey], p_action: 'DELETE' })
+                  const deleteParams = getDeleteParams
+                    ? getDeleteParams(item)
+                    : { [`p_${String(idKey)}`]: item[idKey], p_action: 'DELETE' };
+
+                  const { error } = await supabase.rpc(deleteRpcName, deleteParams);
                   if (error) throw error;
                   toast.success(t('catalog.alerts.deleteSuccess'));
                   fetchData();
