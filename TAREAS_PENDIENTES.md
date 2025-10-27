@@ -1,54 +1,38 @@
 # REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
 
 Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
-
-## Principios de Arquitectura y Decisiones Clave
-*   **Verificación de Dependencias Cruzadas:** Al modificar un archivo central (como un proveedor de contexto, una utilidad global o un archivo de configuración), se debe identificar y revisar explícitamente todos los archivos que lo importan. Esto se hará para anticipar y corregir errores de compilación o efectos secundarios de manera proactiva, en lugar de reactiva.
-*   **Fuente de Datos:** Las funciones de base de datos **NO DEBEN** depender de vistas (`VIEW`). Toda la lógica debe operar directamente sobre las **tablas base** (`usuarios`, `contribucionesporcasa`, etc.).
-*   **Abstracción de Base de Datos:** Toda la interacción con la base de datos (lectura y escritura) **DEBE** realizarse a través de funciones RPC (`supabase.rpc('nombre_funcion', ...)`). **NO SE DEBE** consultar tablas directamente desde el frontend (ej. `supabase.from('tabla').select()`). Esto centraliza la lógica de negocio en la base de datos y mejora la seguridad.
-*   **Enfoque "Mobile-Only":** La aplicación se desarrollará y diseñará exclusivamente para una experiencia móvil (WebApp). Se eliminarán las vistas y componentes específicos para escritorio (como tablas complejas) para simplificar el código, reducir el mantenimiento y alinear el producto con su objetivo primario.
-*   **Autenticación:** El inicio de sesión se realiza **únicamente** a través de la función RPC `login_user`, que valida contra la tabla `public.usuarios`. **NO SE UTILIZA** el sistema de autenticación de Supabase (`supabase.auth`).
-*   **Rendimiento en "Grupos de Trabajo":** La página de "Grupos de Trabajo" **DEBE** usar la función RPC `get_grupos_trabajo_usuario` para delegar la agrupación de datos al servidor. No se debe realizar la agrupación en el cliente.
-*   **Organización del Código:** Toda la lógica de las páginas (obtención de datos, manejo de estado, funciones de guardado) debe permanecer dentro del archivo `page.tsx` correspondiente. **NO SE CREARÁN** archivos separados como hooks o servicios a menos que sea solicitado explícitamente.
-*   **Seguridad:** No se deben introducir nuevas prácticas de seguridad (como encriptación de contraseñas con `crypt`) sin una discusión y aprobación previa.
-*   **Alteración de Funciones de BD:** Antes de proponer cualquier modificación (DDL) a una función de base de datos existente, debo solicitarte la versión actual que está en producción para usarla como base.
-**DDL de Base de Datos:** Toda definición de funciones de base de datos (DDL) que se proporcione **DEBE** incluir la cláusula `SECURITY DEFINER` para asegurar que se ejecuten con los permisos adecuados y evitar problemas de acceso a datos por RLS.
-*   **Diseño Extensible y Preparado para el Futuro:** Todas las sugerencias de código deben considerar la futura implementación de características como temas (claro/oscuro), internacionalización (múltiples idiomas) y accesibilidad. Se debe evitar el uso de valores "hardcodeados" (ej. colores como `#FFFFFF` o texto como `"Guardar"`) en favor de abstracciones (ej. variables de tema, claves de traducción) que faciliten la extensibilidad sin romper el diseño existente.
-## Flujo de Trabajo para Cambios (Workflow)
-*   **Propuesta Detallada:** Para cualquier cambio que no sea una corrección trivial (como un error de tipeo), se debe presentar un plan de propuesta detallado que incluya el "Razonamiento del Problema" y la "Solución Propuesta".
-*   **Aprobación por Pasos:** La solución propuesta debe desglosarse en pasos pequeños e incrementales. Cada paso debe ser lo suficientemente pequeño como para ser compilado y verificado de forma independiente.
-*   **Autorización Explícita:** Se debe obtener la autorización explícita del usuario ("aprobado", "adelante", etc.) para **cada paso individual** antes de proporcionar el código o `diff` correspondiente. No se procederá al siguiente paso sin la aprobación del anterior.
-*   **Comando de Sincronización "LEE":** Al inicio de cada sesión, el usuario proporcionará este archivo y usará la instrucción "LEE". Esto servirá como señal para que el asistente lea, entienda y se adhiera estrictamente a todos los principios y flujos de trabajo aquí definidos antes de realizar cualquier análisis o sugerencia.
-*   **Propuesta de Mejoras:** Cualquier mejora o "buena práctica" no solicitada (ej. seguridad, rendimiento) debe ser propuesta primero como un nuevo ítem en la sección "I. Tareas Pendientes". La propuesta debe incluir una justificación y un análisis del impacto potencial sobre el sistema existente. No se implementará hasta que sea discutida y aprobada.
-*   **Indicación Explícita de Acción:** Al final de cada respuesta que contenga un cambio de código, debo indicar explícitamente la acción que espero de ti. Por ejemplo: "Ahora, por favor, **compila y verifica** que los cambios se aplican correctamente" o "Ahora, por favor, **sube los cambios a Git** con el siguiente mensaje:".
-
-
-*   **Nivel de Servicio 'Pro' y Verificación (Compromiso del Asistente):** Se establece que la cuenta del desarrollador es de nivel "Pro". Esto implica un compromiso inquebrantable por parte del asistente de IA de adherirse a todas las reglas y flujos de trabajo definidos en este documento. El asistente debe verificar cada paso y no asumir intenciones. Cualquier desviación de este principio se considerará una falta grave al nivel de servicio acordado.
-
-
----
-
-## I. Tareas Pendientes (Deuda Técnica y Refinamiento)
-
-### 1. Implementar Gestión de Evidencias
+### 4. Implementar Sistema de Votación
 *   **Prioridad:** Alta.
-*   **Objetivo:** Desarrollar la funcionalidad para que los administradores puedan subir y gestionar archivos (PDF, imágenes) como evidencia o cotizaciones para un proyecto en estado "abierto".
-*   **Detalle Clave de Implementación:** La visualización de las evidencias se realizará mediante tarjetas. Cada tarjeta mostrará la información del archivo y un **enlace público** para verlo o descargarlo. Esto sigue el patrón implementado en el reporte financiero y evita sobrecargar la interfaz o los reportes con archivos incrustados.
-*   **Solución Propuesta:**
-    *   **Paso 1 (Backend):** Crear la infraestructura en la base de datos. Esto incluye una nueva tabla `proyecto_evidencias` para almacenar los metadatos de los archivos y una nueva función RPC `fn_gestionar_proyecto_evidencias` para manejar las operaciones CRUD.
-    *   **Paso 2 (Frontend):** Implementar la interfaz de usuario en `EvidenceManagement.tsx`. Se mostrará una lista de las evidencias existentes y se añadirá un formulario para subir nuevos archivos.
+*   **Objetivo:** Desarrollar la funcionalidad para que los usuarios puedan votar sobre propuestas de proyectos.
+*   **Detalle Clave de Implementación:** Esto implicará la creación de tablas para registrar votos, funciones RPC para gestionar el proceso de votación y una interfaz de usuario para que los usuarios puedan emitir sus votos y ver los resultados.
+
+### 5. Generar Reporte Final (Rubros -> Evidencias -> Votaciones)
+*   **Prioridad:** Alta.
+*   **Objetivo:** Crear un reporte consolidado que muestre la información detallada de un proyecto, incluyendo sus rubros, las evidencias adjuntas y los resultados de las votaciones.
+*   **Detalle Clave de Implementación:** Este reporte probablemente será en formato PDF y requerirá la integración de datos de múltiples fuentes (tablas de proyectos, rubros, evidencias y votaciones) a través de funciones RPC.
+
+### 6. Corregir Fondo de Modal de Confirmación (Deuda Técnica)
+*   **Prioridad:** Baja.
+*   **Problema:** El modal de confirmación (`ConfirmationModal`) muestra un fondo negro que cubre toda la pantalla (`bg-black bg-opacity-50`), lo cual resulta visualmente intrusivo en la versión de escritorio.
+*   **Solución Propuesta:** Reducir la opacidad del fondo (ej. `bg-opacity-30`) y añadir un efecto de desenfoque (`backdrop-blur-sm`) para una apariencia más moderna y menos agresiva.
 
 ---
 
-### 2. Optimizar Carga de Datos en `ProposalDetail` (Deuda Técnica)
-*   **Prioridad:** Baja.
-*   **Problema:** El componente `ProposalDetail.tsx` realiza una llamada RPC (`fn_gestionar_rubros_catalogo`) para obtener el catálogo maestro de rubros. Esta llamada es redundante, ya que la página principal podría obtener estos datos una sola vez.
-*   **Solución Propuesta:** Modificar la página `projects_management/page.tsx` para que obtenga el catálogo maestro y lo pase como `prop` a `ProposalDetail.tsx`, eliminando la llamada duplicada y mejorando el rendimiento.
+## II. Logros Recientes (Tareas Completadas)
 
-### 3. Mejorar la Experiencia de Usuario (UX) en `ProposalDetail` (Deuda Técnica)
-*   **Prioridad:** Baja.
-*   **Problema:** Después de añadir, actualizar o eliminar un rubro en `ProposalDetail.tsx`, se vuelve a llamar a la base de datos para recargar toda la lista (`fetchProyectoRubros()`). Esto genera un parpadeo en la UI y un consumo de red innecesario.
-*   **Solución Propuesta:** Refactorizar las funciones de guardado, actualización y borrado para que manipulen el estado local de React (`proyectoRubros`). Esto proporcionará una actualización instantánea y fluida (Optimistic UI) y solo se recurrirá a una recarga completa si la operación falla.
+### 2 y 3. Optimización y Mejora de UX en Detalle de Propuesta
+*   ✅ **Optimización de Carga:** Se eliminó la llamada RPC redundante en `ProposalDetail.tsx`. El catálogo maestro de rubros ahora se carga una sola vez en la página principal (`projects_management/page.tsx`) y se pasa como prop, mejorando el rendimiento.
+*   ✅ **Mejora de Experiencia de Usuario (UX):** Se implementaron "Actualizaciones Optimistas" (Optimistic UI) para las operaciones de añadir y eliminar rubros. La interfaz ahora se actualiza de forma instantánea, eliminando el parpadeo y la recarga completa de la lista, lo que resulta en una experiencia de usuario más fluida y profesional.
+*   ✅ **Corrección de Bug en Input Numérico:** Se solucionó un error en el campo de monto que impedía ingresar valores completos, formateando incorrectamente el número durante la edición.
+*   ✅ **Estabilización y Depuración:** Se resolvieron múltiples errores de tipo y advertencias de linting que surgieron durante la refactorización, asegurando la calidad y consistencia del código.
+
+### 3. Implementación de Gestión de Evidencias
+*   ✅ **Infraestructura de Base de Datos:** Se creó la tabla `proyecto_evidencias` y la función RPC `fn_gestionar_proyecto_evidencias` para almacenar y gestionar los metadatos de las evidencias (descripción, fecha, nombre de archivo, URL, tipo MIME, tamaño).
+*   ✅ **Subida Segura de Archivos:** Se implementó la subida de archivos a Supabase Storage (`evidencias_imagenes`) utilizando URLs firmadas generadas por una función RPC (`fn_upload_evidence_file`), garantizando la seguridad y el control de acceso.
+*   ✅ **Interfaz de Usuario (Frontend):** Se desarrolló el componente `EvidenceManagement.tsx` que integra `CatalogManagement` para listar y eliminar evidencias, y `EvidenceUploader.tsx` para la subida de nuevos archivos.
+*   ✅ **Manejo de Errores Mejorado:** Se mejoró la visualización de errores de la base de datos en el frontend, proporcionando mensajes más descriptivos en lugar de `[object Object]`.
+*   ✅ **Consistencia Visual:** Se ajustaron los estilos de los inputs y botones para mantener la coherencia con el diseño de la aplicación.
+*   ✅ **Integración Completa:** La gestión de evidencias está completamente integrada en el flujo de proyectos, accesible para proyectos en estado "abierto".
 
 ---
 
@@ -252,4 +236,3 @@ Con la gestión de catálogos finalizada, estamos listos para continuar con el o
 ## Tareas Canceladas
 
 Las siguientes tareas se han cancelado y no se trabajarán.
-

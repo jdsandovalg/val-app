@@ -443,6 +443,22 @@
       "viewEvidence": "View Evidence",
       "altText": "Expense evidence"
     },
+    "evidence": {
+      "title": "Evidence Management",
+      "buttons": {
+        "add": "Upload Evidence",
+        "viewFile": "View File"
+      },
+      "fields": {
+        "description": "Evidence Description",
+        "date": "Evidence Date"
+      },
+      "emptyState": "No evidence has been recorded for this project.",
+      "alerts": {
+        "uploadSuccess": "Evidence uploaded successfully.",
+        "uploadError": "Error uploading evidence: {message}"
+      }
+    },
     "proposalDetail": {
       "title": "Line Items",
       "noRubros": "No line items have been added to this project yet.",
@@ -463,6 +479,9 @@
         "deleteConfirm": "Are you sure you want to delete this line item?",
         "deleteSuccess": "Line item deleted successfully."
       }
+    },
+    "emptyState": {
+      "noProjectSelected": "Select a project to manage its evidence."
     }
   },
   "projectStatus": {

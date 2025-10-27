@@ -20,11 +20,11 @@ type Proyecto = {
   estado: ProjectStatus;
 };
 
-type Rubro = {
+type RubroCatalogo = {
   id_rubro: number;
   nombre: string;
   descripcion: string | null;
-  categoria: string | null;
+  id_categoria: number | null;
 };
 
 type ProyectoRubro = {
@@ -45,26 +45,29 @@ type ProyectoRubro = {
 
 type ProposalDetailProps = {
   project: Proyecto;
+  rubrosCatalogo: RubroCatalogo[]; // Añadimos la prop para el catálogo de rubros
 };
 
 import { createClient } from '@/utils/supabase/client';
 
-export default function ProposalDetail({ project }: ProposalDetailProps) {
+export default function ProposalDetail({ project, rubrosCatalogo }: ProposalDetailProps) {
   const { t } = useI18n();
   const supabase = createClient();
 
   // Estado para la lista de rubros del proyecto
   const [proyectoRubros, setProyectoRubros] = useState<ProyectoRubro[]>([]);
   // Estado para el catálogo maestro de rubros
-  const [masterRubros, setMasterRubros] = useState<Rubro[]>([]);
-  // Estado para el formulario de nuevo rubro
-  const [rubroInput, setRubroInput] = useState('');
+  const [masterRubros, setMasterRubros] = useState<RubroCatalogo[]>([]);
   const [selectedRubroId, setSelectedRubroId] = useState<string>('');
   const [newMonto, setNewMonto] = useState<string>('');
   const [isAdding, setIsAdding] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [rubroToDeleteId, setRubroToDeleteId] = useState<number | null>(null);
+
+  // Estado para el formulario de nuevo rubro, inicializado con el primer rubro del catálogo si existe
+  const [rubroInput, setRubroInput] = useState(rubrosCatalogo[0]?.nombre || '');
+
 
   const fetchProyectoRubros = useCallback(async () => {
     const { data, error } = await supabase.rpc('fn_proyecto_rubros', {
@@ -77,20 +80,14 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
     else setProyectoRubros(data as ProyectoRubro[]);
   }, [project.id_proyecto, supabase, t]);
 
-  const fetchMasterRubros = useCallback(async () => {
-    const { data, error } = await supabase.rpc('fn_gestionar_rubros_catalogo', {
-      p_accion: 'SELECT'
-    });
-
-    if (error)
-      toast.error(t('catalog.alerts.fetchError', { entity: 'Rubros', message: error.message }));
-    else setMasterRubros(data as Rubro[]);
-  }, [supabase, t]);
-
   useEffect(() => {
     fetchProyectoRubros();
-    fetchMasterRubros();
-  }, [fetchProyectoRubros, fetchMasterRubros]);
+  }, [fetchProyectoRubros]);
+
+  useEffect(() => {
+    // Actualizar masterRubros cuando la prop rubrosCatalogo cambie
+    setMasterRubros(rubrosCatalogo);
+  }, [rubrosCatalogo]);
 
   const handleRubroInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -100,7 +97,7 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
     setSelectedRubroId(selectedRubro ? String(selectedRubro.id_rubro) : '');
   };
 
-  const handleRubroSelect = (rubro: Rubro) => {
+  const handleRubroSelect = (rubro: RubroCatalogo) => {
     setRubroInput(rubro.nombre);
     setSelectedRubroId(String(rubro.id_rubro));
     setIsSearchFocused(false);
@@ -119,7 +116,7 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
     }
     setIsAdding(true);
 
-    const { error } = await supabase.rpc('fn_proyecto_rubros', {
+    const { data: newRubro, error } = await supabase.rpc('fn_proyecto_rubros', {
       p_accion: 'INSERT',
       p_id_proyecto: project.id_proyecto,
       p_id_rubro_catalogo: parseInt(selectedRubroId, 10),
@@ -133,7 +130,10 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
       toast.error(t('catalog.alerts.saveError', { message: error.message }));
     } else {
       toast.success(t('projects.proposalDetail.alerts.addSuccess'));
-      await fetchProyectoRubros(); // Recargar la lista
+      // Actualización optimista: añadir el nuevo rubro al estado local
+      if (newRubro && newRubro.length > 0) {
+        setProyectoRubros(prev => [...prev, newRubro[0]]);
+      }
       // Resetear formulario de adición
       setRubroInput('');
       setSelectedRubroId('');
@@ -178,26 +178,34 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
   const confirmDelete = async () => {
     if (rubroToDeleteId === null) return;
 
-    const { error } = await supabase.rpc('fn_proyecto_rubros', {
-      p_accion: 'DELETE',
-      p_id_proyecto_rubro: rubroToDeleteId,
-      p_id_proyecto: null,
-      p_id_rubro_catalogo: null,
-      p_monto: null,
-      p_descripcion_adicional: null,
-      p_referencia1: null
-    });
+    // Actualización optimista: eliminar el rubro del estado local primero
+    const originalRubros = [...proyectoRubros];
+    setProyectoRubros(prev => prev.filter(r => r.id_proyecto_rubro !== rubroToDeleteId));
+    setIsConfirmModalOpen(false); // Cerrar modal inmediatamente
 
-    if (error) {
-      toast.error(t('catalog.alerts.deleteError', { message: error.message }));
-    } else {
+    try {
+      const { error } = await supabase.rpc('fn_proyecto_rubros', {
+        p_accion: 'DELETE',
+        p_id_proyecto_rubro: rubroToDeleteId,
+        p_id_proyecto: null,
+        p_id_rubro_catalogo: null,
+        p_monto: null,
+        p_descripcion_adicional: null,
+        p_referencia1: null
+      });
+
+      if (error) throw error; // Si hay error, el bloque catch lo manejará
+
       toast.success(t('projects.proposalDetail.alerts.deleteSuccess'));
-      await fetchProyectoRubros(); // Recargar la lista
+    } catch (error: unknown) {
+      // Manejo de errores más seguro con 'unknown'
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(t('catalog.alerts.deleteError', { message }));
+      setProyectoRubros(originalRubros); // Revertir el cambio en caso de error
     }
 
     // Resetear y cerrar modal
     setRubroToDeleteId(null);
-    setIsConfirmModalOpen(false);
   };
 
   const totalEstimatedValue = useMemo(() => {
@@ -274,7 +282,7 @@ export default function ProposalDetail({ project }: ProposalDetailProps) {
                       <input
                         type="number"
                         step="0.01"
-                        value={Number(item.monto).toFixed(2)}
+                        value={item.monto}
                         onChange={(e) => handleUpdateRubroField(item.id_proyecto_rubro, 'monto', parseFloat(e.target.value) || 0)}
                         className="p-2 border border-gray-300 rounded-md text-sm w-full text-right font-bold text-base bg-gray-50"
                       />

@@ -442,6 +442,22 @@
       "viewEvidence": "Voir la Preuve",
       "altText": "Preuve de dépense"
     },
+    "evidence": {
+      "title": "Gestion des Preuves",
+      "buttons": {
+        "add": "Télécharger une Preuve",
+        "viewFile": "Voir le Fichier"
+      },
+      "fields": {
+        "description": "Description de la Preuve",
+        "date": "Date de la Preuve"
+      },
+      "emptyState": "Aucune preuve n'a été enregistrée pour ce projet.",
+      "alerts": {
+        "uploadSuccess": "Preuve téléchargée avec succès.",
+        "uploadError": "Erreur lors du téléchargement de la preuve : {message}"
+      }
+    },
     "proposalDetail": {
       "title": "Postes de Coût",
       "noRubros": "Aucun poste de coût n'a encore été ajouté à ce projet.",
@@ -462,6 +478,9 @@
         "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce poste de coût ?",
         "deleteSuccess": "Poste de coût supprimé avec succès."
       }
+    },
+    "emptyState": {
+      "noProjectSelected": "Sélectionnez un projet pour gérer ses preuves."
     }
   },
   "projectStatus": {

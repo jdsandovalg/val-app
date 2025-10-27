@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'react-hot-toast';
@@ -13,7 +13,7 @@ import ProjectContributions from './ProjectContributions';
 import ProjectExpenses from './ProjectExpenses';
 import ProposalDetail from './components/ProposalDetail';
 import FinancialDetail from './FinancialDetail';
-import EvidenceManagement from './components/EvidenceManagement';
+import EvidenceManagement from './components/EvidenceManagement'; // Importar el nuevo componente
 import FinancialReport from './FinancialReport';
 
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
@@ -28,6 +28,13 @@ type Proyecto = {
   valor_estimado: number | null;
   activo: boolean;
   estado: ProjectStatus;
+};
+
+type RubroCatalogo = {
+  id_rubro: number;
+  nombre: string;
+  descripcion: string | null;
+  id_categoria: number | null;
 };
 
 type ProyectoPayload = {
@@ -47,6 +54,29 @@ export default function ProjectClassificationManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
   const [selectedProject, setSelectedProject] = useState<Proyecto | null>(null);
+  const [rubrosCatalogo, setRubrosCatalogo] = useState<RubroCatalogo[]>([]);
+
+  const fetchRubrosCatalogo = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.rpc('fn_gestionar_rubros_catalogo', {
+        p_accion: 'SELECT',
+        p_id_rubro: null,
+        p_nombre: null,
+        p_descripcion: null,
+        p_categoria: null,
+        p_id_categoria: null
+      });
+      if (error) throw error;
+      setRubrosCatalogo(data || []);
+    } catch (error) {
+      toast.error(t('catalog.alerts.fetchError', { entity: t('catalog.rubros_catalog'), message: (error as Error).message }));
+    }
+  }, [supabase, t]);
+
+  useEffect(() => {
+    // Cargar el catálogo de rubros una sola vez al montar la página
+    fetchRubrosCatalogo();
+  }, [fetchRubrosCatalogo]);
 
   const handleOpenModal = useCallback((typeId: number) => {
     setSelectedTypeId(typeId);
@@ -149,7 +179,7 @@ export default function ProjectClassificationManagementPage() {
                   activeView === 'contributions' || activeView === 'evidence_management' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {selectedProject?.estado === 'abierto'
+                {selectedProject?.estado === 'abierto' // Cambiar el texto del botón dinámicamente
                   ? t('projects.evidenceAppendix.title')
                   : t('projects.contributions.title')}
               </button>
@@ -197,8 +227,8 @@ export default function ProjectClassificationManagementPage() {
           {activeView === 'contributions' && <ProjectContributions projectId={selectedProjectId} />}
           {activeView === 'expenses' && <ProjectExpenses projectId={selectedProjectId} />}
           {activeView === 'summary' && <FinancialDetail projectId={selectedProjectId} />}
-          {activeView === 'evidence_management' && <EvidenceManagement />}
-          {activeView === 'proposal_detail' && selectedProject && <ProposalDetail project={selectedProject} />}
+          {activeView === 'evidence_management' && <EvidenceManagement projectId={selectedProjectId} />} {/* Renderizar el nuevo componente */}
+          {activeView === 'proposal_detail' && selectedProject && <ProposalDetail project={selectedProject} rubrosCatalogo={rubrosCatalogo} />}
         </div>
       </div>
 

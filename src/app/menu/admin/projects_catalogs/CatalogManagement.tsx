@@ -5,6 +5,7 @@ import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import CatalogCard from './CatalogCard';
 import { toast } from 'react-hot-toast';
+import ConfirmationModal from '../projects_management/components/ConfirmationModal';
 
 type BaseItem = {
   [key: string]: unknown;
@@ -40,6 +41,8 @@ type CatalogManagementProps<T, TModalProps = object> = {
   getDeleteParams?: (item: T) => object;
   // Handler opcional para el clic en la tarjeta
   onCardClick?: (item: T) => void;
+  // Prop para ocultar el botón de añadir por defecto
+  hideAddButton?: boolean;
 };
 
 export default function CatalogManagement<T extends BaseItem, TModalProps>({
@@ -56,6 +59,7 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
   getSaveParams,
   getDeleteParams,
   onCardClick,
+  hideAddButton = false,
 }: CatalogManagementProps<T, TModalProps>) {
   const { t } = useI18n();
   const supabase = createClient();
@@ -63,6 +67,8 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Partial<T> | null>(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<T | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -111,43 +117,47 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
     }
   };
 
-  const handleDelete = (item: T) => {
-    toast(
-      (toastInstance) => (
-        <span>
-          {t('catalog.alerts.deleteConfirm')}
-          <div className="flex gap-2 mt-2">
-            <button className="px-3 py-1 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700" onClick={async () => {
-                toast.dismiss(toastInstance.id);
-                try {
-                  const deleteParams = getDeleteParams
-                    ? getDeleteParams(item)
-                    : { [`p_${String(idKey)}`]: item[idKey], p_action: 'DELETE' };
+  const openDeleteConfirmation = (item: T) => {
+    setItemToDelete(item);
+    setIsConfirmDeleteOpen(true);
+  };
 
-                  const { error } = await supabase.rpc(deleteRpcName, deleteParams);
-                  if (error) throw error;
-                  toast.success(t('catalog.alerts.deleteSuccess'));
-                  fetchData();
-                } catch (error: unknown) {
-                  const message = error instanceof Error ? error.message : String(error);
-                  toast.error(t('catalog.alerts.deleteError', { message }));
-                }
-              }}>{t('manageContributions.card.delete')}</button>
-            <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200" onClick={() => toast.dismiss(toastInstance.id)}>{t('userModal.cancelButton')}</button>
-          </div>
-        </span>
-      ),
-      { duration: 6000 }
-    );
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      const deleteParams = getDeleteParams
+        ? getDeleteParams(itemToDelete)
+        : { [`p_${String(idKey)}`]: itemToDelete[idKey], p_action: 'DELETE' };
+
+      const { error } = await supabase.rpc(deleteRpcName, deleteParams);
+      if (error) throw error;
+      toast.success(t('catalog.alerts.deleteSuccess'));
+      fetchData();
+    } catch (error: unknown) {
+      let message = t('calendar.payment.unknownError');
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        message = (error as { message: string }).message;
+      }
+      if (typeof error === 'object' && error !== null && 'details' in error && typeof (error as { details: string }).details === 'string') {
+        message += ` Detalles: ${(error as { details: string }).details}`;
+      }
+      toast.error(t('catalog.alerts.deleteError', { message }));
+    } finally {
+      setIsConfirmDeleteOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
-        <button onClick={() => handleOpenModal(null)} className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md hover:bg-gray-900">
-          {t(i18nKeys.add)}
-        </button>
-      </div>
+      {!hideAddButton && (
+        <div className="mb-4 flex justify-end">
+          <button onClick={() => handleOpenModal(null)} className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md hover:bg-gray-900">
+            {t(i18nKeys.add)}
+          </button>
+        </div>
+      )}
       {loading ? <p className="text-center text-gray-500">{t('loading')}</p> : items.length === 0 ? <p className="text-center text-gray-500">{t(i18nKeys.emptyState)}</p> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {items.map((item, index) => (
@@ -155,7 +165,7 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
               key={item[idKey] as React.Key}
               colorClass={colorPalette[index % colorPalette.length]}
               onEdit={() => handleOpenModal(item)}
-              onDelete={() => handleDelete(item)}
+              onDelete={() => openDeleteConfirmation(item)}
               onCardClick={onCardClick ? () => onCardClick(item) : undefined}>
               {renderCardContent(item)}
             </CatalogCard>
@@ -163,6 +173,13 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
         </div>
       )}
       {isModalOpen && <ModalComponent isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSave} item={editingItem} {...additionalModalProps} />}
+      <ConfirmationModal
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={t('catalog.alerts.deleteConfirm')}
+        message={t('projects.proposalDetail.alerts.deleteConfirm')} // Puedes hacer este mensaje más genérico si es necesario
+      />
     </div>
   );
 }

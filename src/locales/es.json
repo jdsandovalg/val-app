@@ -443,6 +443,22 @@
       "viewEvidence": "Ver Evidencia",
       "altText": "Evidencia de gasto"
     },
+    "evidence": {
+      "title": "Gestión de Evidencias",
+      "buttons": {
+        "add": "Subir Evidencia",
+        "viewFile": "Ver Archivo"
+      },
+      "fields": {
+        "description": "Descripción de la Evidencia",
+        "date": "Fecha de la Evidencia"
+      },
+      "emptyState": "No se han registrado evidencias para este proyecto.",
+      "alerts": {
+        "uploadSuccess": "Evidencia subida exitosamente.",
+        "uploadError": "Error al subir la evidencia: {message}"
+      }
+    },
     "proposalDetail": {
       "title": "Rubros",
       "noRubros": "Aún no se han añadido rubros a este proyecto.",
@@ -463,6 +479,9 @@
         "deleteConfirm": "¿Estás seguro de que quieres eliminar este rubro?",
         "deleteSuccess": "Rubro eliminado exitosamente."
       }
+    },
+    "emptyState": {
+      "noProjectSelected": "Seleccione un proyecto para gestionar sus evidencias."
     }
   },
   "projectStatus": {
