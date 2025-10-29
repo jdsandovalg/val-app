@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
+import { FilePenLine } from 'lucide-react';
 
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 
@@ -22,9 +23,10 @@ type Proyecto = {
 type ProjectListProps = {
   onProjectSelect: (project: Proyecto | null) => void;
   selectedProject: Proyecto | null;
+  onEditProject: (project: Proyecto) => void;
 };
 
-export default function ProjectList({ onProjectSelect, selectedProject }: ProjectListProps) {
+export default function ProjectList({ onProjectSelect, selectedProject, onEditProject }: ProjectListProps) {
   const supabase = createClient();
   const { t } = useI18n();
   const [projects, setProjects] = useState<Proyecto[]>([]);
@@ -94,9 +96,21 @@ export default function ProjectList({ onProjectSelect, selectedProject }: Projec
               >
                 <div className="flex justify-between items-start">
                   <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
-                  <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
-                    {t(`projectStatus.${project.estado}`)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
+                      {t(`projectStatus.${project.estado}`)}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Evita que el evento de clic se propague al div padre
+                        onEditProject(project);
+                      }}
+                      className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                      title={t('manageUsers.card.edit')}
+                    >
+                      <FilePenLine size={16} className="text-gray-600" />
+                    </button>
+                  </div>
                 </div>
                 {project.notas_clave && <p className="text-sm text-gray-600 mt-2">{project.notas_clave}</p>}
               </div>

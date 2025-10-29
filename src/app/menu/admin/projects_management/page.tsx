@@ -37,15 +37,6 @@ type RubroCatalogo = {
   id_categoria: number | null;
 };
 
-type ProyectoPayload = {
-  id_tipo_proyecto: number;
-  descripcion_tarea: string;
-  detalle_tarea?: string | null;
-  frecuencia_sugerida?: string | null;
-  notas_clave?: string | null;
-  valor_estimado?: number | null;
-};
-
 export default function ProjectClassificationManagementPage() {
   const { t } = useI18n();
   const [activeView, setActiveView] = useState('projects'); // Cambiado a 'projects' como vista por defecto
@@ -54,6 +45,7 @@ export default function ProjectClassificationManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
   const [selectedProject, setSelectedProject] = useState<Proyecto | null>(null);
+  const [editingProject, setEditingProject] = useState<Proyecto | null>(null);
   const [rubrosCatalogo, setRubrosCatalogo] = useState<RubroCatalogo[]>([]);
 
   const fetchRubrosCatalogo = useCallback(async () => {
@@ -83,9 +75,16 @@ export default function ProjectClassificationManagementPage() {
     setIsModalOpen(true);
   }, []);
 
+  const handleOpenEditModal = useCallback((project: Proyecto) => {
+    setEditingProject(project);
+    setSelectedTypeId(project.id_tipo_proyecto); // Aseguramos que el tipo de proyecto esté seleccionado
+    setIsModalOpen(true);
+  }, []);
+
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedTypeId(null);
+    setEditingProject(null); // Limpiamos el proyecto en edición al cerrar
   }, []);
 
   const handleProjectSelect = useCallback((project: Proyecto | null) => {
@@ -110,31 +109,38 @@ export default function ProjectClassificationManagementPage() {
     });
   }, [activeView, setActiveView]);
 
-  const handleSaveProject = useCallback(async (projectData: ProyectoPayload) => {
+  const handleSaveProject = useCallback(async (projectData: Partial<Proyecto>) => {
+    const isEditing = !!projectData.id_proyecto;
+
     try {
-      // Lógica de "toggle" implícito:
-      // Si hay un valor estimado, usamos el flujo antiguo.
-      // Si no, usamos el nuevo flujo de propuestas.
-      const action = projectData.valor_estimado && projectData.valor_estimado > 0 ? 'INSERT' : 'INSERT_PROPOSAL';
-      const successMessageKey = action === 'INSERT' ? 'projects.alerts.saveSuccess' : 'projects.alerts.proposalSaveSuccess'; // Necesitaremos una nueva clave de i18n
+      let action: string;
+      if (isEditing) {
+        action = 'UPDATE';
+      } else {
+        action = projectData.valor_estimado && projectData.valor_estimado > 0 ? 'INSERT' : 'INSERT_PROPOSAL';
+      }
+
+      const successMessageKey = isEditing ? 'catalog.alerts.saveSuccess' : (action === 'INSERT' ? 'projects.alerts.saveSuccess' : 'projects.alerts.proposalSaveSuccess');
 
       const { error } = await supabase.rpc('gestionar_proyectos', {
         p_action: action,
+        p_id_proyecto: projectData.id_proyecto, // Se envía para UPDATE, es ignorado en INSERT
         p_id_tipo_proyecto: projectData.id_tipo_proyecto,
         p_descripcion_tarea: projectData.descripcion_tarea,
         p_detalle_tarea: projectData.detalle_tarea,
         p_frecuencia_sugerida: projectData.frecuencia_sugerida,
         p_notas_clave: projectData.notas_clave,
-        p_valor_estimado: action === 'INSERT' ? projectData.valor_estimado : null, // Solo pasamos el valor en el flujo antiguo
+        p_valor_estimado: action === 'INSERT' || action === 'UPDATE' ? projectData.valor_estimado : null,
+        p_estado: projectData.estado // Enviamos el nuevo estado
       });
 
       if (error) throw error;
 
       toast.success(t(successMessageKey));
       handleCloseModal();
-      // Forzamos un refresh para que ProjectList y otros componentes se actualicen.
-      // Una mejora futura podría ser actualizar el estado localmente.
-      window.location.reload();
+      // Forzamos un refresh para que ProjectList se actualice.
+      // TODO: Reemplazar con actualización de estado local para una mejor UX.
+      window.location.reload(); 
 
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
@@ -221,7 +227,11 @@ export default function ProjectClassificationManagementPage() {
             </div>
           </div>
           {activeView === 'projects' && (
-            <ProjectList onProjectSelect={handleProjectSelect} selectedProject={selectedProject} />
+            <ProjectList
+              onProjectSelect={handleProjectSelect}
+              selectedProject={selectedProject}
+              onEditProject={handleOpenEditModal}
+            />
           )}
           {activeView === 'overview' && <RelationshipView onTypeClick={handleOpenModal} />}
           {activeView === 'contributions' && <ProjectContributions projectId={selectedProjectId} />}
@@ -238,6 +248,7 @@ export default function ProjectClassificationManagementPage() {
           onClose={handleCloseModal}
           onSave={handleSaveProject}
           id_tipo_proyecto={selectedTypeId}
+          projectToEdit={editingProject}
         />
       )}
     </div>

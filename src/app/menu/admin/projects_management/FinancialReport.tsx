@@ -12,6 +12,7 @@ type SummaryData = {
   total_aportes: number;
   total_gastos: number;
   balance?: number;
+  total_pendiente?: number;
   participatingHouses?: number;
   surplusPerHouse?: number;
 };
@@ -20,6 +21,8 @@ type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_
 
 type ProjectInfo = {
   descripcion_tarea: string;
+  detalle_tarea: string | null;
+  notas_clave: string | null;
   tipo_proyecto: string;
   grupo_mantenimiento: string;
   estado: ProjectStatus;
@@ -31,6 +34,8 @@ type DetailRow = {
   descripcion: string;
   monto: number;
   nombre_proveedor?: string;
+  monto_pagado?: number;
+  monto_saldo?: number; // NUEVO CAMPO
   descripcion_gasto?: string;
   url_documento?: string | null;
 };
@@ -251,6 +256,15 @@ const styles = StyleSheet.create({
   tableContainer: {
     width: '48%',
   },
+  footer: {
+    position: 'absolute',
+    bottom: 15,
+    left: 30,
+    right: 30,
+    textAlign: 'center',
+    color: 'grey',
+    fontSize: 8,
+  }
 });
 
 export const ReportDocument = ({ summary, details, projectInfo, t, locale, currency, logoBase64 }: ReportDocumentProps) => {
@@ -276,6 +290,7 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
           <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('catalog.fields.group')}:</Text> {projectInfo.grupo_mantenimiento}</Text>
           <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('catalog.toggle_types')}:</Text> {projectInfo.tipo_proyecto}</Text>
           <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('projects.fields.description')}:</Text> {projectInfo.descripcion_tarea}</Text>
+          {projectInfo.detalle_tarea && <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('projects.fields.details')}:</Text> {projectInfo.detalle_tarea}</Text>}
         </View>
         <View style={[styles.statusCard, { backgroundColor: '#FEFCE8', borderLeft: '3px solid #D97706' }]}>
           <Text style={[styles.summaryTitle, { color: '#92400E', marginBottom: 2 }]}>{t('projectStatus.title')}</Text>
@@ -310,12 +325,12 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
               <Text style={[styles.surplusSubText, { color: '#2C7A7B' }]}>({summary.participatingHouses} {t('projects.summary.participatingHouses')})</Text>
             </View>
           ) : (
-            <View style={[styles.surplusCard, { backgroundColor: '#FFF5F5', borderLeftColor: '#E53E3E' }]}>
-              <Text style={[styles.surplusTitle, { color: '#9B2C2C' }]}>{t('projects.summary.deficitPerHouse')}</Text>
+            <View style={[styles.deficitCard]}>
+              <Text style={[styles.surplusTitle]}>Total Pendiente de Cobro</Text>
               <Text style={[styles.surplusAmount, { color: '#9B2C2C' }]}>
-                {formatCurrency(Math.abs(summary.surplusPerHouse || 0), locale, currency)}
+                {/* CORREGIDO: Usar summary.total_pendiente */}
+                {formatCurrency(summary.total_pendiente ?? 0, locale, currency)}
               </Text>
-              <Text style={[styles.surplusSubText, { color: '#9B2C2C' }]}>({summary.participatingHouses} {t('projects.summary.participatingHouses')})</Text>
             </View>
           )}
         </View>
@@ -333,7 +348,25 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
             {aportes.map((item: DetailRow, i: number) => (
               <View key={i} style={styles.tableRow}>
                 <Text style={[styles.col, styles.descriptionCol]}>{item.descripcion}</Text>
-                <Text style={[styles.col, styles.amountCol, { color: '#2C7A7B' }]}>{formatCurrency(item.monto, locale, currency)}</Text>
+                <View style={[styles.col, styles.amountCol, { alignItems: 'flex-end' }]}>
+                  <Text style={{
+                    // Si no se ha pagado nada (y no es un gasto), se muestra en rojo. Si no, en verde.
+                    color: item.monto_pagado === 0 && item.tipo_registro === 'aporte' ? '#9B2C2C' : '#2C7A7B',
+                    fontWeight: 'bold',
+                    fontSize: 10
+                  }}>
+                    {formatCurrency(item.monto, locale, currency)}
+                  </Text>
+                  {/* Se muestra el desglose siempre que monto_saldo exista (incluso si es 0) */}
+                  {item.monto_saldo != null && item.monto_pagado != null && (
+                    <>
+                      <Text style={styles.subText}>
+                        Abono: {formatCurrency(item.monto_pagado, locale, currency)}
+                      </Text>
+                      <Text style={styles.subText}>Saldo: {formatCurrency(item.monto_saldo, locale, currency)}</Text>
+                    </>
+                  )}
+                </View>
               </View>
             ))}
           </View>
@@ -360,6 +393,12 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
           </View>
         </View>
       </View>
+      {/* CORRECCIÓN FINAL: Mover el footer a la primera página. La prop 'fixed' lo repetirá en las demás. */}
+      {projectInfo.notas_clave && (
+        <View style={styles.footer} fixed>
+          <Text>{`${t('projects.fields.keyNotes')}: ${projectInfo.notas_clave}`}</Text>
+        </View>
+      )}
     </Page>
     {gastosConEvidencia.length > 0 && (
       <Page size="LETTER" style={styles.page} wrap={false}>
@@ -412,10 +451,6 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
         return;
       }
 
-      const formattedProjectInfo = {
-        ...projectInfoData
-      };
-      
       // --- INICIO: Lógica para calcular el sobrante ---
       const balance = summary.total_aportes - summary.total_gastos;
       const aportes = details.filter(d => d.tipo_registro === 'aporte');
@@ -424,6 +459,7 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
       const summaryWithSurplus: SummaryData = {
         ...summary,
         balance,
+        total_pendiente: summary.total_pendiente ?? 0, // Convertimos null a 0
         participatingHouses,
         surplusPerHouse: participatingHouses > 0 ? balance / participatingHouses : 0,
       };
@@ -432,7 +468,8 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
       const reportPayload = {
         summary: summaryWithSurplus,
         details,
-        projectInfo: formattedProjectInfo,
+        // CORREGIDO: Asegurarse de que projectInfoData (que tiene notas_clave) se pase correctamente.
+        projectInfo: projectInfoData,
       };
 
       localStorage.setItem('financialReportData', JSON.stringify(reportPayload));

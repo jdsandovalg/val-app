@@ -4,21 +4,27 @@ import { useState, useEffect } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 
+type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
+
 type Proyecto = {
-  id_proyecto?: number;
+  id_proyecto: number;
   id_tipo_proyecto: number;
   descripcion_tarea: string;
   detalle_tarea?: string | null;
   frecuencia_sugerida?: string | null;
   notas_clave?: string | null;
   valor_estimado?: number | null;
+  // Añadimos los campos que faltaban para que coincida con el tipo en page.tsx
+  activo: boolean;
+  estado: ProjectStatus;
 };
 
 type ProjectModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (project: Omit<Proyecto, 'id_proyecto'>) => void | Promise<void>;
+  onSave: (project: Partial<Proyecto>) => void | Promise<void>;
   id_tipo_proyecto: number | null;
+  projectToEdit: Partial<Proyecto> | null;
 };
 
 const initialFormData = {
@@ -27,19 +33,39 @@ const initialFormData = {
   frecuencia_sugerida: '',
   notas_clave: '',
   valor_estimado: 0,
+  estado: 'abierto' as ProjectStatus,
 };
 
-export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto }: ProjectModalProps) {
+export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto, projectToEdit }: ProjectModalProps) {
   const { t } = useI18n();
-  const [formData, setFormData] = useState<Omit<Proyecto, 'id_proyecto' | 'id_tipo_proyecto'>>(initialFormData);
+  const [formData, setFormData] = useState(initialFormData);
   const [activeTab, setActiveTab] = useState<'proposal' | 'legacy'>('proposal');
 
+  const isEditing = !!projectToEdit;
+
   useEffect(() => {
-    if (!isOpen) {
-      // Reset form when modal closes
+    if (isOpen) {
+      if (isEditing && projectToEdit) {
+        // Modo Edición: Rellenar el formulario con los datos del proyecto
+        setFormData({
+          descripcion_tarea: projectToEdit.descripcion_tarea || '',
+          detalle_tarea: projectToEdit.detalle_tarea || '',
+          frecuencia_sugerida: projectToEdit.frecuencia_sugerida || '',
+          notas_clave: projectToEdit.notas_clave || '',
+          valor_estimado: projectToEdit.valor_estimado || 0,
+          estado: projectToEdit.estado || 'abierto',
+        });
+        // En modo edición, la pestaña se ajusta según si hay valor estimado o no
+        setActiveTab(projectToEdit.valor_estimado && projectToEdit.valor_estimado > 0 ? 'legacy' : 'proposal');
+      } else {
+        // Modo Creación: Resetear el formulario
+        setFormData(initialFormData);
+        setActiveTab('proposal');
+      }
+    } else {
       setFormData(initialFormData);
     }
-  }, [isOpen]);
+  }, [isOpen, isEditing, projectToEdit]);
   
   useEffect(() => {
     // Si cambiamos a la pestaña de propuesta, nos aseguramos de que el valor estimado sea 0
@@ -48,7 +74,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
     }
   }, [activeTab]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -61,7 +87,12 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
       toast.error(t('catalog.alerts.allFieldsRequired')); // Reutilizamos una clave existente
       return;
     }
-    onSave({ ...formData, id_tipo_proyecto });
+    const payload: Partial<Proyecto> = {
+      ...formData,
+      id_tipo_proyecto,
+      id_proyecto: isEditing ? projectToEdit?.id_proyecto : undefined,
+    };
+    onSave(payload);
   };
 
   if (!isOpen) return null;
@@ -76,36 +107,52 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-semibold mb-4">
-          {t('projects.modals.addProject')} 
+          {isEditing ? t('userModal.titleEdit') + ' Proyecto' : t('projects.modals.addProject')} 
         </h3>
 
         {/* Pestañas / Toggle */}
-        <div className="mb-4 border-b border-gray-200">
-          <nav className="-mb-px flex space-x-4" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('proposal')}
-              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'proposal'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {t('projects.modals.tabs.newProject')}
-            </button>
-            <button
-              onClick={() => setActiveTab('legacy')}
-              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'legacy'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {t('projects.modals.tabs.projectWithCosts')}
-            </button>
-          </nav>
-        </div>
+        {!isEditing && (
+          <div className="mb-4 border-b border-gray-200">
+            <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab('proposal')}
+                className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'proposal'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {t('projects.modals.tabs.newProject')}
+              </button>
+              <button
+                onClick={() => setActiveTab('legacy')}
+                className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'legacy'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {t('projects.modals.tabs.projectWithCosts')}
+              </button>
+            </nav>
+          </div>
+        )}
 
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+          {isEditing && (
+            <div>
+              <label htmlFor="estado" className="block text-sm font-medium text-gray-700 mb-1">{t('projectStatus.title')}</label>
+              <select id="estado" name="estado" value={formData.estado} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50">
+                <option value="abierto">{t('projectStatus.abierto')}</option>
+                <option value="en_votacion">{t('projectStatus.en_votacion')}</option>
+                <option value="aprobado">{t('projectStatus.aprobado')}</option>
+                <option value="rechazado">{t('projectStatus.rechazado')}</option>
+                <option value="en_progreso">{t('projectStatus.en_progreso')}</option>
+                <option value="terminado">{t('projectStatus.terminado')}</option>
+                <option value="cancelado">{t('projectStatus.cancelado')}</option>
+              </select>
+            </div>
+          )}
           <div>
             <label htmlFor="descripcion_tarea" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.description')}</label>
             <input id="descripcion_tarea" name="descripcion_tarea" value={formData.descripcion_tarea} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />

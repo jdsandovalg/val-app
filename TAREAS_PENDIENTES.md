@@ -20,6 +20,16 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ## II. Logros Recientes (Tareas Completadas)
 
+### 4. Mejoras en Gestión de Proyectos y Reporte Financiero
+*   ✅ **Edición Completa de Proyectos:** Se implementó la funcionalidad para editar proyectos existentes. Esto incluye un nuevo botón de edición, la adaptación del modal para pre-rellenar datos y la capacidad de cambiar el estado de un proyecto (ej. de "Abierto" a "En Progreso").
+*   ✅ **Mejoras Sustanciales al Reporte Financiero (PDF):**
+    *   Se añadió el campo `detalle_tarea` a la información general del proyecto.
+    *   Se corrigió un bug persistente que impedía la visualización del pie de página (`notas_clave`).
+    *   Se ajustó la lógica financiera para incluir `monto_saldo` en los cálculos de aportes.
+    *   Se corrigió el cálculo del "Total Pendiente de Cobro" para que refleje la suma real de las cuotas no pagadas.
+    *   Se mejoró la presentación visual de los aportes, mostrando el desglose del saldo de forma clara y resaltando en rojo los pagos pendientes.
+*   ✅ **Estabilización y Depuración:** Se resolvieron múltiples errores de tipo de TypeScript y advertencias de linting en varios componentes (`FinancialReport`, `useFinancialData`, `ProjectModal`, etc.), asegurando la calidad y consistencia del código.
+
 ### 2 y 3. Optimización y Mejora de UX en Detalle de Propuesta
 *   ✅ **Optimización de Carga:** Se eliminó la llamada RPC redundante en `ProposalDetail.tsx`. El catálogo maestro de rubros ahora se carga una sola vez en la página principal (`projects_management/page.tsx`) y se pasa como prop, mejorando el rendimiento.
 *   ✅ **Mejora de Experiencia de Usuario (UX):** Se implementaron "Actualizaciones Optimistas" (Optimistic UI) para las operaciones de añadir y eliminar rubros. La interfaz ahora se actualiza de forma instantánea, eliminando el parpadeo y la recarga completa de la lista, lo que resulta en una experiencia de usuario más fluida y profesional.

@@ -9,6 +9,8 @@ type DetailRow = {
   fecha: string;
   descripcion: string;
   monto: number;
+  monto_pagado?: number | null;
+  monto_saldo?: number | null;
   nombre_proveedor?: string;
   descripcion_gasto?: string;
   url_documento?: string | null;
@@ -17,11 +19,7 @@ type DetailRow = {
 type SummaryData = {
   total_aportes: number;
   total_gastos: number;
-};
-
-type FinancialsRpcResult = DetailRow & {
-  total_aportes: number | null;
-  total_gastos: number | null;
+  total_pendiente: number | null;
 };
 
 export function useFinancialData(projectId: number | null) {
@@ -57,18 +55,13 @@ export function useFinancialData(projectId: number | null) {
 
       const summaryData = summaryResult.data?.[0];
 
-      setSummary(summaryData ? { total_aportes: summaryData.total_aportes, total_gastos: summaryData.total_gastos } : { total_aportes: 0, total_gastos: 0 });
+      setSummary(summaryData 
+        ? { total_aportes: summaryData.total_aportes, total_gastos: summaryData.total_gastos, total_pendiente: summaryData.total_pendiente } 
+        : { total_aportes: 0, total_gastos: 0, total_pendiente: 0 }
+      );
 
-      // 2024-07-26: Cambio para alinear con la función de BD de producción.
-      // La función `get_project_financials` devuelve el monto del gasto en la columna `total_gastos` para los registros de tipo 'gasto'.
-      // Esta corrección reasigna ese valor a la columna `monto` para asegurar la consistencia de datos en toda la aplicación.
-      const correctedDetails = (detailsResult.data as FinancialsRpcResult[] || []).map((d) => {
-        if (d.tipo_registro === 'gasto') {
-          return { ...d, monto: d.total_gastos ?? 0 };
-        }
-        return d;
-      });
-      setDetails(correctedDetails);
+      // La función de BD ahora devuelve los datos correctamente, no se necesita corrección.
+      setDetails(detailsResult.data || []);
       console.log('[QA Log] useFinancialData: Estado actualizado con datos procesados.');
 
     } catch (error: unknown) {
