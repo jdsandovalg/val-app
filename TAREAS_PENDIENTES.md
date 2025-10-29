@@ -239,6 +239,30 @@ Con la gestión de catálogos finalizada, estamos listos para continuar con el o
     1.  **Fase 1 (Actual):** Finalizar las funcionalidades web pendientes para consolidar el producto base.
     2.  **Fase 2 (Futuro):** Abordar la integración de Capacitor.js. Esto incluirá la configuración inicial de los proyectos nativos y el aprendizaje del nuevo flujo de compilación y despliegue para las tiendas de aplicaciones.
 
+### 2. Implementación de Notificaciones Push Web
+
+*   **Prioridad:** Alta (Roadmap Q4 2025).
+*   **Objetivo:** Implementar notificaciones push para la aplicación web utilizando Supabase para notificar a los usuarios sobre eventos importantes (ej. cambios de estado de proyectos, nuevos aportes pendientes, etc.) y así aumentar la interacción.
+*   **Tecnología Propuesta:** Service Workers, Push API del navegador, Supabase Edge Functions.
+
+*   **Análisis de Viabilidad:**
+    *   **Pros:** Permite el re-engagement de los usuarios sin necesidad de una app nativa. Funciona bien en navegadores de escritorio y Android.
+    *   **Contras:** Requiere permiso explícito del usuario. En iOS, el soporte es limitado (a partir de iOS 16.4 y solo para PWAs añadidas a la pantalla de inicio).
+
+*   **Plan de Acción por Fases:**
+    1.  **Fase 1: Configuración de Backend e Infraestructura (Invisible para el usuario):**
+        *   Configurar las credenciales de los servicios de notificación (FCM, APNs) y las VAPID keys en el dashboard de Supabase.
+        *   Crear y registrar el archivo `service-worker.js` en la carpeta `public` del frontend. Este script se encargará de recibir y mostrar las notificaciones.
+
+    2.  **Fase 2: Interfaz de Usuario y Lógica de Suscripción (Visible para el usuario):**
+        *   Crear una nueva tabla `push_subscriptions` en la base de datos para almacenar los tokens de suscripción de cada usuario.
+        *   Añadir un botón o interruptor en la UI (ej. en el perfil de usuario) para que puedan "Activar notificaciones".
+        *   Implementar la lógica para solicitar el permiso del navegador y, si es aceptado, guardar el objeto de suscripción en la nueva tabla.
+
+    3.  **Fase 3: Lógica de Envío de Notificaciones (Backend):**
+        *   Desarrollar una Supabase Edge Function que se active por eventos de la base de datos (ej. un `UPDATE` en la tabla `proyectos`).
+        *   Esta función buscará las suscripciones de los usuarios relevantes y enviará el mensaje de la notificación a través de la API de Supabase.
+
 ---
 
 
