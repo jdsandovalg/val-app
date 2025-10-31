@@ -23,6 +23,18 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
     *   **Backend:** Crear una única función RPC multipropósito para la tabla `contribucionesporcasa`. Esta función reemplazará a la vista `v_usuarios_contribuciones` con una acción `SELECT` y manejará la lógica de `UPDATE` para registrar los pagos.
     *   **Frontend:** Refactorizar completamente la página `/menu/calendarios/page.tsx` y sus componentes para que utilicen exclusivamente la nueva función RPC, asegurando que la fecha de pago se guarde y se muestre correctamente.
 
+### 8. Finalizar Refactorización de Gestión de Aportaciones (Admin)
+*   **Prioridad:** Crítica.
+*   **Objetivo:** Completar la refactorización iniciada, alineando las pantallas de administración con la nueva estructura de base de datos y las funciones RPC para la gestión de aportaciones.
+*   **Contexto:** Después de estabilizar las vistas del usuario (`Calendario`, `Avisos`, `Grupos de Trabajo`), es imperativo corregir las pantallas de administración que quedaron rotas.
+*   **Plan de Acción por Pasos:**
+    1.  **Crear Pantalla de Catálogo de Contribuciones:**
+        *   **Tarea:** Crear una nueva página en `/menu/admin/contributions-catalog/page.tsx`.
+        *   **Implementación:** Utilizar el componente genérico `CatalogManagement` para permitir el CRUD (Crear, Leer, Actualizar, Eliminar) de los tipos de aportes, conectándolo a la función RPC `gestionar_contribuciones_catalogo`.
+    2.  **Refactorizar Pantalla de Gestión de Aportes por Casa:**
+        *   **Tarea:** Corregir la página `/menu/admin/manage-house-contributions/page.tsx`.
+        *   **Implementación:** Modificar la página para que obtenga y guarde los datos utilizando la función RPC `gestionar_contribuciones_casa`.
+
 ---
 
 ## II. Logros Recientes (Tareas Completadas)

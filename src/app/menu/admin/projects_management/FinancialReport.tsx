@@ -350,10 +350,9 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
 
       <View style={styles.tablesContainer}>
         <View style={styles.tableContainer}>
-          <Text style={styles.sectionTitle}>{t('projects.contributions.title')}</Text>
           <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.colHeader, styles.descriptionCol]}>{t('projects.fields.description')}</Text>
+            <View style={styles.tableHeader}> 
+              <Text style={[styles.colHeader, styles.descriptionCol]}>{t('projects.contributions.listTitle')}</Text>
               <Text style={[styles.colHeader, styles.amountCol]}>{t('projects.fields.amount')}</Text>
             </View>
             {aportes.map((item: DetailRow, i: number) => (
@@ -382,10 +381,9 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
         </View>
 
         <View style={styles.tableContainer}>
-          <Text style={styles.sectionTitle}>{t('projects.expenses.title')}</Text>
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={[styles.colHeader, {width: '45%'}]}>{t('projects.fields.description')}</Text>
+              <Text style={[styles.colHeader, {width: '45%'}]}>{t('projects.expenses.listTitle')}</Text>
               <Text style={[styles.colHeader, {width: '25%'}]}>{t('projects.expenses.fields.docDate')}</Text>
               <Text style={[styles.colHeader, styles.amountCol]}>{t('projects.fields.amount')}</Text>
             </View>
@@ -474,11 +472,18 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
       };
       // --- FIN: Lógica para calcular el sobrante ---
 
+      // --- INICIO: Lógica para el nombre del archivo ---
+      const safeProjectName = projectInfoData.descripcion_tarea.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const fileName = t('projects.summary.fileName', { projectName: safeProjectName });
+      // --- FIN: Lógica para el nombre del archivo ---
+
       const reportPayload = {
         summary: summaryWithSurplus,
         details,
         // CORREGIDO: Asegurarse de que projectInfoData (que tiene notas_clave) se pase correctamente.
         projectInfo: projectInfoData,
+        // Añadimos el nombre del archivo al payload
+        fileName: fileName,
       };
 
       localStorage.setItem('financialReportData', JSON.stringify(reportPayload));

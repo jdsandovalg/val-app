@@ -24,14 +24,18 @@
   "header": {
     "greeting": "Bonjour, {user}",
     "welcome": "Bienvenue",
+    "operation": {
+      "ariaLabel": "Ouvrir le menu d'opération",
+      "title": "Opération",
+      "projects_management": "Gestion de Projets"
+    },
     "admin": {
       "ariaLabel": "Ouvrir le menu d'administration",
+      "title": "Administration",
       "contributions": "Contributions",
-      "users": "Utilisateurs",
+      "users": "Gérer les Utilisateurs",
       "catalog_management": "Gestion des Catalogues",
-      "project_operation": "Opération de Projets",
-      "project_classification_management": "Gestion Classification de Projets",
-      "projects_management": "Gestion de Projets"
+      "project_classification_management": "Classification de Projets"
     },
     "logout": {
       "ariaLabel": "Se déconnecter"
@@ -170,6 +174,7 @@
       "responsiblePlaceholder": "Filtrer par responsable...",
       "allTypes": "Tous les types",
       "admin": "Administrateur",
+      "operativo": "Opérateur",
       "owner": "Propriétaire",
       "close": "Fermer"
     },
@@ -378,6 +383,7 @@
     },
     "contributions": {
       "title": "Apports",
+      "listTitle": "Liste des Apports",
       "emptyState": "Aucun apport trouvé pour ce projet.",
       "paidOn": "Payé le :",
       "status": {
@@ -396,6 +402,7 @@
     },
     "expenses": {
       "title": "Dépenses",
+      "listTitle": "Liste des Dépenses",
       "buttons": {
         "add": "Ajouter une Dépense"
       },
@@ -434,6 +441,7 @@
       "noData": "Impossible de charger le résumé du projet.",
       "reportTitle": "Résumé Financier du Projet",
       "generatePdf": "Rapport PDF",
+      "fileName": "Resume_Financier_{projectName}.pdf",
       "downloadPdf": "Télécharger PDF",
       "alerts": {
         "fetchError": "Erreur lors du chargement du résumé : {message}",

@@ -289,6 +289,7 @@ export default function ManageUsersPage() {
               <select name="tipo_usuario" value={filters.tipo_usuario} onChange={handleFilterChange} className="w-full p-2 border rounded">
                 <option value="">{t('manageUsers.filterModal.allTypes')}</option>
                 <option value="ADM">{t('manageUsers.filterModal.admin')}</option>
+                <option value="OPE">{t('manageUsers.filterModal.operativo')}</option>
                 <option value="PRE">{t('manageUsers.filterModal.owner')}</option>
               </select>
             </div>

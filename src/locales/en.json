@@ -24,14 +24,18 @@
   "header": {
     "greeting": "Hello, {user}",
     "welcome": "Welcome",
+    "operation": {
+      "ariaLabel": "Open operation menu",
+      "title": "Operation",
+      "projects_management": "Project Management"
+    },
     "admin": {
       "ariaLabel": "Open administration menu",
+      "title": "Administration",
       "contributions": "Contributions",
-      "users": "Users",
+      "users": "Manage Users",
       "catalog_management": "Catalog Management",
-      "project_operation": "Project Operation",
-      "project_classification_management": "Project Classification Management",
-      "projects_management": "Project Management"
+      "project_classification_management": "Project Classification"
     },
     "logout": {
       "ariaLabel": "Log out"
@@ -170,6 +174,7 @@
       "responsiblePlaceholder": "Filter by responsible...",
       "allTypes": "All types",
       "admin": "Administrator",
+      "operativo": "Operator",
       "owner": "Owner",
       "close": "Close"
     },
@@ -379,6 +384,7 @@
     },
     "contributions": {
       "title": "Contributions",
+      "listTitle": "List of Contributions",
       "emptyState": "No contributions found for this project.",
       "paidOn": "Paid on:",
       "status": {
@@ -397,6 +403,7 @@
     },
     "expenses": {
       "title": "Expenses",
+      "listTitle": "List of Expenses",
       "buttons": {
         "add": "Add Expense"
       },
@@ -435,6 +442,7 @@
       "noData": "Could not load project summary.",
       "reportTitle": "Project Financial Summary",
       "generatePdf": "PDF Report",
+      "fileName": "Financial_Summary_{projectName}.pdf",
       "downloadPdf": "Download PDF",
       "alerts": {
         "fetchError": "Error loading summary: {message}",

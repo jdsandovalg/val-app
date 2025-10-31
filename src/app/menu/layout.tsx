@@ -28,9 +28,11 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [isOperationMenuOpen, setIsOperationMenuOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const operationMenuRef = useRef<HTMLDivElement>(null);
   const adminMenuRef = useRef<HTMLDivElement>(null);
   const { t, lang, setLang } = useI18n();
 
@@ -82,6 +84,9 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      if (operationMenuRef.current && !operationMenuRef.current.contains(event.target as Node)) {
+        setIsOperationMenuOpen(false);
+      }
       if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
         setIsAdminMenuOpen(false);
       }
@@ -141,6 +146,34 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
           {usuario ? t('header.greeting', { user: usuario.responsable }) : t('header.welcome')}
         </div>
         <div className="flex items-center gap-4">
+          {/* --- Menú de Operación (OPE y ADM) --- */}
+          {usuario && (usuario.tipo_usuario === 'ADM' || usuario.tipo_usuario === 'OPE') && (
+            <div ref={operationMenuRef} className="relative flex items-center">
+              <button
+                onClick={() => setIsOperationMenuOpen(prev => !prev)}
+                className="text-gray-600 hover:text-blue-600"
+                aria-label={t('header.operation.ariaLabel')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </button>
+              {isOperationMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-md shadow-lg z-20 border border-gray-200">
+                  <div className="py-1">
+                    <Link href="/menu/admin/projects_management" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsOperationMenuOpen(false)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3 text-gray-500">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {t('header.operation.projects_management')}
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* --- Menú de Administración (Solo ADM) --- */}
           {usuario && usuario.tipo_usuario === 'ADM' && (
             <div ref={adminMenuRef} className="relative flex items-center">
               <button
@@ -155,31 +188,23 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
               {isAdminMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-md shadow-lg z-20 border border-gray-200">
                   <div className="py-1">
-                    <Link href="/menu/admin/manage-house-contributions" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link href="/menu/admin/manage-house-contributions" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAdminMenuOpen(false)}>
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3 text-gray-500">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       {t('header.admin.contributions')}
                     </Link>
-
-                    <Link href="/menu/admin/manage-users" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link href="/menu/admin/manage-users" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAdminMenuOpen(false)}>
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3 text-gray-500">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       {t('header.admin.users')}
                     </Link>
-
-                    <Link href="/menu/admin/projects_catalogs" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link href="/menu/admin/projects_catalogs" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAdminMenuOpen(false)}>
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3 text-gray-500">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                       </svg>
                       {t('header.admin.project_classification_management')}
-                    </Link>
-                    <Link href="/menu/admin/projects_management" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3 text-gray-500">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      {t('header.admin.projects_management')}
                     </Link>
                   </div>
                 </div>
