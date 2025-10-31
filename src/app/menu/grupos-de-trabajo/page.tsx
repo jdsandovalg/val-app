@@ -30,14 +30,10 @@ type ContribucionAgrupada = {
   descripcion: string;
   grupos: {
     id_grupo: number | null;
+    casas: { id: number; responsable: string; }[];
     fechas: {
       fecha: string;
-      dias_restantes: number;
-      realizado: string;
-      casas: {
-        id: number;
-        responsable: string;
-      }[];
+      estado: 'PENDIENTE' | 'PAGADO' | string;
     }[];
   }[];
 };
@@ -67,10 +63,9 @@ export default function GruposDeTrabajoPage() {
       const currentUser: Usuario = JSON.parse(storedUser);
 
       // --- OPTIMIZACIÓN ---
-      // Se llama a la función RPC para que la base de datos haga la agrupación.
-      const { data, error } = await supabase.rpc('get_grupos_trabajo_usuario', {
-        p_user_id: currentUser.id,
-        p_user_type: currentUser.tipo_usuario,
+      // CORREGIDO: Llamar a la nueva función RPC correcta.
+      const { data, error } = await supabase.rpc('get_grupos_de_trabajo_agrupados', {
+        p_user_id: currentUser.id
       });
 
       if (error) throw error;
@@ -160,19 +155,27 @@ export default function GruposDeTrabajoPage() {
       <div className="space-y-6">
         {!loading && sortedGrupos.length > 0 ? (
           sortedGrupos.map((contribucion) => (
-            <div key={contribucion.descripcion} className="bg-slate-50 p-4 sm:p-6 rounded-xl shadow-lg border border-slate-200">
+            <div
+              key={contribucion.descripcion}
+              className="bg-slate-50 p-4 sm:p-6 rounded-xl shadow-lg border border-slate-200 w-full max-w-xl mx-auto"
+            >
               <h2 className="text-xl font-bold text-blue-800 border-b pb-2 mb-4">{contribucion.descripcion}</h2>
               {contribucion.grupos.map((grupo) => (
                 <div key={grupo.id_grupo ?? 'default-group'} className="mb-6 last:mb-0">
                   <h3 className="text-lg font-semibold text-gray-700 mb-3">
                     {grupo.id_grupo ? t('groups.groupTitle', { number: grupo.id_grupo }) : t('groups.membersTitle')}
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Contenedor Flex para centrar el Grid */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-full max-w-md space-y-4">
                     {grupo.fechas.map((fechaInfo) => (
-                      <TaskCard 
-                        key={`${fechaInfo.fecha}-${fechaInfo.casas[0]?.id || 0}`}
-                        fechaInfo={fechaInfo} />
+                      <TaskCard
+                        key={fechaInfo.fecha}
+                        fechaInfo={fechaInfo}
+                        casas={grupo.casas} // Pasamos las casas del grupo padre
+                      />
                     ))}
+                  </div>
                   </div>
                 </div>
               ))}

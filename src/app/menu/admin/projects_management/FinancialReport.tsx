@@ -307,9 +307,20 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
           <Text style={[styles.summaryTitle, { color: '#9B2C2C' }]}>{t('projects.summary.totalExpenses')}</Text>
           <Text style={[styles.summaryAmount, { color: '#9B2C2C' }]}>{formatCurrency(summary.total_gastos, locale, currency)}</Text>
         </View>
-        <View style={[styles.summaryCard, summary.balance && summary.balance >= 0 ? { backgroundColor: '#EBF8FF', borderLeft: '3px solid #4299E1' } : { backgroundColor: '#FFF5F5', borderLeft: '3px solid #E53E3E' }]}>
-          <Text style={[styles.summaryTitle, summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#9B2C2C' }]}>{t('projects.summary.balance')}</Text>
-          <Text style={[styles.summaryAmount, summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#9B2C2C' }]}>{formatCurrency(summary.balance || 0, locale, currency)}</Text>
+        <View style={[
+          styles.summaryCard,
+          summary.balance && summary.balance >= 0
+            ? { backgroundColor: '#EBF8FF', borderLeft: '3px solid #4299E1' } // Estilo para saldo positivo (azul)
+            : { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FBBF24' } // Estilo para saldo negativo (ámbar/naranja)
+        ]}>
+          <Text style={[
+            styles.summaryTitle,
+            summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#B45309' }
+          ]}>{t('projects.summary.balance')}</Text>
+          <Text style={[
+            styles.summaryAmount,
+            summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#B45309' }
+          ]}>{formatCurrency(summary.balance || 0, locale, currency)}</Text>
         </View>
       </View>
 
@@ -326,7 +337,7 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
             </View>
           ) : (
             <View style={[styles.deficitCard]}>
-              <Text style={[styles.surplusTitle]}>Total Pendiente de Cobro</Text>
+              <Text style={[styles.surplusTitle]}>{t('projects.summary.pendingCollection')}</Text>
               <Text style={[styles.surplusAmount, { color: '#9B2C2C' }]}>
                 {/* CORREGIDO: Usar summary.total_pendiente */}
                 {formatCurrency(summary.total_pendiente ?? 0, locale, currency)}
@@ -350,20 +361,18 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
                 <Text style={[styles.col, styles.descriptionCol]}>{item.descripcion}</Text>
                 <View style={[styles.col, styles.amountCol, { alignItems: 'flex-end' }]}>
                   <Text style={{
-                    // Si no se ha pagado nada (y no es un gasto), se muestra en rojo. Si no, en verde.
+                    // CORREGIDO: Si no se ha pagado nada, se muestra en rojo. Si no, en verde.
                     color: item.monto_pagado === 0 && item.tipo_registro === 'aporte' ? '#9B2C2C' : '#2C7A7B',
                     fontWeight: 'bold',
                     fontSize: 10
                   }}>
-                    {formatCurrency(item.monto, locale, currency)}
-                  </Text>
-                  {/* Se muestra el desglose siempre que monto_saldo exista (incluso si es 0) */}
-                  {item.monto_saldo != null && item.monto_pagado != null && (
+                    {formatCurrency(item.monto, locale, currency)}</Text>
+                  {item.monto_saldo && item.monto_saldo > 0 && item.monto_pagado != null && (
                     <>
-                      <Text style={styles.subText}>
-                        Abono: {formatCurrency(item.monto_pagado, locale, currency)}
-                      </Text>
-                      <Text style={styles.subText}>Saldo: {formatCurrency(item.monto_saldo, locale, currency)}</Text>
+                      {item.monto_pagado > 0 && (
+                        <Text style={styles.subText}>{t('projects.summary.downPaymentLabel')}: {formatCurrency(item.monto_pagado, locale, currency)}</Text>
+                      )}
+                      <Text style={styles.subText}>{t('projects.summary.balanceUsedLabel')}: {formatCurrency(item.monto_saldo, locale, currency)}</Text>
                     </>
                   )}
                 </View>

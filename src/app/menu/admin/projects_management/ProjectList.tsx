@@ -112,7 +112,7 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
                     </button>
                   </div>
                 </div>
-                {project.notas_clave && <p className="text-sm text-gray-600 mt-2">{project.notas_clave}</p>}
+                {project.detalle_tarea && <p className="text-sm text-gray-600 mt-2">{project.detalle_tarea}</p>}
               </div>
             );
           })}

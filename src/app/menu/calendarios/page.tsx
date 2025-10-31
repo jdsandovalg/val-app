@@ -20,17 +20,19 @@ import { toast } from 'react-hot-toast';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
 import ImageViewerModal from '@/components/modals/ImageViewerModal';
 import ContributionCalendarCard from './components/ContributionCalendarCard';
-import { saveContributionPayment } from '@/utils/supabase/server-actions';
 
 
 type Contribucion = {
-  id_contribucion: string;
-  descripcion: string | null;
-  fecha: string;
-  realizado: string; // 'S' o 'N'
-  dias_restantes?: number;
-  color_del_borde?: string | null;
+  id_casa: number;
+  id_contribucion: number;
+  fecha_cargo: string; // Corresponde a la 'fecha' original
+  estado: 'PENDIENTE' | 'PAGADO'; // Corresponde a 'realizado'
+  monto_pagado: number | null; // Corresponde a 'pagado'
+  fechapago?: string | null;
   url_comprobante?: string | null;
+  responsable: string;
+  contribucion_nombre: string; // Corresponde a 'descripcion'
+  contribucion_color: string | null; // Corresponde a 'color_del_borde'
 };
 
 export default function CalendariosPage() {
@@ -47,7 +49,7 @@ export default function CalendariosPage() {
   // Ordenamiento por defecto. Ya no se necesita configuración de ordenamiento o filtros.
   const filteredAndSortedContribuciones = useMemo(() => {
     return [...contribuciones]
-      .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+      .sort((a, b) => new Date(a.fecha_cargo).getTime() - new Date(b.fecha_cargo).getTime());
   }, [contribuciones]);
 
   const fetchContribuciones = useCallback(async () => {
@@ -60,10 +62,10 @@ export default function CalendariosPage() {
     try {
       const user = JSON.parse(stored);
       setUsuario(user);
-      const { data, error } = await supabase
-        .from('v_usuarios_contribuciones')
-        .select('id_contribucion, descripcion, fecha, realizado, dias_restantes, url_comprobante, color_del_borde')
-        .eq('id', user.id);
+      const { data, error } = await supabase.rpc('gestionar_contribuciones_casa', {
+        p_accion: 'SELECT',
+        p_id_casa: user.id
+      });
 
       if (error) throw error;
       setContribuciones((data as Contribucion[]) || []);
@@ -102,37 +104,74 @@ export default function CalendariosPage() {
     setViewingImageUrl(null);
   };
 
-  const handleSavePayment = async (amount: number, file: File) => {
+  const handleSavePayment = async (amount: number, date: string, file: File | null) => {
     if (!selectedContribution || !usuario) return;
 
+    const toastId = toast.loading(t('manageContributions.uploading'));
+
     try {
-      await saveContributionPayment(selectedContribution, usuario, amount, file);
-      toast.success(t('calendar.payment.success'));
+      let filePath: string | null = null;
+
+      // 1. Subir la imagen a Supabase Storage, SOLO SI EXISTE.
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${usuario.id}-${selectedContribution.id_contribucion}-${selectedContribution.fecha_cargo}-${Date.now()}.${fileExt}`;
+        filePath = fileName; // La ruta que se guardará en la BD es solo el nombre del archivo.
+
+        const { error: uploadError } = await supabase.storage.from('imagenespagos').upload(filePath, file);
+
+        if (uploadError) {
+          throw new Error(`Error subiendo archivo: ${uploadError.message}`);
+        }
+      }
+
+      // 2. Llamar a la nueva función RPC para actualizar el registro
+      const { data: updatedRecord, error: rpcError } = await supabase.rpc('gestionar_pago_contribucion_casa', {
+        p_id_casa: usuario.id,
+        p_id_contribucion: selectedContribution.id_contribucion,
+        p_fecha_cargo: selectedContribution.fecha_cargo,
+        p_monto_pagado: amount,
+        p_fecha_pago: date,
+        p_url_comprobante: filePath, // Pasamos la ruta del archivo o null
+      });
+
+      if (rpcError) throw rpcError;
+      
+      if (!updatedRecord || updatedRecord.length === 0) throw new Error("No se recibió confirmación de la actualización.");
+
+      // Actualización optimista en el frontend
+      setContribuciones(prev => prev.map(c => 
+        (c.id_contribucion === selectedContribution.id_contribucion && c.fecha_cargo === selectedContribution.fecha_cargo) 
+        ? { ...c, ...updatedRecord[0] }
+        : c
+      ));
+
+      toast.success(t('calendar.payment.success'), { id: toastId });
       handleClosePaymentModal();
-      fetchContribuciones(); // Recargar los datos
     } catch (error: unknown) {
       let message = t('calendar.payment.unknownError');
-      if (error instanceof Error) {
-        message = error.message;
-      }
-      toast.error(t('calendar.payment.error', { message }));
+      if (error instanceof Error) message = error.message;
+      toast.error(t('calendar.payment.error', { message }), { id: toastId });
     }
   };
 
   const getEstado = useCallback((row: Contribucion): { texto: string; icon: React.ReactNode | null; color: string; key: string } => {
-    if (row.realizado === 'S') {
+    // CORREGIDO: Usar la nueva columna 'estado'
+    if (row.estado === 'PAGADO') {
       return { texto: t('calendar.status.paid'), key: 'paid', color: 'text-green-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-green-600"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
     }
-    if (typeof row.dias_restantes === 'number') {
-      if (row.dias_restantes >= 0) {
-        return { texto: t('calendar.status.overdue'), key: 'overdue', color: 'text-red-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-red-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg> };
-      } else {
-        const diasFuturo = Math.abs(row.dias_restantes);
-        const textColor = diasFuturo <= 7 ? 'text-yellow-700' : 'text-blue-700';
-        const iconColor = diasFuturo <= 7 ? 'text-yellow-500' : 'text-blue-500';
-        return { texto: t('calendar.status.scheduled', { days: diasFuturo }), key: 'scheduled', color: textColor, icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${iconColor}`}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
-      }
+
+    // CORREGIDO: Calcular los días restantes en el cliente
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaCargo = new Date(row.fecha_cargo + 'T00:00:00');
+    const diffTime = fechaCargo.getTime() - hoy.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return { texto: t('calendar.status.overdue'), key: 'overdue', color: 'text-red-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-red-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg> };
     }
+    
     return { texto: t('calendar.status.pending'), key: 'pending', color: 'text-gray-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
   }, [t]);
 
@@ -154,12 +193,12 @@ export default function CalendariosPage() {
                 }
                 // Mapear y ordenar los datos para el reporte PDF.
                 const reportData = filteredAndSortedContribuciones
-                .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()) // Ordenar por fecha ascendente
+                .sort((a, b) => new Date(a.fecha_cargo).getTime() - new Date(b.fecha_cargo).getTime()) // Ordenar por fecha ascendente
                 .map(c => ({
                   id_contribucion: c.id_contribucion,
-                  descripcion: c.descripcion ?? 'N/A',
-                  fecha_limite: c.fecha,
-                  pagado: c.realizado === 'S',
+                  descripcion: c.contribucion_nombre ?? 'N/A',
+                  fecha_limite: c.fecha_cargo,
+                  pagado: c.estado === 'PAGADO',
                   status: getEstado(c).texto, // El texto para mostrar
                   statusKey: getEstado(c).key,
                 }));
@@ -181,13 +220,14 @@ export default function CalendariosPage() {
         <div className="w-full">
           {filteredAndSortedContribuciones.map((row) => (
             <ContributionCalendarCard
-              key={`${row.id_contribucion}-${row.fecha}`}
-              descripcion={row.descripcion}
-              fecha={row.fecha}
+              key={`${row.id_contribucion}-${row.fecha_cargo}`}
+              descripcion={row.contribucion_nombre}
+              fecha={row.fecha_cargo}
               estado={getEstado(row)}
-              realizado={row.realizado}
+              realizado={row.estado === 'PAGADO' ? 'S' : 'N'} // Adaptado para compatibilidad con el componente
               url_comprobante={row.url_comprobante}
-              color_del_borde={row.color_del_borde}
+              color_del_borde={row.contribucion_color}
+              fechapago={row.fechapago}
               onPay={() => handleOpenPaymentModal(row)}
               onViewProof={() => handleOpenImageViewer(row.url_comprobante)}
             />

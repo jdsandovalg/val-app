@@ -16,6 +16,13 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 *   **Problema:** El modal de confirmación (`ConfirmationModal`) muestra un fondo negro que cubre toda la pantalla (`bg-black bg-opacity-50`), lo cual resulta visualmente intrusivo en la versión de escritorio.
 *   **Solución Propuesta:** Reducir la opacidad del fondo (ej. `bg-opacity-30`) y añadir un efecto de desenfoque (`backdrop-blur-sm`) para una apariencia más moderna y menos agresiva.
 
+### 7. Refactorizar y Corregir Lógica de Pago en Calendario (Deuda Técnica Crítica)
+*   **Prioridad:** Crítica.
+*   **Problema:** La funcionalidad para registrar un pago desde la página de "Calendarios" está rota. La fecha de pago no se guarda en la base de datos y no se muestra en la interfaz. La causa raíz es una combinación de una vista (`v_usuarios_contribuciones`) desactualizada y una lógica de guardado incorrecta que mezclaba contextos (proyectos vs. calendario) y rompía la arquitectura de la aplicación.
+*   **Solución Propuesta (Reinicio):**
+    *   **Backend:** Crear una única función RPC multipropósito para la tabla `contribucionesporcasa`. Esta función reemplazará a la vista `v_usuarios_contribuciones` con una acción `SELECT` y manejará la lógica de `UPDATE` para registrar los pagos.
+    *   **Frontend:** Refactorizar completamente la página `/menu/calendarios/page.tsx` y sus componentes para que utilicen exclusivamente la nueva función RPC, asegurando que la fecha de pago se guarde y se muestre correctamente.
+
 ---
 
 ## II. Logros Recientes (Tareas Completadas)

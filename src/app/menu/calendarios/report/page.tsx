@@ -18,25 +18,25 @@ Font.register({
 // Estilos del PDF y función de sanitización
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 35,
-    paddingBottom: 50,
+    paddingTop: 5,
+    paddingBottom: 5,
     paddingHorizontal: 40,
     fontFamily: 'Helvetica',
     backgroundColor: '#F9FAFB',
   },
   header: {
     position: 'absolute',
-    top: 35,
+    top: 5,
     left: 40,
     right: 40,
     textAlign: 'center',
   },
   logo: {
     position: 'absolute',
-    top: 25,
+    top: 5,
     left: 40,
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
   },
   title: {
     fontSize: 20,
@@ -48,11 +48,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 60,
+    marginTop: 0,
+    marginBottom: 0
   },
   footer: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 10,
     left: 40,
     right: 40,
     textAlign: 'center',

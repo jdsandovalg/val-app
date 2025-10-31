@@ -16,6 +16,7 @@ interface ContributionCalendarCardProps {
   realizado: string;
   url_comprobante?: string | null;
   color_del_borde?: string | null;
+  fechapago?: string | null;
   onPay: () => void;
   onViewProof: () => void;
 }
@@ -38,6 +39,7 @@ const ContributionCalendarCard: React.FC<ContributionCalendarCardProps> = ({
   realizado,
   url_comprobante,
   color_del_borde,
+  fechapago,
   onPay,
   onViewProof,
 }) => {
@@ -50,7 +52,13 @@ const ContributionCalendarCard: React.FC<ContributionCalendarCardProps> = ({
       <div className="flex justify-between items-start">
         <div>
           <p className="font-bold text-gray-800">{descripcion ?? 'N/A'}</p>
-          <p className="text-sm text-gray-500">{t('calendar.table.dueDate')}: {formatDate(fecha, lang)}</p>
+          <div className="flex items-center gap-4 mt-1"> {/* Usar gap para espaciado */}
+            {/* La fecha del compromiso (Fecha Límite) siempre se muestra */}
+            <p className="text-sm text-gray-500">{t('calendar.table.dueDate')}: {formatDate(fecha, lang)}</p>
+            {/* La fecha de pago se muestra a la derecha si existe */}
+            {fechapago &&
+              <p className="text-sm text-green-600 font-medium">{t('projects.contributions.paidOn')} {formatDate(fechapago, lang)}</p>}
+          </div>
         </div>
         <div className={`flex items-center justify-center gap-2 font-medium text-xs ${estado.color}`}>
           {estado.icon}

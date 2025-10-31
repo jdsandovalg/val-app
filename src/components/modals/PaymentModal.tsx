@@ -17,7 +17,7 @@ function PaymentModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (amount: number, file: File) => Promise<void>;
+  onSave: (amount: number, date: string, file: File) => Promise<void>;
   contribution: PayableContribution | null;
 }) {
   const { t } = useI18n();
@@ -25,6 +25,7 @@ function PaymentModal({
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
 
   if (!isOpen || !contribution) return null;
 
@@ -36,12 +37,12 @@ function PaymentModal({
       return;
     }
     setLoading(true);
-    await onSave(parseFloat(amount), file);
+    await onSave(parseFloat(amount), paymentDate, file);
     setLoading(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-30 z-50 flex justify-center items-center backdrop-blur-sm">
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
         <h2 className="text-xl font-bold mb-2 text-center">{t('paymentModal.title')}</h2>
         <div className="text-center mb-4">
@@ -52,8 +53,16 @@ function PaymentModal({
         </div>
         <form onSubmit={handleSubmit}>
           <div className="mb-4 flex flex-col items-center">
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 w-1/2 text-center">{t('paymentModal.amountPaid')}</label>
-            <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 block w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-right px-2 py-1 bg-gray-100" placeholder={t('paymentModal.amountPlaceholder')} step="0.01" required />
+            <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+              <div className="flex flex-col items-center">
+                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">{t('paymentModal.amountPaid')}</label>
+                <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-right px-2 py-1 bg-gray-100" placeholder={t('paymentModal.amountPlaceholder')} step="0.01" required />
+              </div>
+              <div className="flex flex-col items-center">
+                <label htmlFor="paymentDate" className="block text-sm font-medium text-gray-700 mb-1">{t('contributionModal.dateLabel')}</label>
+                <input type="date" id="paymentDate" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-2 py-1 bg-gray-100" required />
+              </div>
+            </div>
           </div>
           <div className="mb-4 flex flex-col items-center">
             <label className="block text-sm font-bold text-gray-700 text-center mb-2">{t('paymentModal.proof')}</label>

@@ -18,11 +18,22 @@ import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
 type AvisoCategorizado = {
-  id_contribucion: string;
-  descripcion: string;
-  fecha: string;
-  dias_restantes: number;
-  categoria: 'verde' | 'amarillo' | 'rojo';
+  id_contribucion: number;
+  contribucion_nombre: string;
+  fecha_cargo: string;
+  fecha_maxima_pago: string | null;
+  dias_restantes: number; // Calculado en el cliente
+  categoria: 'verde' | 'amarillo' | 'rojo'; // Calculado en el cliente
+};
+
+// Tipo para los datos que devuelve la función RPC
+type ContribucionCasaDetalle = {
+  id_contribucion: number;
+  fecha_cargo: string;
+  estado: 'PENDIENTE' | 'PAGADO' | string;
+  contribucion_nombre: string;
+  fecha_maxima_pago: string | null;
+  // ...pueden añadirse más campos si son necesarios
 };
 
 type Tab = 'verde' | 'amarillo' | 'rojo';
@@ -45,13 +56,32 @@ export default function AvisosPage() {
     try {
       const user: Usuario = JSON.parse(storedUser);
  
-      const { data, error } = await supabase.rpc('get_avisos_categorizados', {
-        p_user_id: user.id,
+      // CORREGIDO: Usar la nueva función RPC
+      const { data, error } = await supabase.rpc('gestionar_contribuciones_casa', {
+        p_accion: 'SELECT',
+        p_id_casa: user.id,
       });
  
       if (error) throw error;
  
-      setAvisos(data || []);
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
+      // Adaptar y calcular los datos en el cliente
+      const avisosPendientes = (data || [])
+        .filter((item: ContribucionCasaDetalle) => item.estado === 'PENDIENTE')
+        .map((item: ContribucionCasaDetalle) => {
+          const fechaLimite = new Date(item.fecha_maxima_pago || item.fecha_cargo);
+          fechaLimite.setHours(0, 0, 0, 0);
+          const diffTime = fechaLimite.getTime() - hoy.getTime();
+          const dias_restantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          const categoria: Tab = dias_restantes <= 7 ? 'verde' : (dias_restantes <= 30 ? 'amarillo' : 'rojo');
+
+          return { ...item, dias_restantes, categoria };
+        });
+
+      setAvisos(avisosPendientes);
     } catch (e) {
       toast.error(`${t('notices.alerts.dbError', { message: e instanceof Error ? e.message : '' })}`);
       router.push('/menu');
@@ -154,12 +184,12 @@ export default function AvisosPage() {
           <div className="space-y-4">
             {filteredAvisos.map((aviso) => (
               <div
-                key={`${aviso.id_contribucion}-${aviso.fecha}`}
+                key={`${aviso.id_contribucion}-${aviso.fecha_cargo}`}
                 className={`bg-white p-4 rounded-lg shadow-md border-l-4 ${categoryStyles[aviso.categoria].border}`}
               >
                 <div className="flex justify-between items-start">
-                  <h2 className="font-bold text-gray-800">{aviso.descripcion}</h2>
-                  <span className="text-sm font-medium text-gray-600">{formatDate(aviso.fecha, lang)}</span>
+                  <h2 className="font-bold text-gray-800">{aviso.contribucion_nombre}</h2>
+                  <span className="text-sm font-medium text-gray-600">{formatDate(aviso.fecha_cargo, lang)}</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
                   {getDaysRemainingMessage(aviso.dias_restantes, lang)}

@@ -14,6 +14,15 @@ type Aviso = {
   categoria: string;
 };
 
+// Tipo para los datos que devuelve la función RPC
+type ContribucionCasaDetalle = {
+  id_contribucion: number;
+  fecha_cargo: string;
+  estado: 'PENDIENTE' | 'PAGADO' | string; // Aceptamos string para ser flexibles
+  contribucion_nombre: string;
+  // ...pueden añadirse más campos si son necesarios
+};
+
 function MenuLayoutContent({ children }: { children: ReactNode }) {
   const supabase = createClient();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -42,14 +51,24 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
       const user: Usuario = JSON.parse(storedUser);
       setUsuario(user);
 
-      const { data, error } = await supabase.rpc('get_avisos_categorizados', {
-        p_user_id: user.id,
+      const { data, error } = await supabase.rpc('gestionar_contribuciones_casa', {
+        p_accion: 'SELECT',
+        p_id_casa: user.id,
       });
 
       if (error) throw error;
+      
+      // Filtrar solo los avisos pendientes y adaptar los datos al formato que espera el componente.
+      const pendingAvisos = (data || [])
+        .filter((item: ContribucionCasaDetalle) => item.estado === 'PENDIENTE')
+        .map((item: ContribucionCasaDetalle) => ({
+          id_contribucion: item.id_contribucion,
+          descripcion: item.contribucion_nombre,
+          fecha: item.fecha_cargo,
+          categoria: 'general', // La categorización por colores se hará en la página de Avisos.
+        }));
 
-      setAvisos(data || []);
-
+      setAvisos(pendingAvisos);
     } catch (e) {
       console.error("Error al obtener datos iniciales:", e);
       localStorage.removeItem('usuario');

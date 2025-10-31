@@ -36,8 +36,8 @@ const PdfCalendarCard: React.FC<PdfCalendarCardProps> = ({ record, t, locale }) 
   const styles = StyleSheet.create({
     card: {
       backgroundColor: '#FFFFFF',
-      padding: 12,
-      marginBottom: 12,
+      padding: 6,
+      marginBottom: 6,
       borderRadius: 6,
       borderLeftWidth: 4,
       borderLeftColor: statusColor,
@@ -50,7 +50,7 @@ const PdfCalendarCard: React.FC<PdfCalendarCardProps> = ({ record, t, locale }) 
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 10,
+      marginBottom: 6,
     },
     headerText: {
       fontSize: 11,
