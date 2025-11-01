@@ -9,6 +9,7 @@
     "calendar": "Calendario",
     "groups": "Grupos",
     "notices": "Avisos",
+    "profile": "Mi Perfil",
     "languageMenu": "Idioma",
     "language": "Idioma",
     "changeLanguage": "Cambiar idioma",
@@ -42,12 +43,12 @@
     }
   },
   "login": {
-    "idPlaceholder": "Casa #",
+    "identifierPlaceholder": "Casa # o Correo Electrónico",
     "passwordPlaceholder": "Clave",
     "button": "Ingresar",
     "loadingButton": "Ingresando...",
     "error": {
-      "credentials": "ID o clave incorrectos.",
+      "credentials": "Identificador o clave incorrectos.",
       "generic": "Error al iniciar sesión. Verifique sus credenciales."
     }
   },

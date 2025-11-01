@@ -9,6 +9,7 @@
     "calendar": "Calendar",
     "groups": "Groups",
     "notices": "Notices",
+    "profile": "My Profile",
     "languageMenu": "Language",
     "language": "Language",
     "changeLanguage": "Change language",
@@ -42,12 +43,12 @@
     }
   },
   "login": {
-    "idPlaceholder": "House #",
+    "identifierPlaceholder": "House # or Email",
     "passwordPlaceholder": "Password",
     "button": "Login",
     "loadingButton": "Logging in...",
     "error": {
-      "credentials": "Incorrect ID or password.",
+      "credentials": "Incorrect identifier or password.",
       "generic": "Login error. Please check your credentials."
     }
   },

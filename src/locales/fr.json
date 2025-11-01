@@ -9,6 +9,7 @@
     "calendar": "Calendrier",
     "groups": "Groupes",
     "notices": "Avis",
+    "profile": "Mon Profil",
     "languageMenu": "Langue",
     "language": "Langue",
     "changeLanguage": "Changer de langue",
@@ -42,12 +43,12 @@
     }
   },
   "login": {
-    "idPlaceholder": "Maison #",
+    "identifierPlaceholder": "Maison # ou Courriel",
     "passwordPlaceholder": "Mot de passe",
     "button": "Connexion",
     "loadingButton": "Connexion en cours...",
     "error": {
-      "credentials": "ID ou mot de passe incorrect.",
+      "credentials": "Identifiant ou mot de passe incorrect.",
       "generic": "Erreur de connexion. Veuillez vérifier vos identifiants."
     }
   },

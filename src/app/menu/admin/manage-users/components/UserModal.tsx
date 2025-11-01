@@ -9,9 +9,10 @@ interface UserModalProps {
   onClose: () => void;
   onSave: (userData: Partial<Usuario>) => Promise<void>;
   user: Partial<Usuario> | null;
+  mode?: 'admin' | 'profile';
 }
 
-export default function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
+export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin' }: UserModalProps) {
   const { t } = useI18n();
   const [userData, setUserData] = useState<Partial<Usuario>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -62,7 +63,7 @@ export default function UserModal({ isOpen, onClose, onSave, user }: UserModalPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+    <div className="fixed inset-0 bg-gray300 bg-opacity-10 z-50 flex justify-center items-center p-4">
       <div className={`bg-white p-8 rounded-lg shadow-xl w-full max-w-md border-l-4 transition-all duration-300 ease-in-out ${borderClass}`}>
         <h2 className="text-2xl font-bold mb-4">{user && user.id ? t('userModal.titleEdit') : t('userModal.titleAdd')}</h2>
         <form onSubmit={handleSubmit}>
@@ -75,7 +76,7 @@ export default function UserModal({ isOpen, onClose, onSave, user }: UserModalPr
               value={userData.id || ''}
               onChange={handleChange}
               required
-              disabled={!!(user && user.id)} // Deshabilitar si se está editando
+              disabled={mode === 'profile' || !!(user && user.id)}
               placeholder={t('userModal.idPlaceholder')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100"
             />
@@ -114,6 +115,7 @@ export default function UserModal({ isOpen, onClose, onSave, user }: UserModalPr
               id="ubicacion"
               value={userData.ubicacion || ''}
               onChange={handleChange}
+              disabled={mode === 'profile'}
               placeholder={t('userModal.locationPlaceholder')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
@@ -134,7 +136,13 @@ export default function UserModal({ isOpen, onClose, onSave, user }: UserModalPr
           </div>
           <div className="mb-6">
             <label htmlFor="tipo_usuario" className="block text-sm font-medium text-gray-700">{t('userModal.userTypeLabel')}</label>
-            <select name="tipo_usuario" id="tipo_usuario" value={userData.tipo_usuario || 'PRE'} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <select 
+              name="tipo_usuario" 
+              id="tipo_usuario" 
+              value={userData.tipo_usuario || 'PRE'} 
+              onChange={handleChange} 
+              disabled={mode === 'profile'}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100">
               <option value="OPE">{t('manageUsers.filterModal.operativo')}</option>
               <option value="PRE">{t('manageUsers.filterModal.owner')}</option>
               <option value="ADM">{t('manageUsers.filterModal.admin')}</option>

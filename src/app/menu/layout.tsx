@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
+import UserModal from '@/app/menu/admin/manage-users/components/UserModal';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/app/i18n-provider';
@@ -29,6 +30,8 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [isOperationMenuOpen, setIsOperationMenuOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [currentUserForModal, setCurrentUserForModal] = useState<Partial<Usuario> | null>(null);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -106,6 +109,29 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
       localStorage.removeItem('usuario');
       router.push('/');
     }
+  };
+
+  const handleOpenProfileModal = () => {
+    if (usuario) {
+      setCurrentUserForModal(usuario);
+      setIsProfileModalOpen(true);
+    }
+  };
+
+  const handleSaveProfile = async (userData: Partial<Usuario>) => {
+    if (!usuario) return;
+
+    const { error } = await supabase.rpc('manage_user_data', {
+      p_accion: 'UPDATE',
+      p_id: usuario.id,
+      p_responsable: userData.responsable,
+      p_clave: userData.clave || null, // Enviar null si está vacío para no cambiarla
+      p_email: userData.email,
+      p_tipo_usuario: usuario.tipo_usuario, // El usuario no puede cambiar su propio tipo
+      p_ubicacion: usuario.ubicacion, // El usuario no puede cambiar su ubicación
+    });
+
+    if (!error) setIsProfileModalOpen(false); // Idealmente, se debería mostrar un toast de éxito y recargar los datos del usuario.
   };
 
   const navLinkItems = [
@@ -225,6 +251,18 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
 
       {/* --- Contenido Principal --- */}
       <main className="flex-grow px-4 pt-4 flex flex-col overflow-y-auto">{children}</main>
+      
+      {/* --- Modal de Perfil de Usuario --- */}
+      {isProfileModalOpen && (
+        <UserModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          onSave={handleSaveProfile}
+          user={currentUserForModal}
+          mode="profile"
+        />
+      )}
+
 
       {/* --- Menú de Navegación Inferior --- */}
       <footer className="bg-white shadow-t sticky bottom-0 z-10 rounded-t-lg mx-4 mb-2">
@@ -242,7 +280,17 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
             );
           })}
 
-          
+          {/* --- Botón Mi Perfil --- */}
+          <button
+            type="button"
+            onClick={handleOpenProfileModal}
+            className="flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 text-gray-600 hover:bg-gray-200 hover:text-indigo-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs">{t('navigation.profile')}</span>
+          </button>
 
           {/* --- Botón de Notificaciones --- */}
           <Link href="/menu/avisos" className={`relative flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 hover:bg-gray-200 hover:text-yellow-600 ${avisos.length === 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'text-gray-600'}`}>

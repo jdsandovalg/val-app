@@ -19,7 +19,7 @@ export default function Home() {
   const { t, lang, setLang } = useI18n();
   const supabase = createClient();
 
-  const [id, setId] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [clave, setClave] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +30,7 @@ export default function Home() {
     try {
       // CORRECCIÓN: Llamar a la función 'login_user' para autenticar contra la tabla 'usuarios'.
       const { data, error: rpcError } = await supabase.rpc('login_user', {
-        p_id: Number(id),
+        p_identifier: identifier,
         p_clave: clave,
       });
 
@@ -68,10 +68,10 @@ export default function Home() {
 
         <form onSubmit={handleLogin} className="w-full max-w-xs space-y-4">
           <input
-            type="number"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            placeholder={t('login.idPlaceholder')}
+            type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            placeholder={t('login.identifierPlaceholder')}
             required
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

@@ -1,6 +1,33 @@
 # REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
 
 Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
+
+### NUEVAS TAREAS (Plan de Trabajo Actual)
+
+### 1. Mejoras de Acceso y Perfil de Usuario
+*   **Prioridad:** Crítica.
+*   **Objetivo:** Permitir que los usuarios inicien sesión con su ID de casa o su correo electrónico y que puedan editar su propia información de perfil.
+*   **Plan de Acción por Pasos:**
+    1.  **Backend - Autenticación Flexible (login_user):**
+        *   **Tarea:** Actualizar la función `login_user` en la base de datos.
+        *   **Implementación:** Modificar la función para que acepte un identificador de tipo `text`. La lógica buscará una coincidencia en el campo `id` o `email` y validará la contraseña de forma segura con `crypt()`.
+    2.  **Frontend - Adaptar Página de Login:**
+        *   **Tarea:** Modificar la página de inicio de sesión (`/src/app/page.tsx`).
+        *   **Implementación:** Cambiar el `placeholder` a "Casa # o Correo Electrónico", ajustar el `input` a tipo `text` y modificar la función `handleLogin` para que llame a la versión actualizada de `login_user`.
+    3.  **Frontend - Añadir Botón "Mi Perfil":**
+        *   **Tarea:** Agregar un nuevo botón en la barra de navegación inferior (`/src/app/menu/layout.tsx`).
+        *   **Implementación:** Este botón abrirá un nuevo modal para la edición del perfil de usuario.
+    4.  **Frontend - Reutilizar Modal de Usuario:**
+        *   **Tarea:** Adaptar el componente `UserModal.tsx` para que sea reutilizable.
+        *   **Implementación:** Añadir un `prop` `mode` ('admin' o 'profile'). En modo 'profile', los campos no editables (ID, Tipo de Usuario, Ubicación) se mostrarán como deshabilitados.
+    5.  **Frontend - Integrar Modal de Perfil:**
+        *   **Tarea:** Integrar el `UserModal` en el layout principal (`/src/app/menu/layout.tsx`).
+        *   **Implementación:** Controlar su visibilidad con un estado y crear una función `handleSaveProfile` que llame a `manage_user_data` para guardar los cambios del perfil del usuario actual.
+
+---
+
+## Tareas Futuras (Post-implementación actual)
+
 ### 4. Implementar Sistema de Votación
 *   **Prioridad:** Alta.
 *   **Objetivo:** Desarrollar la funcionalidad para que los usuarios puedan votar sobre propuestas de proyectos.
