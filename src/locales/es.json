@@ -198,6 +198,11 @@
     "responsiblePlaceholder": "Nombre del propietario",
     "passwordLabel": "Clave",
     "passwordPlaceholder": "Clave de acceso",
+      "locationLabel": "Ubicación",
+      "locationPlaceholder": "Ej: XX00",
+      "emailLabel": "Correo Electrónico",
+      "emailPlaceholder": "correo@ejemplo.com",
+      "emailInvalid": "Por favor, ingrese un correo electrónico válido.",
     "userTypeLabel": "Tipo de Usuario",
     "saveButton": "Guardar",
     "cancelButton": "Cancelar"

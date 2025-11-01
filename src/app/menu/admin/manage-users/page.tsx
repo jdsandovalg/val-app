@@ -96,7 +96,8 @@ export default function ManageUsersPage() {
   const handleSave = useCallback(async (userData: Partial<Usuario>) => {
     setUiError(null);
     try {
-      if (!userData.id || !userData.responsable || !userData.clave) {
+      // La clave solo es obligatoria al crear un nuevo usuario (cuando `editingUser` es null)
+      if (!userData.id || !userData.responsable || (!editingUser && !userData.clave)) {
         throw new Error(t('manageUsers.alerts.validationError'));
       }
 
@@ -107,7 +108,9 @@ export default function ManageUsersPage() {
         p_id: userData.id,
         p_responsable: userData.responsable,
         p_clave: userData.clave,
-        p_tipo_usuario: userData.tipo_usuario || 'PRE' // Valor por defecto si no se proporciona
+        p_tipo_usuario: userData.tipo_usuario || 'PRE', // Valor por defecto si no se proporciona
+        p_ubicacion: userData.ubicacion,
+        p_email: userData.email
       };
 
       const { data: updatedUsers, error } = await supabase.rpc('manage_user_data', params);

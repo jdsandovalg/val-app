@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import type { Usuario } from '@/types/database';
 
@@ -16,9 +16,36 @@ export default function UserModal({ isOpen, onClose, onSave, user }: UserModalPr
   const [userData, setUserData] = useState<Partial<Usuario>>({});
   const [isSaving, setIsSaving] = useState(false);
 
+  const getRoleStyles = useMemo(() => (role: string | null | undefined): { borderClass: string } => {
+    switch (role) {
+      case 'ADM':
+        return {
+          borderClass: 'border-blue-500',
+        };
+      case 'OPE':
+        return {
+          borderClass: 'border-yellow-500',
+        };
+      case 'PRE':
+      default:
+        return {
+          borderClass: 'border-green-500',
+        };
+    }
+  }, []);
+
   useEffect(() => {
-    setUserData(user || { tipo_usuario: 'PRE' });
+    // Aseguramos que los campos nuevos tengan un valor inicial vacío si no existen
+    setUserData(user || {
+      tipo_usuario: 'PRE',
+      ubicacion: '',
+      email: '',
+      clave: '', // Asegurarse de que la clave esté presente para el estado
+    });
   }, [user]);
+
+  // Determina la clase del borde basada en el tipo de usuario actual en el estado del modal
+  const { borderClass } = getRoleStyles(userData.tipo_usuario);
 
   if (!isOpen) return null;
 
@@ -36,7 +63,7 @@ export default function UserModal({ isOpen, onClose, onSave, user }: UserModalPr
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+      <div className={`bg-white p-8 rounded-lg shadow-xl w-full max-w-md border-l-4 transition-all duration-300 ease-in-out ${borderClass}`}>
         <h2 className="text-2xl font-bold mb-4">{user && user.id ? t('userModal.titleEdit') : t('userModal.titleAdd')}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -74,14 +101,41 @@ export default function UserModal({ isOpen, onClose, onSave, user }: UserModalPr
               id="clave"
               value={userData.clave || ''}
               onChange={handleChange}
-              required
+              required={!user} // La clave es obligatoria solo para usuarios nuevos
               placeholder={t('userModal.passwordPlaceholder')}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="ubicacion" className="block text-sm font-medium text-gray-700">{t('userModal.locationLabel')}</label>
+            <input
+              type="text"
+              name="ubicacion"
+              id="ubicacion"
+              value={userData.ubicacion || ''}
+              onChange={handleChange}
+              placeholder={t('userModal.locationPlaceholder')}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">{t('userModal.emailLabel')}</label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              value={userData.email || ''}
+              onChange={handleChange}
+              placeholder={t('userModal.emailPlaceholder')}
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              title={t('userModal.emailInvalid')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
           <div className="mb-6">
             <label htmlFor="tipo_usuario" className="block text-sm font-medium text-gray-700">{t('userModal.userTypeLabel')}</label>
             <select name="tipo_usuario" id="tipo_usuario" value={userData.tipo_usuario || 'PRE'} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+              <option value="OPE">{t('manageUsers.filterModal.operativo')}</option>
               <option value="PRE">{t('manageUsers.filterModal.owner')}</option>
               <option value="ADM">{t('manageUsers.filterModal.admin')}</option>
             </select>

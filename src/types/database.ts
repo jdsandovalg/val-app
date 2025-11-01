@@ -65,7 +65,9 @@ export interface Database {
           created_at: string
           responsable: string
           clave: string
-          tipo_usuario: string | null // 'ADM' or other
+          tipo_usuario: string | null
+          ubicacion: string | null
+          email: string | null
         }
         Insert: {
           id: number
@@ -73,6 +75,8 @@ export interface Database {
           responsable: string
           clave: string
           tipo_usuario?: string | null
+          ubicacion?: string | null
+          email?: string | null
         }
         Update: {
           id?: number
@@ -80,6 +84,8 @@ export interface Database {
           responsable?: string
           clave?: string
           tipo_usuario?: string | null
+          ubicacion?: string | null
+          email?: string | null
         }
       }
     }
@@ -91,6 +97,9 @@ export interface Database {
     }
   }
 }
+
+// Definición de tipo más estricta para los roles de usuario
+export type TipoUsuario = 'ADM' | 'PRE' | 'OPE';
 
 // Tipos extraídos para un uso más sencillo en la aplicación
 export type Usuario = Database['public']['Tables']['usuarios']['Row'];

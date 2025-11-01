@@ -198,6 +198,11 @@
     "responsiblePlaceholder": "Nom du propriétaire",
     "passwordLabel": "Mot de passe",
     "passwordPlaceholder": "Mot de passe d'accès",
+      "locationLabel": "Emplacement",
+      "locationPlaceholder": "Ex: XX00",
+      "emailLabel": "Courriel",
+      "emailPlaceholder": "courriel@exemple.com",
+      "emailInvalid": "Veuillez entrer une adresse de courriel valide.",
     "userTypeLabel": "Type d'Utilisateur",
     "saveButton": "Enregistrer",
     "cancelButton": "Annuler"

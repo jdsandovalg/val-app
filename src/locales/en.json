@@ -198,6 +198,11 @@
     "responsiblePlaceholder": "Owner's name",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Access password",
+      "locationLabel": "Location",
+      "locationPlaceholder": "E.g.: XX00",
+      "emailLabel": "Email",
+      "emailPlaceholder": "email@example.com",
+      "emailInvalid": "Please enter a valid email address.",
     "userTypeLabel": "User Type",
     "saveButton": "Save",
     "cancelButton": "Cancel"

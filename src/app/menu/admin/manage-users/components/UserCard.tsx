@@ -11,17 +11,42 @@ interface UserCardProps {
 
 export default function UserCard({ user, onDelete, onOpenModal }: UserCardProps) {
   const { t } = useI18n();
-  const userType = user.tipo_usuario === 'ADM' ? t('manageUsers.filterModal.admin') : t('manageUsers.filterModal.owner');
-  const userTypeClasses = user.tipo_usuario === 'ADM' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+
+  const getRoleStyles = (role: string | null | undefined) => {
+    switch (role) {
+      case 'ADM':
+        return {
+          text: t('manageUsers.filterModal.admin'),
+          badgeClasses: 'bg-blue-100 text-blue-800',
+          borderClass: 'border-blue-500',
+        };
+      case 'OPE':
+        return {
+          text: t('manageUsers.filterModal.operativo'),
+          badgeClasses: 'bg-yellow-100 text-yellow-800',
+          borderClass: 'border-yellow-500',
+        };
+      default: // PRE
+        return {
+          text: t('manageUsers.filterModal.owner'),
+          badgeClasses: 'bg-green-100 text-green-800',
+          borderClass: 'border-green-500',
+        };
+    }
+  };
+
+  const { text: userType, badgeClasses, borderClass } = getRoleStyles(user.tipo_usuario);
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 mb-4 border-l-4 border-gray-500">
+    <div className={`bg-white shadow-md rounded-lg p-4 mb-4 border-l-4 ${borderClass}`}>
       <div className="flex justify-between items-start">
         <div>
           <p className="font-bold text-gray-800">{t('groups.house')} #{user.id}</p>
           <p className="text-sm text-gray-600">{user.responsable}</p>
+          {user.ubicacion && <p className="text-xs text-gray-500 mt-1">{t('userModal.locationLabel')}: {user.ubicacion}</p>}
+          {user.email && <p className="text-xs text-gray-500">{t('userModal.emailLabel')}: {user.email}</p>}
         </div>
-        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${userTypeClasses}`}>
+        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${badgeClasses}`}>
           {userType}
         </span>
       </div>
