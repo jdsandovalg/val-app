@@ -13,7 +13,7 @@
  */import { useRef } from 'react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import type { Usuario } from '@/types/database';
-import UserModal from './components/UserModal';
+import UserModal, { type UserFormData } from './components/UserModal';
 import UserCard from './components/UserCard';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
@@ -93,24 +93,40 @@ export default function ManageUsersPage() {
     setEditingUser(null);
   }, []);
 
-  const handleSave = useCallback(async (userData: Partial<Usuario>) => {
+  const handleSave = useCallback(async (userData: UserFormData) => {
     setUiError(null);
     try {
       // La clave solo es obligatoria al crear un nuevo usuario (cuando `editingUser` es null)
       if (!userData.id || !userData.responsable || (!editingUser && !userData.clave)) {
         throw new Error(t('manageUsers.alerts.validationError'));
       }
-
-      // Se construye el objeto de parámetros para que coincida con la nueva firma de la función.
+      
       const action = editingUser ? 'UPDATE' : 'INSERT';
+      let newAvatarUrl = editingUser?.avatar_url || null;
+
+      if (userData.avatarFile) {
+        const avatarFile = userData.avatarFile as File;
+        const fileExt = avatarFile.name.split('.').pop();
+        // Usar el ID del usuario o 'new' para el nombre del archivo
+        const fileName = `${editingUser?.id || userData.id || 'new'}-${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        newAvatarUrl = urlData.publicUrl;
+      }
+
       const params = {
         p_action: action,
         p_id: userData.id,
         p_responsable: userData.responsable,
         p_clave: userData.clave,
-        p_tipo_usuario: userData.tipo_usuario || 'PRE', // Valor por defecto si no se proporciona
+        p_tipo_usuario: userData.tipo_usuario || 'PRE',
         p_ubicacion: userData.ubicacion,
-        p_email: userData.email
+        p_email: userData.email,
+        p_avatar_url: newAvatarUrl,
       };
 
       const { data: updatedUsers, error } = await supabase.rpc('manage_user_data', params);

@@ -2,6 +2,15 @@
 
 Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
 
+### TAREAS CRÍTICAS (Resolver Inmediatamente)
+
+### 0. Corregir Lógica de Guardado en Gestión de Usuarios (Admin)
+*   **Prioridad:** Urgente.
+*   **Problema:** La lógica para guardar usuarios desde el panel de administración (`/menu/admin/manage-users`) está incompleta. No maneja la subida de avatares, lo que causa que la imagen se suba al bucket pero la URL no se guarde en la base de datos, generando una falla silenciosa.
+*   **Solución:** Replicar la lógica de subida de archivos que ya funciona en el modal de "Mi Perfil" dentro de la función `handleSave` de la página de administración de usuarios, asegurando que la funcionalidad sea consistente en toda la aplicación.
+
+---
+
 ### NUEVAS TAREAS (Plan de Trabajo Actual)
 
 ### 1. Mejoras de Acceso y Perfil de Usuario

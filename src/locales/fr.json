@@ -193,12 +193,17 @@
   "userModal": {
     "titleAdd": "Ajouter un Nouvel Utilisateur",
     "titleEdit": "Modifier l'Utilisateur",
+    "subtitle": "Informations de l'utilisateur",
     "idLabel": "ID (Maison #)",
     "idPlaceholder": "Ex : 101",
     "responsibleLabel": "Responsable",
     "responsiblePlaceholder": "Nom du propriétaire",
     "passwordLabel": "Mot de passe",
+    "passwordLabelNew": "Nouveau mot de passe (optionnel)",
     "passwordPlaceholder": "Mot de passe d'accès",
+    "passwordPlaceholderOptional": "Laisser vide pour ne pas changer",
+    "passwordConfirmLabel": "Confirmer le nouveau mot de passe",
+    "passwordConfirmPlaceholder": "Répétez le nouveau mot de passe",
       "locationLabel": "Emplacement",
       "locationPlaceholder": "Ex: XX00",
       "emailLabel": "Courriel",
@@ -206,7 +211,10 @@
       "emailInvalid": "Veuillez entrer une adresse de courriel valide.",
     "userTypeLabel": "Type d'Utilisateur",
     "saveButton": "Enregistrer",
-    "cancelButton": "Annuler"
+    "cancelButton": "Annuler",
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "changeAvatar": "Changer",
+    "avatarAlt": "Avatar de l'utilisateur"
   },
   "manageContributions": {
     "title": "Gérer les Contributions",

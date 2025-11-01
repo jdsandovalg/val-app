@@ -193,12 +193,17 @@
   "userModal": {
     "titleAdd": "Add New User",
     "titleEdit": "Edit User",
+    "subtitle": "User information",
     "idLabel": "ID (House #)",
     "idPlaceholder": "E.g.: 101",
     "responsibleLabel": "Responsible",
     "responsiblePlaceholder": "Owner's name",
     "passwordLabel": "Password",
+    "passwordLabelNew": "New Password (optional)",
     "passwordPlaceholder": "Access password",
+    "passwordPlaceholderOptional": "Leave blank to keep current",
+    "passwordConfirmLabel": "Confirm New Password",
+    "passwordConfirmPlaceholder": "Repeat the new password",
       "locationLabel": "Location",
       "locationPlaceholder": "E.g.: XX00",
       "emailLabel": "Email",
@@ -206,7 +211,10 @@
       "emailInvalid": "Please enter a valid email address.",
     "userTypeLabel": "User Type",
     "saveButton": "Save",
-    "cancelButton": "Cancel"
+    "cancelButton": "Cancel",
+    "passwordMismatch": "Passwords do not match.",
+    "changeAvatar": "Change",
+    "avatarAlt": "User avatar"
   },
   "manageContributions": {
     "title": "Manage Contributions",

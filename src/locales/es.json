@@ -193,12 +193,17 @@
   "userModal": {
     "titleAdd": "Agregar Nuevo Usuario",
     "titleEdit": "Editar Usuario",
+    "subtitle": "Información del usuario",
     "idLabel": "ID (Casa #)",
     "idPlaceholder": "Ej: 101",
     "responsibleLabel": "Responsable",
     "responsiblePlaceholder": "Nombre del propietario",
     "passwordLabel": "Clave",
+    "passwordLabelNew": "Nueva Clave (opcional)",
     "passwordPlaceholder": "Clave de acceso",
+    "passwordPlaceholderOptional": "Dejar en blanco para no cambiar",
+    "passwordConfirmLabel": "Confirmar Nueva Clave",
+    "passwordConfirmPlaceholder": "Repita la nueva clave",
       "locationLabel": "Ubicación",
       "locationPlaceholder": "Ej: XX00",
       "emailLabel": "Correo Electrónico",
@@ -206,7 +211,10 @@
       "emailInvalid": "Por favor, ingrese un correo electrónico válido.",
     "userTypeLabel": "Tipo de Usuario",
     "saveButton": "Guardar",
-    "cancelButton": "Cancelar"
+    "cancelButton": "Cancelar",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "changeAvatar": "Cambiar",
+    "avatarAlt": "Avatar de usuario"
   },
   "manageContributions": {
     "title": "Gestionar Aportaciones",

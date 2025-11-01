@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import Image from 'next/image'; 
 import type { Usuario } from '@/types/database';
-import UserModal from '@/app/menu/admin/manage-users/components/UserModal';
+import UserModal, { type UserFormData } from '@/app/menu/admin/manage-users/components/UserModal';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 import { useI18n } from '@/app/i18n-provider';
 
 type Aviso = {
@@ -118,20 +120,49 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleSaveProfile = async (userData: Partial<Usuario>) => {
+  const handleSaveProfile = async (userData: UserFormData) => {
     if (!usuario) return;
+
+    const finalUserData = { ...userData };
+    let newAvatarUrl = usuario.avatar_url;
+
+    if (userData.avatarFile) {
+      const avatarFile = userData.avatarFile as File;
+      const fileExt = avatarFile.name.split('.').pop();
+      const fileName = `${usuario.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
+
+      if (uploadError) {
+        console.error("Error subiendo avatar:", uploadError);
+        // Aquí se debería mostrar un toast de error
+      } else {
+        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        newAvatarUrl = urlData.publicUrl;
+      }
+    }
 
     const { error } = await supabase.rpc('manage_user_data', {
       p_accion: 'UPDATE',
       p_id: usuario.id,
-      p_responsable: userData.responsable,
-      p_clave: userData.clave || null, // Enviar null si está vacío para no cambiarla
-      p_email: userData.email,
+      p_responsable: finalUserData.responsable,
+      p_clave: finalUserData.clave || null, // Enviar null si está vacío para no cambiarla
+      p_email: finalUserData.email,
       p_tipo_usuario: usuario.tipo_usuario, // El usuario no puede cambiar su propio tipo
       p_ubicacion: usuario.ubicacion, // El usuario no puede cambiar su ubicación
+      p_avatar_url: newAvatarUrl,
     });
 
-    if (!error) setIsProfileModalOpen(false); // Idealmente, se debería mostrar un toast de éxito y recargar los datos del usuario.
+    if (!error) {
+      // Actualizar el estado y localStorage para reflejar el cambio de avatar inmediatamente
+      const updatedUser = { ...usuario, ...finalUserData, avatar_url: newAvatarUrl };
+      setUsuario(updatedUser);
+      localStorage.setItem('usuario', JSON.stringify(updatedUser));
+      
+      setIsProfileModalOpen(false);
+      toast.success(t('manageUsers.alerts.saveSuccess'));
+    }
   };
 
   const navLinkItems = [
@@ -167,9 +198,34 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
       {/* --- Encabezado --- */}
-      <header className="bg-white shadow-md p-4 flex justify-between items-center">
-        <div className="text-lg font-bold text-blue-800">
-          {usuario ? t('header.greeting', { user: usuario.responsable }) : t('header.welcome')}
+      <header className="bg-white shadow-md p-4 flex justify-between items-center z-20">
+        <div className="flex items-center gap-3">
+          {/* --- Botón Mi Perfil (Avatar) --- */}
+          {usuario && (
+            <button
+              type="button"
+              onClick={handleOpenProfileModal}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600 transition-colors duration-200"
+              aria-label={t('navigation.profile')}
+            > 
+              {usuario.avatar_url ? (
+                <Image
+                  src={usuario.avatar_url}
+                  alt={t('userModal.avatarAlt')}
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              )}
+            </button>
+          )}
+          <div className="text-lg font-bold text-blue-800">
+            {usuario ? t('header.greeting', { user: usuario.responsable }) : t('header.welcome')}
+          </div>
         </div>
         <div className="flex items-center gap-4">
           {/* --- Menú de Operación (OPE y ADM) --- */}
@@ -279,18 +335,6 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
-
-          {/* --- Botón Mi Perfil --- */}
-          <button
-            type="button"
-            onClick={handleOpenProfileModal}
-            className="flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 text-gray-600 hover:bg-gray-200 hover:text-indigo-600"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mb-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span className="text-xs">{t('navigation.profile')}</span>
-          </button>
 
           {/* --- Botón de Notificaciones --- */}
           <Link href="/menu/avisos" className={`relative flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 hover:bg-gray-200 hover:text-yellow-600 ${avisos.length === 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'text-gray-600'}`}>
