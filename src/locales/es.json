@@ -36,7 +36,8 @@
       "contributions": "Aportaciones",
       "users": "Gestionar Usuarios",
       "catalog_management": "Gestión de Catálogos",
-      "project_classification_management": "Clasificación de Proyectos"
+      "project_classification_management": "Clasificación de Proyectos",
+      "houseContributions": "Gestion de Cargos por Contribuciones"
     },
     "logout": {
       "ariaLabel": "Cerrar Sesión"
@@ -251,7 +252,8 @@
       "statusPending": "Pendiente",
       "date": "Fecha",
       "edit": "Editar",
-      "delete": "Eliminar"
+      "delete": "Eliminar",
+      "maxPaymentDate": "Fecha Máx. Pago"
     },
     "alerts": {
       "saveSuccess": "¡Registro guardado exitosamente!",
@@ -518,5 +520,46 @@
     "en_progreso": "En Progreso",
     "terminado": "Terminado",
     "cancelado": "Cancelado"
+  },
+  "manageHouseContributions": {
+    "selectLabel": "Seleccione una Contribución",
+    "selectPlaceholder": "--- Cargar Contribuciones ---",
+    "fetchError": "Error al cargar las contribuciones: {message}",
+    "noContributions": "No hay tipos de contribución definidos.",
+    "type": {
+      "casa": "Por Casa (Rotativo)",
+      "grupo": "Por Grupo (Rotativo)"
+    },
+    "period": "Cada {days} días",
+    "buttons": {
+      "generateProjection": "Generar Proyección Anual",
+      "generating": "Generando...",
+      "confirmAndSave": "Confirmar y Guardar Cargos"
+    },
+    "alerts": {
+      "noProjection": "La función de PREVIEW no devolvió ninguna proyección.",
+      "previewError": "Error al generar la previsualización: {message}",
+      "executeSuccess": "¡{count} cargos han sido guardados exitosamente!",
+      "executeError": "Error al guardar los cargos: {message}"
+    },
+    "modal": {
+      "title": "Previsualización de Cargos Anuales",
+      "subtitle": "Revise los cargos que se generarán para el próximo año. Esta acción borrará y reemplazará cualquier cargo PENDIENTE existente para este año y contribución."
+    },
+    "details": {
+      "currentYear": "Año Actual",
+      "nextYear": "Año a Proyectar",
+      "period": "Periodicidad",
+      "days": "días",
+      "chargeDay": "Día de Cargo",
+      "day": "Día"
+    },
+    "grid": {
+      "month": "Mes",
+      "chargeDate": "Fecha de Cargo",
+      "house": "Casa",
+      "responsible": "Responsable",
+      "maxPaymentDate": "Fecha Máx. Pago"
+    }
   }
 }

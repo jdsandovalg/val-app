@@ -15,19 +15,31 @@ export interface Database {
     Tables: {
       contribuciones: {
         Row: {
-          id_contribucion: string
           descripcion: string | null
-          monto_sugerido: number | null
+          id_contribucion: number
+          nombre: string | null
+          color_del_borde: string | null
+          dia_cargo: number | null
+          periodicidad_dias: number | null
+          tipo_cargo: "casa" | "grupo" | null
         }
         Insert: {
-          id_contribucion: string
+          id_contribucion?: number
           descripcion?: string | null
-          monto_sugerido?: number | null
+          nombre?: string | null
+          color_del_borde?: string | null
+          dia_cargo?: number | null
+          periodicidad_dias?: number | null
+          tipo_cargo?: "casa" | "grupo" | null
         }
         Update: {
-          id_contribucion?: string
+          id_contribucion?: number
           descripcion?: string | null
-          monto_sugerido?: number | null
+          nombre?: string | null
+          color_del_borde?: string | null
+          dia_cargo?: number | null
+          periodicidad_dias?: number | null
+          tipo_cargo?: "casa" | "grupo" | null
         }
       }
       contribucionesporcasa: {
@@ -107,6 +119,7 @@ export type TipoUsuario = 'ADM' | 'PRE' | 'OPE';
 // Tipos extraídos para un uso más sencillo en la aplicación
 export type Usuario = Database['public']['Tables']['usuarios']['Row'];
 export type ContribucionPorCasa = Database['public']['Tables']['contribucionesporcasa']['Row'];
+export type Contribuciones = Database['public']['Tables']['contribuciones']['Row'];
 
 // Tipo para los registros del calendario del usuario
 export type CalendarRecord = {

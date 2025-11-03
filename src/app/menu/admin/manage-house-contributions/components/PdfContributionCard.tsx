@@ -26,54 +26,54 @@ const colorMap: { [key: string]: string } = {
 
 const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, locale, currency }) => {
   const casaInfo = record.usuarios
-    ? `${t('groups.house')} #${record.usuarios.id} - ${record.usuarios.responsable}`
-    : `${t('groups.house')} ID: ${record.id_casa}`;
+    ? `${t('groups.house')} #${record.usuarios.id} - ${record.usuarios.responsable} (${record.ubicacion ?? 'N/A'})`
+    : `${t('groups.house')} ID: ${record.id_casa} (${record.ubicacion ?? 'N/A'})`;
 
   const montoPagado = record.pagado != null
     ? formatCurrency(record.pagado, locale, currency)
     : t('manageContributions.card.notPaid');
 
-  const statusText = record.realizado === 'S'
+  const statusText = record.realizado === 'PAGADO'
     ? t('manageContributions.card.statusDone')
     : t('manageContributions.card.statusPending');
 
-  const statusColor = record.realizado === 'S' ? colorMap.green : colorMap.red;
-
-  const dbColor = record.contribuciones?.color_del_borde?.toLowerCase() || 'default';
-  const borderColor = colorMap[dbColor] || colorMap.default;
+  // Lógica de color basada en el estado del registro
+  const isPaid = record.realizado === 'PAGADO';
+  const statusColor = isPaid ? colorMap.green : colorMap.red;
+  const dividerColor = isPaid ? '#A7F3D0' : '#FECACA'; // green-200 y red-200
 
   const styles = StyleSheet.create({
     card: {
       backgroundColor: '#FFFFFF',
-      padding: 12,
-      marginBottom: 12,
+      padding: 10, // Aumentado ligeramente
+      marginBottom: 10, // Aumentado ligeramente
       borderRadius: 6,
       borderLeftWidth: 4,
-      borderLeftColor: borderColor,
+      borderLeftColor: statusColor, // Usar el color del estado
       fontFamily: 'Helvetica',
       color: '#1F2937', // gray-800
       width: '48%', // Ancho reducido para que quepan dos por fila
-      margin: '1%',
+      margin: '0.8%', // Reducido
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 10,
+      marginBottom: 6, // Reducido
     },
     headerText: {
-      fontSize: 11,
+      fontSize: 11, // Aumentado ligeramente
       fontWeight: 'bold',
     },
     subHeaderText: {
-      fontSize: 9,
+      fontSize: 9, // Aumentado ligeramente
       color: '#4B5563', // gray-600
     },
     status: {
       backgroundColor: statusColor,
       color: '#FFFFFF',
-      paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingHorizontal: 5, // Reducido
+      paddingVertical: 1, // Reducido
       borderRadius: 12,
       fontSize: 8,
       fontWeight: 'bold',
@@ -81,10 +81,10 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
     body: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      fontSize: 9,
-      paddingTop: 10,
+      fontSize: 9, // Aumentado ligeramente
+      paddingTop: 6, // Reducido
       borderTopWidth: 1,
-      borderTopColor: '#E5E7EB', // gray-200
+      borderTopColor: dividerColor, // Usar el color del divisor
     },
     bodyColumn: {
       flexDirection: 'column',
@@ -101,14 +101,17 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
     <View style={styles.card}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerText}>{record.contribuciones?.descripcion ?? 'N/A'}</Text>
-          <Text style={styles.subHeaderText}>{casaInfo}</Text>
+          <Text style={styles.headerText}>{casaInfo}</Text>
+          <Text style={styles.subHeaderText}>{record.contribuciones?.descripcion ?? 'N/A'}</Text>
         </View>
       </View>
       <View style={styles.body}>
         <View style={styles.bodyColumn}>
           <Text style={styles.bodyLabel}>{t('manageContributions.card.date')}</Text>
           <Text style={styles.bodyValue}>{formatDate(record.fecha, locale)}</Text>
+          {record.fecha_maxima_pago && (
+            <Text style={styles.subHeaderText}>{t('manageContributions.card.maxPaymentDate')}: {formatDate(record.fecha_maxima_pago, locale)}</Text>
+          )}
         </View>
         <View style={[styles.bodyColumn, { alignItems: 'flex-end' }]}>
           <Text style={styles.bodyLabel}>{t('manageContributions.card.paidAmount')}</Text>

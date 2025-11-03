@@ -18,15 +18,15 @@ Font.register({
 // Estilos del PDF
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 35,
-    paddingBottom: 50, // Espacio para el footer
+    paddingTop: 30, // Reducido
+    paddingBottom: 40, // Reducido
     paddingHorizontal: 40,
     fontFamily: 'Helvetica',
     backgroundColor: '#F9FAFB',
   },
   header: {
     position: 'absolute',
-    top: 35,
+    top: 30, // Reducido
     left: 40,
     right: 40,
     textAlign: 'center',
@@ -34,21 +34,21 @@ const styles = StyleSheet.create({
   logo: {
     position: 'absolute',
     top: 25,
-    left: 40,
-    width: 50,
-    height: 50,
+    left: 30,
+    width: 40, // Reducido
+    height: 40, // Reducido
   },
   title: {
-    fontSize: 20,
+    fontSize: 18, // Reducido
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 20,
+    marginBottom: 10, // Reducido
   },
   cardContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 60, // Espacio para el header
+    marginTop: 50, // Reducido
   },
   footer: {
     position: 'absolute',

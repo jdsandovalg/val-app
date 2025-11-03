@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import Image from 'next/image'; 
+import Image from 'next/image';
 import type { Usuario } from '@/types/database';
-import UserModal, { type UserFormData } from '@/app/menu/admin/manage-users/components/UserModal';
+import ProfileModal, { type UserFormData } from '@/app/menu/components/ProfileModal';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
@@ -123,45 +123,59 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
   const handleSaveProfile = async (userData: UserFormData) => {
     if (!usuario) return;
 
-    const finalUserData = { ...userData };
-    let newAvatarUrl = usuario.avatar_url;
+    try {
+      // Paso 1: Guardar los datos del perfil con la nueva función específica.
+      const { error: mainError } = await supabase.rpc('update_user_profile', {
+        p_id: Number(usuario.id),
+        p_responsable: userData.responsable,
+        p_email: userData.email,
+        p_clave: userData.clave || null, // Enviar null si está vacío para no cambiarla
+      });
 
-    if (userData.avatarFile) {
-      const avatarFile = userData.avatarFile as File;
-      const fileExt = avatarFile.name.split('.').pop();
-      const fileName = `${usuario.id}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      if (mainError) throw mainError;
 
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
-
-      if (uploadError) {
-        console.error("Error subiendo avatar:", uploadError);
-        // Aquí se debería mostrar un toast de error
-      } else {
-        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-        newAvatarUrl = urlData.publicUrl;
-      }
-    }
-
-    const { error } = await supabase.rpc('manage_user_data', {
-      p_accion: 'UPDATE',
-      p_id: usuario.id,
-      p_responsable: finalUserData.responsable,
-      p_clave: finalUserData.clave || null, // Enviar null si está vacío para no cambiarla
-      p_email: finalUserData.email,
-      p_tipo_usuario: usuario.tipo_usuario, // El usuario no puede cambiar su propio tipo
-      p_ubicacion: usuario.ubicacion, // El usuario no puede cambiar su ubicación
-      p_avatar_url: newAvatarUrl,
-    });
-
-    if (!error) {
-      // Actualizar el estado y localStorage para reflejar el cambio de avatar inmediatamente
-      const updatedUser = { ...usuario, ...finalUserData, avatar_url: newAvatarUrl };
-      setUsuario(updatedUser);
+      // Actualizar el estado local y localStorage para reflejar el cambio inmediatamente
+      const updatedUser = { ...usuario, ...userData };
+      setUsuario(updatedUser as Usuario);
       localStorage.setItem('usuario', JSON.stringify(updatedUser));
-      
+
+      // Paso 2: Si hay un nuevo avatar, subirlo y actualizar la URL con la función específica
+      // if (userData.avatarFile) {
+      //   const avatarFile = userData.avatarFile as File;
+      //   const fileExt = avatarFile.name.split('.').pop();
+      //   const fileName = `${usuario.id}-${Date.now()}.${fileExt}`;
+      //   const filePath = `${fileName}`;
+
+      //   const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true });
+      //   if (uploadError) throw uploadError;
+
+      //   const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      //   const newAvatarUrl = urlData.publicUrl;
+
+      //   const { error: avatarError } = await supabase.rpc('update_user_avatar', {
+      //     p_id: usuario.id,
+      //     p_avatar_url: newAvatarUrl,
+      //   });
+      //   if (avatarError) throw avatarError;
+
+      //   // Actualizar el estado local y localStorage para reflejar el cambio de avatar inmediatamente
+      //   const updatedUser = { ...usuario, ...userData, avatar_url: newAvatarUrl };
+      //   setUsuario(updatedUser);
+      //   localStorage.setItem('usuario', JSON.stringify(updatedUser));
+      // }
+
       setIsProfileModalOpen(false);
       toast.success(t('manageUsers.alerts.saveSuccess'));
+    } catch (error: unknown) {
+      let message = 'Unknown error';
+      if (error && typeof error === 'object' && 'details' in error && typeof error.details === 'string') {
+        message = error.details;
+      } else if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
+      toast.error(t('manageUsers.alerts.saveError', { message }));
     }
   };
 
@@ -288,6 +302,12 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
                       </svg>
                       {t('header.admin.project_classification_management')}
                     </Link>
+                    <Link href="/menu/admin/contribution-charges" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAdminMenuOpen(false)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3 text-gray-500">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125-1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {t('header.admin.houseContributions')}
+                    </Link>
                   </div>
                 </div>
               )}
@@ -310,12 +330,11 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
       
       {/* --- Modal de Perfil de Usuario --- */}
       {isProfileModalOpen && (
-        <UserModal
+        <ProfileModal
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           onSave={handleSaveProfile}
           user={currentUserForModal}
-          mode="profile"
         />
       )}
 

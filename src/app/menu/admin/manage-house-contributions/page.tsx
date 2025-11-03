@@ -73,7 +73,7 @@ export default function ManageHouseContributionsPage() {
 
       // Mapear los datos de la vista al formato esperado por el componente.
       const formattedRecords = data.map(record => ({
-        ...record,
+        ...record, // Esto ya incluye todos los campos de la vista, como `ubicacion`
         usuarios: { id: record.id, responsable: record.responsable },
         contribuciones: { id_contribucion: record.id_contribucion, descripcion: record.descripcion, color_del_borde: record.color_del_borde },
       }));
@@ -242,7 +242,7 @@ export default function ManageHouseContributionsPage() {
     if (filters.realizado) {
       const filterValue = filters.realizado.toLowerCase();
       filteredItems = filteredItems.filter(record =>
-        (record.realizado === 'S' ? '✅ sí' : '❌ no').toLowerCase().includes(filterValue)
+        (record.realizado === 'PAGADO' ? t('calendar.table.yes') : t('calendar.table.no')).toLowerCase().includes(filterValue)
       );
     }
 
@@ -292,7 +292,7 @@ export default function ManageHouseContributionsPage() {
       });
     }
     return sortableItems;
-  }, [records, sortConfig, filters]);
+  }, [records, sortConfig, filters, t]);
 
   const handleGeneratePDF = useCallback(() => {
     if (filteredAndSortedRecords.length === 0) {
@@ -319,9 +319,9 @@ export default function ManageHouseContributionsPage() {
         const casa = record.usuarios
           ? `${t('groups.house')} #${record.usuarios.id} - ${record.usuarios.responsable}`
           : `${t('groups.house')} ID: ${record.id_casa}`;
-        const contribucion = record.contribuciones?.descripcion ?? `ID: ${record.id_contribucion}`;
+        const contribucion = record.contribucion ?? `ID: ${record.id_contribucion}`;
       const pagado = record.pagado != null ? formatCurrency(record.pagado, locale, currency) : t('manageContributions.card.notPaid');
-        const realizado = record.realizado === 'S' ? t('calendar.table.yes') : t('calendar.table.no');
+        const realizado = record.realizado === 'PAGADO' ? t('calendar.table.yes') : t('calendar.table.no');
       return [casa, contribucion, formatDate(record.fecha, locale), pagado, realizado];
       });
 

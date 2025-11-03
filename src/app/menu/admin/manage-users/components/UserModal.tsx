@@ -12,10 +12,9 @@ interface UserModalProps {
   onClose: () => void;
   onSave: (userData: UserFormData) => Promise<void>;
   user: Partial<Usuario> | null;
-  mode?: 'admin' | 'profile';
 }
 
-export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin' }: UserModalProps) {
+export default function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
   const { t } = useI18n();
   const [userData, setUserData] = useState<Partial<Usuario>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -79,8 +78,6 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin
 
     setIsSaving(true);
 
-    // La lógica de subida de avatar se manejará en el componente padre (layout)
-    // para tener acceso al cliente de Supabase.
     await onSave({ ...userData, avatarFile });
     setIsSaving(false);
   };
@@ -103,6 +100,8 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin
         <h2 className="text-xl font-bold mb-1 pr-20">{user && user.id ? t('userModal.titleEdit') : t('userModal.titleAdd')}</h2>
         <p className="text-sm text-gray-500 mb-4 pr-20">{t('userModal.subtitle')}</p>
         <form onSubmit={handleSubmit}>
+          {/* Contenedor para alinear los campos del formulario */}
+          <div className="grid grid-cols-1 gap-y-3">
           <div className="mb-3">
             <label htmlFor="id" className="block text-xs font-medium text-gray-600">{t('userModal.idLabel')}</label>
             <input
@@ -112,7 +111,7 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin
               value={userData.id || ''}
               onChange={handleChange}
               required
-              disabled={mode === 'profile' || !!(user && user.id)}
+              disabled={!!(user && user.id)}
               placeholder={t('userModal.idPlaceholder')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 text-sm"
             />
@@ -166,9 +165,9 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin
               id="ubicacion"
               value={userData.ubicacion || ''}
               onChange={handleChange}
-              disabled={mode === 'profile'}
+              readOnly
               placeholder={t('userModal.locationPlaceholder')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-sm disabled:bg-gray-100"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-sm bg-gray-100 cursor-not-allowed"
             />
           </div>
           <div className="mb-3">
@@ -190,14 +189,15 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin
             <select 
               name="tipo_usuario" 
               id="tipo_usuario" 
-              value={userData.tipo_usuario || 'PRE'} 
-              onChange={handleChange} 
-              disabled={mode === 'profile'}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 text-sm">
+              value={userData.tipo_usuario || 'PRE'}
+              onChange={handleChange}
+              disabled
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-100 cursor-not-allowed appearance-none">
               <option value="OPE">{t('manageUsers.filterModal.operativo')}</option>
               <option value="PRE">{t('manageUsers.filterModal.owner')}</option>
               <option value="ADM">{t('manageUsers.filterModal.admin')}</option>
             </select>
+            <input type="hidden" name="tipo_usuario" value={userData.tipo_usuario || 'PRE'} />
           </div>
           <div className="flex justify-end gap-4">
             <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded hover:bg-gray-300">{t('userModal.cancelButton')}</button>
@@ -205,9 +205,9 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin
               {isSaving ? `${t('userModal.saveButton')}...` : t('userModal.saveButton')}
             </button>
           </div>
+          </div>
         </form>
 
-        {/* --- Avatar Section --- */}
         <div className="absolute top-6 right-6">
           <input
             type="file"
@@ -224,11 +224,17 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode = 'admin
                 width={64} 
                 height={64} 
                 className="w-16 h-16 rounded-full object-cover border-2 border-gray-300 group-hover:border-blue-500 transition-colors" 
-                // La propiedad unoptimized es necesaria para blob URLs
                 unoptimized={avatarPreview.startsWith('blob:')}
               />
             ) : (
               <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300 group-hover:border-blue-500 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-gray-400"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg></div>
+            )}
+            {avatarFile && (
+                <div className="absolute -top-1 -right-1 transform">
+                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                </div>
             )}
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center rounded-full transition-opacity">
               <p className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">{t('userModal.changeAvatar')}</p>

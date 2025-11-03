@@ -36,7 +36,8 @@
       "contributions": "Contributions",
       "users": "Gérer les Utilisateurs",
       "catalog_management": "Gestion des Catalogues",
-      "project_classification_management": "Classification de Projets"
+      "project_classification_management": "Classification de Projets",
+      "houseContributions": "Gestion des Frais de Contribution"
     },
     "logout": {
       "ariaLabel": "Se déconnecter"
@@ -251,7 +252,8 @@
       "statusPending": "En attente",
       "date": "Date",
       "edit": "Modifier",
-      "delete": "Supprimer"
+      "delete": "Supprimer",
+      "maxPaymentDate": "Date Max. Paiement"
     },
     "alerts": {
       "saveSuccess": "Enregistrement sauvegardé avec succès !",
@@ -517,5 +519,46 @@
     "en_progreso": "En Cours",
     "terminado": "Terminé",
     "cancelado": "Annulé"
+  },
+  "manageHouseContributions": {
+    "selectLabel": "Sélectionnez une Contribution",
+    "selectPlaceholder": "--- Charger les Contributions ---",
+    "fetchError": "Erreur lors du chargement des contributions : {message}",
+    "noContributions": "Aucun type de contribution défini.",
+    "type": {
+      "casa": "Par Maison (Rotatif)",
+      "grupo": "Par Groupe (Rotatif)"
+    },
+    "period": "Tous les {days} jours",
+    "buttons": {
+      "generateProjection": "Générer la Projection Annuelle",
+      "generating": "Génération...",
+      "confirmAndSave": "Confirmer et Enregistrer les Frais"
+    },
+    "alerts": {
+      "noProjection": "La fonction PREVIEW n'a renvoyé aucune projection.",
+      "previewError": "Erreur lors de la génération de l'aperçu : {message}",
+      "executeSuccess": "{count} frais ont été enregistrés avec succès !",
+      "executeError": "Erreur lors de l'enregistrement des frais : {message}"
+    },
+    "modal": {
+      "title": "Aperçu des Frais Annuels",
+      "subtitle": "Vérifiez les frais qui seront générés pour l'année prochaine. Cette action supprimera et remplacera tous les frais EN ATTENTE existants pour cette année et cette contribution."
+    },
+    "details": {
+      "currentYear": "Année Actuelle",
+      "nextYear": "Année de Projection",
+      "period": "Périodicité",
+      "days": "jours",
+      "chargeDay": "Jour de Facturation",
+      "day": "Jour"
+    },
+    "grid": {
+      "month": "Mois",
+      "chargeDate": "Date de Facturation",
+      "house": "Maison",
+      "responsible": "Responsable",
+      "maxPaymentDate": "Date Max. Paiement"
+    }
   }
 }

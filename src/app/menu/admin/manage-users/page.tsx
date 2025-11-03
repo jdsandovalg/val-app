@@ -54,12 +54,26 @@ export default function ManageUsersPage() {
     try {
       // Se llama a la función con los parámetros correctos. Para SELECT, solo se necesita p_action.
       const { data, error } = await supabase.rpc('manage_user_data', {
-        p_action: 'SELECT'
+        p_accion: 'SELECT',
+        p_id: null,
+        p_responsable: null,
+        p_clave: null,
+        p_tipo_usuario: null,
+        p_ubicacion: null,
+        p_email: null,
+        p_avatar_url: null
       });
       if (error) throw error;
       setUsers(data || []);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ocurrió un error desconocido.';
+      let message = 'Ocurrió un error desconocido.';
+      if (err && typeof err === 'object' && 'details' in err && typeof err.details === 'string') {
+        message = err.details;
+      } else if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
       setFetchError(t('manageUsers.fetchError', { message }));
     } finally {
       setLoading(false);
@@ -90,67 +104,82 @@ export default function ManageUsersPage() {
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
-    setEditingUser(null);
+    // Retrasar el reseteo del usuario para evitar parpadeos en el modal al cerrar
+    // El estado se limpiará la próxima vez que se abra con handleOpenModal.
+    // setEditingUser(null); 
   }, []);
 
   const handleSave = useCallback(async (userData: UserFormData) => {
     setUiError(null);
     try {
-      // La clave solo es obligatoria al crear un nuevo usuario (cuando `editingUser` es null)
-      if (!userData.id || !userData.responsable || (!editingUser && !userData.clave)) {
+      const action = editingUser ? 'UPDATE' : 'INSERT';
+      const userId = userData.id;
+
+      // Validación explícita para asegurar que los datos requeridos están presentes.
+      if (!userId || !userData.responsable || (action === 'INSERT' && !userData.clave)) {
         throw new Error(t('manageUsers.alerts.validationError'));
       }
-      
-      const action = editingUser ? 'UPDATE' : 'INSERT';
-      let newAvatarUrl = editingUser?.avatar_url || null;
 
-      if (userData.avatarFile) {
-        const avatarFile = userData.avatarFile as File;
-        const fileExt = avatarFile.name.split('.').pop();
-        // Usar el ID del usuario o 'new' para el nombre del archivo
-        const fileName = `${editingUser?.id || userData.id || 'new'}-${Date.now()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-        newAvatarUrl = urlData.publicUrl;
-      }
-
-      const params = {
-        p_action: action,
-        p_id: userData.id,
+      // Unificamos la llamada a `manage_user_data` para ambas acciones.
+      // El ID lo provee el usuario desde el formulario, incluso para nuevos usuarios.
+      const { error: mainError } = await supabase.rpc('manage_user_data', {
+        p_accion: action,
+        p_id: Number(userId),
         p_responsable: userData.responsable,
-        p_clave: userData.clave,
+        p_clave: userData.clave || null,
         p_tipo_usuario: userData.tipo_usuario || 'PRE',
         p_ubicacion: userData.ubicacion,
-        p_email: userData.email,
-        p_avatar_url: newAvatarUrl,
-      };
+        p_email: userData.email || null,
+        p_avatar_url: null, // El avatar se gestiona en un paso posterior.
+      });
 
-      const { data: updatedUsers, error } = await supabase.rpc('manage_user_data', params);
+      if (mainError) throw mainError;
 
-      if (error) throw error;
+      // // La lógica para subir el avatar es la misma para crear y actualizar.
+      // if (userData.avatarFile) {
+      //   const avatarFile = userData.avatarFile as File;
+      //   const fileExt = avatarFile.name.split('.').pop();
+      //   const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      //   const filePath = `${fileName}`;
 
-      // Actualizar el estado con la lista de usuarios devuelta por la función.
-      setUsers(updatedUsers || []);
+      //   const { error: uploadError } = await supabase.storage
+      //     .from('avatars')
+      //     .upload(filePath, avatarFile, { upsert: true });
+
+      //   if (uploadError) throw uploadError;
+
+      //   const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      //   const newAvatarUrl = urlData.publicUrl;
+
+      //   // Se llama a la función específica para actualizar solo el avatar.
+      //   const { error: avatarError } = await supabase.rpc('update_user_avatar', {
+      //     p_id: Number(userId),
+      //     p_avatar_url: newAvatarUrl,
+      //   });
+
+      //   if (avatarError) throw avatarError;
+      // }
+
+      await fetchData();
       toast.success(t('manageUsers.alerts.saveSuccess'));
     } catch (err: unknown) {
       let message = 'desconocido';
-      if (err && typeof err === 'object' && 'message' in err) {
-        message = (err as { message: string }).message;
+      if (err && typeof err === 'object' && 'details' in err && typeof err.details === 'string') {
+        message = err.details;
+      } else if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'string') {
+        message = err;
       }
       const errorMessage = t('manageUsers.alerts.saveError', { message });
       setUiError(errorMessage);
       toast.error(errorMessage, {
-        duration: 6000, // Duración más larga para errores detallados
+        duration: 6000,
       });
     } finally {
       handleCloseModal();
-      // Ya no es necesario llamar a fetchData() porque la RPC devuelve la lista actualizada.
     }
-  }, [supabase, editingUser, t, handleCloseModal]);
+  }, [supabase, editingUser, t, handleCloseModal, fetchData]);
 
   // La función 'manage_user_data' no tiene una acción 'DELETE', por lo que se elimina la funcionalidad.
   const handleDelete = useCallback(async () => {

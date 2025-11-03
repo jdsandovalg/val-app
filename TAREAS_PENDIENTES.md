@@ -1,13 +1,11 @@
-# REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
+# I. REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
 
 Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
 
 ### TAREAS CRÍTICAS (Resolver Inmediatamente)
 
-### 0. Corregir Lógica de Guardado en Gestión de Usuarios (Admin)
-*   **Prioridad:** Urgente.
-*   **Problema:** La lógica para guardar usuarios desde el panel de administración (`/menu/admin/manage-users`) está incompleta. No maneja la subida de avatares, lo que causa que la imagen se suba al bucket pero la URL no se guarde en la base de datos, generando una falla silenciosa.
-*   **Solución:** Replicar la lógica de subida de archivos que ya funciona en el modal de "Mi Perfil" dentro de la función `handleSave` de la página de administración de usuarios, asegurando que la funcionalidad sea consistente en toda la aplicación.
+### ✅ 0. Corregir Lógica de Guardado en Gestión de Usuarios (Admin)
+*   **Solución:** Se refactorizó la función `handleSave` en la página de administración de usuarios (`/menu/admin/manage-users`) para asegurar la correcta subida y guardado de avatares. La nueva lógica gestiona de forma separada la creación y actualización de usuarios. Al crear un usuario, primero se inserta el registro en la base de datos para obtener el `ID` y luego se utiliza ese `ID` para subir el avatar y asociar la URL, solucionando la falla silenciosa que ocurría previamente.
 
 ---
 
@@ -32,6 +30,28 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
     5.  **Frontend - Integrar Modal de Perfil:**
         *   **Tarea:** Integrar el `UserModal` en el layout principal (`/src/app/menu/layout.tsx`).
         *   **Implementación:** Controlar su visibilidad con un estado y crear una función `handleSaveProfile` que llame a `manage_user_data` para guardar los cambios del perfil del usuario actual.
+
+---
+
+## II. Logros Recientes (Tareas Completadas)
+
+### 5. Implementación de Gestión de Cargos por Contribuciones
+*   ✅ **Backend Robusto:** Se crearon y pulieron dos funciones RPC clave:
+    *   `procesar_cargos_rotativos`: Genera una previsualización (`PREVIEW`) completa para el año siguiente, manejando correctamente la lógica de rotación tanto para contribuciones por casa como por grupo.
+    *   `insertar_cargos_proyectados`: Recibe la proyección y la asienta de forma segura en la base de datos, incluyendo una validación para borrar cargos pendientes existentes antes de una nueva inserción.
+*   ✅ **Interfaz Funcional y Coherente:**
+    *   Se desarrolló una nueva página en `/menu/admin/contribution-charges` con un diseño "mobile-first" que centraliza todo el proceso en una sola pantalla.
+    *   La interfaz permite seleccionar una contribución, ver sus parámetros, generar una previsualización y confirmar la grabación de los cargos.
+*   ✅ **Integración de `fecha_maxima_pago`:** Se añadió el cálculo y la visualización de la "Fecha Máxima de Pago" en todo el flujo, desde la base de datos hasta la interfaz de usuario.
+*   ✅ **Mejoras de UI/UX:**
+    *   Se creó un componente de grid (`ProjectionGrid`) responsivo y visualmente consistente, utilizando el color de la contribución para los bordes de las tarjetas.
+    *   La tarjeta de control principal también se estilizó para mantener la coherencia del diseño.
+
+### 6. Optimización de Reportes y Corrección de Bugs
+*   ✅ **Optimización de Reporte PDF:** Se ajustó el diseño de las tarjetas en el reporte PDF de "Gestionar Aportaciones" para optimizar el espacio vertical, logrando que más registros quepan en una sola página. Se mejoró la jerarquía visual y se añadió la `ubicacion` y `fecha_maxima_pago` para enriquecer la información.
+*   ✅ **Corrección de Bugs Críticos:**
+    *   Se sincronizó el tipo `ContribucionPorCasaExt` con la estructura real de la vista `v_usuarios_contribuciones`, solucionando una cascada de errores de compilación en las páginas `manage-house-contributions` y `calendarios`.
+    *   Se corrigió la lógica de visualización del estado "Pagado"/"Pendiente" en las tarjetas de la web y del PDF para que reflejen los datos correctos.
 
 ---
 

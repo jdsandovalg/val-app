@@ -36,7 +36,8 @@
       "contributions": "Contributions",
       "users": "Manage Users",
       "catalog_management": "Catalog Management",
-      "project_classification_management": "Project Classification"
+      "project_classification_management": "Project Classification",
+      "houseContributions": "Manage Contribution Charges"
     },
     "logout": {
       "ariaLabel": "Log out"
@@ -251,7 +252,8 @@
       "statusPending": "Pending",
       "date": "Date",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "maxPaymentDate": "Max. Payment Date"
     },
     "alerts": {
       "saveSuccess": "Record saved successfully!",
@@ -518,5 +520,46 @@
     "en_progreso": "In Progress",
     "terminado": "Finished",
     "cancelado": "Canceled"
+  },
+  "manageHouseContributions": {
+    "selectLabel": "Select a Contribution",
+    "selectPlaceholder": "--- Load Contributions ---",
+    "fetchError": "Error loading contributions: {message}",
+    "noContributions": "No contribution types defined.",
+    "type": {
+      "casa": "By House (Rotating)",
+      "grupo": "By Group (Rotating)"
+    },
+    "period": "Every {days} days",
+    "buttons": {
+      "generateProjection": "Generate Annual Projection",
+      "generating": "Generating...",
+      "confirmAndSave": "Confirm and Save Charges"
+    },
+    "alerts": {
+      "noProjection": "The PREVIEW function did not return any projection.",
+      "previewError": "Error generating preview: {message}",
+      "executeSuccess": "{count} charges have been saved successfully!",
+      "executeError": "Error saving charges: {message}"
+    },
+    "modal": {
+      "title": "Annual Charges Preview",
+      "subtitle": "Review the charges that will be generated for the next year. This action will delete and replace any existing PENDING charges for this year and contribution."
+    },
+    "details": {
+      "currentYear": "Current Year",
+      "nextYear": "Projection Year",
+      "period": "Period",
+      "days": "days",
+      "chargeDay": "Charge Day",
+      "day": "Day"
+    },
+    "grid": {
+      "month": "Month",
+      "chargeDate": "Charge Date",
+      "house": "House",
+      "responsible": "Responsible",
+      "maxPaymentDate": "Max. Payment Date"
+    }
   }
 }
