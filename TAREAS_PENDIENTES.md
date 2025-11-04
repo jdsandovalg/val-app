@@ -33,30 +33,55 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
-## II. Logros Recientes (Tareas Completadas)
+## II. Principios de Colaboración y Lecciones Aprendidas
 
-### 5. Implementación de Gestión de Cargos por Contribuciones
-*   ✅ **Backend Robusto:** Se crearon y pulieron dos funciones RPC clave:
-    *   `procesar_cargos_rotativos`: Genera una previsualización (`PREVIEW`) completa para el año siguiente, manejando correctamente la lógica de rotación tanto para contribuciones por casa como por grupo.
-    *   `insertar_cargos_proyectados`: Recibe la proyección y la asienta de forma segura en la base de datos, incluyendo una validación para borrar cargos pendientes existentes antes de una nueva inserción.
-*   ✅ **Interfaz Funcional y Coherente:**
-    *   Se desarrolló una nueva página en `/menu/admin/contribution-charges` con un diseño "mobile-first" que centraliza todo el proceso en una sola pantalla.
-    *   La interfaz permite seleccionar una contribución, ver sus parámetros, generar una previsualización y confirmar la grabación de los cargos.
-*   ✅ **Integración de `fecha_maxima_pago`:** Se añadió el cálculo y la visualización de la "Fecha Máxima de Pago" en todo el flujo, desde la base de datos hasta la interfaz de usuario.
-*   ✅ **Mejoras de UI/UX:**
-    *   Se creó un componente de grid (`ProjectionGrid`) responsivo y visualmente consistente, utilizando el color de la contribución para los bordes de las tarjetas.
-    *   La tarjeta de control principal también se estilizó para mantener la coherencia del diseño.
+Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
 
-### 6. Optimización de Reportes y Corrección de Bugs
-*   ✅ **Optimización de Reporte PDF:** Se ajustó el diseño de las tarjetas en el reporte PDF de "Gestionar Aportaciones" para optimizar el espacio vertical, logrando que más registros quepan en una sola página. Se mejoró la jerarquía visual y se añadió la `ubicacion` y `fecha_maxima_pago` para enriquecer la información.
-*   ✅ **Corrección de Bugs Críticos:**
-    *   Se sincronizó el tipo `ContribucionPorCasaExt` con la estructura real de la vista `v_usuarios_contribuciones`, solucionando una cascada de errores de compilación en las páginas `manage-house-contributions` y `calendarios`.
-    *   Se corrigió la lógica de visualización del estado "Pagado"/"Pendiente" en las tarjetas de la web y del PDF para que reflejen los datos correctos.
+### 1. Claridad y Precisión sobre la Base de Datos
+*   **Lección Aprendida:** Suponer la estructura o el nombre de los campos de un objeto de la base de datos (tabla, vista, función) sin tener la definición exacta ha llevado a errores de compilación, bugs y retrabajo significativo. Los daños colaterales, como romper funcionalidades existentes, son inaceptables.
+*   **Norma de Trabajo (Regla de Oro):**
+    > **Cuando exista la más mínima duda sobre la estructura, los campos, los alias o el comportamiento de cualquier objeto de la base de datos (tabla, vista, función, etc.), es mi responsabilidad y obligación solicitar explícitamente su definición antes de proponer cualquier solución o escribir código. La precisión es más importante que la velocidad.**
+
+### 2. Planificación y Aprobación
+*   **Lección Aprendida:** Implementar soluciones complejas sin un plan de trabajo previamente acordado puede resultar en diseños que no se alinean con la visión del desarrollador.
+*   **Norma de Trabajo:**
+    *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, debo proponer un plan de trabajo detallado.
+    *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entendemos el objetivo y la estrategia.
 
 ---
 
-## Tareas Futuras (Post-implementación actual)
+## III. Próxima Tarea Crítica (A Diagnosticar)
 
+### 7. Refactorizar y Corregir Lógica de Pago en Calendario (Deuda Técnica Crítica)
+*   **Prioridad:** Crítica.
+*   **Problema:** La funcionalidad para registrar un pago desde la página de "Calendarios" está rota. La fecha de pago no se guarda en la base de datos y no se muestra en la interfaz. La causa raíz es una combinación de una vista (`v_usuarios_contribuciones`) desactualizada y una lógica de guardado incorrecta que mezclaba contextos (proyectos vs. calendario) y rompía la arquitectura de la aplicación.
+*   **Plan de Diagnóstico y Solución:**
+    1.  **Diagnosticar:** Revisar la página `/menu/calendarios/page.tsx` y la función RPC `gestionar_pago_contribucion_casa` para identificar el punto exacto de la falla con la lógica actual.
+    2.  **Backend:** Modificar o crear la función RPC necesaria para que maneje la acción `UPDATE` de un pago de forma aislada y segura, sin depender de vistas complejas.
+    3.  **Frontend:** Refactorizar completamente la página `/menu/calendarios/page.tsx` y sus componentes para que utilicen exclusivamente la nueva función RPC, asegurando que la fecha de pago se guarde y se muestre correctamente.
+
+---
+
+## IV. Logros Recientes (Tareas Completadas)
+
+### 5. Implementación de Gestión de Cargos por Contribuciones
+*   ✅ **Backend Robusto:** Se crearon y pulieron dos funciones RPC clave:
+    *   `procesar_cargos_rotativos`: Genera una previsualización (`PREVIEW`) completa para el año siguiente, manejando correctamente la lógica de rotación tanto para contribuciones por casa como por grupo, e incluyendo el cálculo de la `fecha_maxima_pago`.
+    *   `insertar_cargos_proyectados`: Recibe la proyección y la asienta de forma segura en la base de datos, incluyendo una validación para borrar cargos pendientes existentes antes de una nueva inserción.
+*   ✅ **Interfaz Funcional y Coherente:**
+    *   Se desarrolló una nueva página en `/menu/admin/contribution-charges` con un diseño "mobile-first" que centraliza todo el proceso en una sola pantalla (selector, parámetros, grid de previsualización y botón de guardado).
+    *   Se creó un componente de grid (`ProjectionGrid`) responsivo y visualmente consistente, utilizando el color de la contribución para los bordes de las tarjetas.
+
+### 6. Optimización de Reportes y Corrección de Bugs
+*   ✅ **Optimización de Reporte PDF:** Se ajustó el diseño de las tarjetas en el reporte PDF de "Gestionar Aportaciones" para optimizar el espacio vertical, logrando que más registros quepan en una sola página. Se mejoró la jerarquía visual y se añadió la `ubicacion` y `fecha_maxima_pago` para enriquecer la información.
+*   ✅ **Mejora de Diseño en Tarjetas:** Se implementó una lógica de color dinámica en las tarjetas de "Gestionar Aportaciones" (web y PDF) para que el borde y el divisor reflejen el estado del pago (verde para 'PAGADO', rojo para 'PENDIENTE').
+*   ✅ **Corrección de Bugs Críticos:**
+    *   Se sincronizó el tipo `ContribucionPorCasaExt` con la estructura real de la vista `v_usuarios_contribuciones`, solucionando una cascada de errores de compilación en las páginas `manage-house-contributions` y `calendarios`.
+    *   Se corrigió la lógica de visualización y filtrado del estado "Pagado"/"Pendiente" en la página de "Gestionar Aportaciones" para que refleje los datos correctos.
+
+---
+
+## V. Tareas Futuras (Post-implementación actual)
 ### 4. Implementar Sistema de Votación
 *   **Prioridad:** Alta.
 *   **Objetivo:** Desarrollar la funcionalidad para que los usuarios puedan votar sobre propuestas de proyectos.
@@ -71,13 +96,6 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 *   **Prioridad:** Baja.
 *   **Problema:** El modal de confirmación (`ConfirmationModal`) muestra un fondo negro que cubre toda la pantalla (`bg-black bg-opacity-50`), lo cual resulta visualmente intrusivo en la versión de escritorio.
 *   **Solución Propuesta:** Reducir la opacidad del fondo (ej. `bg-opacity-30`) y añadir un efecto de desenfoque (`backdrop-blur-sm`) para una apariencia más moderna y menos agresiva.
-
-### 7. Refactorizar y Corregir Lógica de Pago en Calendario (Deuda Técnica Crítica)
-*   **Prioridad:** Crítica.
-*   **Problema:** La funcionalidad para registrar un pago desde la página de "Calendarios" está rota. La fecha de pago no se guarda en la base de datos y no se muestra en la interfaz. La causa raíz es una combinación de una vista (`v_usuarios_contribuciones`) desactualizada y una lógica de guardado incorrecta que mezclaba contextos (proyectos vs. calendario) y rompía la arquitectura de la aplicación.
-*   **Solución Propuesta (Reinicio):**
-    *   **Backend:** Crear una única función RPC multipropósito para la tabla `contribucionesporcasa`. Esta función reemplazará a la vista `v_usuarios_contribuciones` con una acción `SELECT` y manejará la lógica de `UPDATE` para registrar los pagos.
-    *   **Frontend:** Refactorizar completamente la página `/menu/calendarios/page.tsx` y sus componentes para que utilicen exclusivamente la nueva función RPC, asegurando que la fecha de pago se guarde y se muestre correctamente.
 
 ### 8. Finalizar Refactorización de Gestión de Aportaciones (Admin)
 *   **Prioridad:** Crítica.

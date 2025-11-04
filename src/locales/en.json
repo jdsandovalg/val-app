@@ -458,7 +458,7 @@
       "noData": "Could not load project summary.",
       "reportTitle": "Project Financial Summary",
       "generatePdf": "PDF Report",
-      "fileName": "Financial_Summary_{projectName}.pdf",
+      "fileName": "Financial_Summary_{projectName}",
       "downloadPdf": "Download PDF",
       "alerts": {
         "fetchError": "Error loading summary: {message}",

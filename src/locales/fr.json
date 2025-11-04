@@ -457,7 +457,7 @@
       "noData": "Impossible de charger le résumé du projet.",
       "reportTitle": "Résumé Financier du Projet",
       "generatePdf": "Rapport PDF",
-      "fileName": "Resume_Financier_{projectName}.pdf",
+      "fileName": "Resume_Financier_{projectName}",
       "downloadPdf": "Télécharger PDF",
       "alerts": {
         "fetchError": "Erreur lors du chargement du résumé : {message}",

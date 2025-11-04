@@ -474,7 +474,8 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
 
       // --- INICIO: Lógica para el nombre del archivo ---
       const safeProjectName = projectInfoData.descripcion_tarea.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const fileName = t('projects.summary.fileName', { projectName: safeProjectName });
+      const dateStamp = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      const fileName = `${t('projects.summary.fileName', { projectName: safeProjectName })}-${dateStamp}.pdf`;
       // --- FIN: Lógica para el nombre del archivo ---
 
       const reportPayload = {
