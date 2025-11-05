@@ -17,6 +17,14 @@ type ProjectInfo = {
   estado: ProjectStatus;
 };
 type DetailRow = { tipo_registro: 'aporte' | 'gasto'; fecha: string; descripcion: string; monto: number; nombre_proveedor?: string; descripcion_gasto?: string; url_documento?: string | null; };
+type GeneralEvidence = {
+  id_evidencia: number;
+  descripcion_evidencia: string;
+  fecha_evidencia: string;
+  nombre_archivo: string;
+  url_publica: string;
+  tipo_evidencia: string;
+};
 
 // Registrar fuentes para el PDF
 Font.register({
@@ -34,7 +42,7 @@ const sanitizeFilename = (name: string) => {
 
 export default function FinancialReportViewerPage() {
   const { t, locale, currency } = useI18n();
-  const [reportData, setReportData] = useState<{ summary: SummaryData; details: DetailRow[]; projectInfo: ProjectInfo; fileName: string; } | null>(null);
+  const [reportData, setReportData] = useState<{ summary: SummaryData; details: DetailRow[]; projectInfo: ProjectInfo; fileName: string; generalEvidence: GeneralEvidence[] } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -66,6 +74,7 @@ export default function FinancialReportViewerPage() {
         locale={locale}
         currency={currency}
         logoBase64={logoBase64}
+        generalEvidence={reportData.generalEvidence}
       />
     );
     return await pdf(doc).toBlob();
@@ -96,8 +105,6 @@ export default function FinancialReportViewerPage() {
         text: `Reporte financiero del proyecto: ${reportData.projectInfo.descripcion_tarea}`,
         files: [file],
       });
-    } else {
-      alert(t('shareNotSupported'));
     }
   };
 

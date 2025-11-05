@@ -31,12 +31,14 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
   const { t } = useI18n();
   const [projects, setProjects] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(true);
+  // Estado para controlar la visibilidad de la lista de archivados
+  const [showArchived, setShowArchived] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.rpc('gestionar_proyectos', {
-        p_action: 'SELECT',
+        p_action: 'SELECT_ALL', // Cambiamos la acción para traer todos los proyectos
       });
 
       if (error) throw error;
@@ -67,6 +69,10 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
     cancelado: { badge: 'bg-red-100 text-red-800', border: 'border-red-400' },
   };
 
+  // Separar proyectos en activos y archivados
+  const activeProjects = projects.filter(p => !['terminado', 'cancelado'].includes(p.estado));
+  const archivedProjects = projects.filter(p => ['terminado', 'cancelado'].includes(p.estado));
+
   const handleSelect = (project: Proyecto) => {
     if (selectedProject?.id_proyecto === project.id_proyecto) {
       onProjectSelect(null); // Deseleccionar si se hace clic en el mismo
@@ -78,11 +84,11 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
   return (
     <div className="mb-8">
       <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('projects.activeProjectsTitle')}</h3>
-      {projects.length === 0 ? (
+      {activeProjects.length === 0 ? (
         <p className="text-center text-gray-500 py-4 bg-gray-100 rounded-lg">{t('projects.emptyState.noActiveProjects')}</p>
       ) : (
         <div className="space-y-3">
-          {projects.map(project => {
+          {activeProjects.map(project => {
             const isSelected = selectedProject?.id_proyecto === project.id_proyecto;
             return (
               <div
@@ -116,6 +122,49 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Nueva sección para proyectos archivados */}
+      {archivedProjects.length > 0 && (
+        <div className="mt-8">
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className="w-full text-left text-lg font-semibold mb-4 text-gray-600 flex justify-between items-center p-2 rounded-md hover:bg-gray-100"
+          >
+            Proyectos Archivados ({archivedProjects.length})
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 transition-transform ${showArchived ? 'rotate-180' : ''}`}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </button>
+          {showArchived && (
+            <div className="space-y-3">
+              {archivedProjects.map(project => {
+                const isSelected = selectedProject?.id_proyecto === project.id_proyecto;
+                return (
+                  <div
+                    key={project.id_proyecto}
+                    onClick={() => handleSelect(project)}
+                    className={`p-4 rounded-lg border-l-4 shadow-sm cursor-pointer transition-all opacity-80 ${
+                      isSelected
+                        ? `bg-blue-50 ${statusStyles[project.estado]?.border || 'border-gray-400'} ring-2 ring-blue-300`
+                        : `bg-white ${statusStyles[project.estado]?.border || 'border-gray-400'} hover:bg-gray-50`
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
+                          {t(`projectStatus.${project.estado}`)}
+                        </span>
+                        {/* El botón de editar está deshabilitado para proyectos archivados */}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -18,23 +18,23 @@ Font.register({
 // Estilos del PDF y función de sanitización
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingHorizontal: 40,
+    paddingTop: 80, // Aumentado para dejar espacio al header
+    paddingBottom: 50, // Aumentado para dejar espacio al footer
+    paddingHorizontal: 30,
     fontFamily: 'Helvetica',
     backgroundColor: '#F9FAFB',
   },
   header: {
     position: 'absolute',
-    top: 5,
-    left: 40,
-    right: 40,
+    top: 20,
+    left: 30,
+    right: 30,
     textAlign: 'center',
   },
   logo: {
     position: 'absolute',
-    top: 5,
-    left: 40,
+    top: 20,
+    left: 30,
     width: 60,
     height: 60,
   },
@@ -42,20 +42,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 20,
+    // marginBottom ya no es necesario con el padding de la página
   },
   cardContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 0,
-    marginBottom: 0
+    // márgenes ya no son necesarios aquí
   },
   footer: {
     position: 'absolute',
-    bottom: 10,
-    left: 40,
-    right: 40,
+    bottom: 20,
+    left: 30,
+    right: 30,
     textAlign: 'center',
     color: 'grey',
     fontSize: 10,
@@ -73,10 +72,12 @@ const ReportDocument = ({ records, t, locale, logoBase64 }: { records: CalendarR
       </View>
 
       {/* Contenido */}
-      <View style={styles.cardContainer}>
-        {records.map((record) => (
-          <PdfCalendarCard key={`${record.id_contribucion}-${record.fecha_limite}`} record={record} t={t} locale={locale} />
-        ))}
+      <View> {/* Contenedor principal que respeta el padding de la página */}
+        <View style={styles.cardContainer}>
+          {records.map((record) => (
+            <PdfCalendarCard key={`${record.id_contribucion}-${record.fecha_limite}`} record={record} t={t} locale={locale} />
+          ))}
+        </View>
       </View>
 
       {/* Pie de página */}

@@ -149,10 +149,11 @@ export default function ProjectClassificationManagementPage() {
   }, [supabase, t, handleCloseModal]);
 
   // Lógica para deshabilitar botones según el estado del proyecto
-  const isContributionsDisabled = !selectedProject || ['en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
-  // El botón de gastos ahora se habilita para 'abierto' (propuesta) y los estados financieros.
-  const isExpensesDisabled = !selectedProject || ['en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
-  const isSummaryDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado', 'cancelado'].includes(selectedProject.estado);
+  const isContributionsDisabled = !selectedProject || ['en_votacion', 'rechazado', 'terminado', 'cancelado'].includes(selectedProject.estado);
+  const isExpensesDisabled = !selectedProject || ['en_votacion', 'rechazado', 'terminado', 'cancelado'].includes(selectedProject.estado);
+  // El resumen SÍ debe estar disponible para proyectos terminados o cancelados.
+  const isSummaryDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado'].includes(selectedProject.estado);
+
   const selectedProjectId = selectedProject?.id_proyecto ?? null;
 
   return (

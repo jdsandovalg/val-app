@@ -16,17 +16,28 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
   const [isUploading, setIsUploading] = useState(false);
   const [description, setDescription] = useState('');
   const [evidenceDate, setEvidenceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [evidenceType, setEvidenceType] = useState('COTIZACION'); // Valor por defecto
   const [file, setFile] = useState<File | null>(null);
+
+  const evidenceTypes = [
+    'COTIZACION',
+    'FACTURA',
+    'RECIBO',
+    'TRANSFERENCIA',
+    'RECOMENDACION',
+    'FOTOGRAFIA_01',
+    'FOTOGRAFIA_02',
+    'FOTOGRAFIA_03'
+  ];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
     }
   };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!file || !description || !evidenceDate) {
+    if (!file || !description || !evidenceDate || !evidenceType) {
       toast.error(t('catalog.alerts.allFieldsRequired'));
       return;
     }
@@ -55,6 +66,7 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
         p_descripcion_evidencia: description,
         p_fecha_evidencia: evidenceDate,
         p_nombre_archivo: file.name,
+        p_tipo_evidencia: evidenceType, // Añadido el nuevo campo
         p_url_publica: urlData.publicUrl,
         p_tipo_mime: file.type,
         p_tamano_bytes: file.size,
@@ -66,6 +78,7 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
       // Limpiar formulario y notificar al padre para que refresque la lista
       setDescription('');
       setEvidenceDate(new Date().toISOString().split('T')[0]);
+      setEvidenceType('COTIZACION');
       setFile(null);
       if (e.target instanceof HTMLFormElement) e.target.reset();
       onUploadSuccess();
@@ -82,10 +95,18 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
     <form onSubmit={handleSubmit} className="p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded-lg shadow-sm mb-6">
       <div className="space-y-4">
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.evidence.fields.description')}</label>
-          <input id="description" value={description} onChange={(e) => setDescription(e.target.value)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white" />
+          <label htmlFor="evidenceType" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.evidence.fields.type')}</label>
+          <select id="evidenceType" value={evidenceType} onChange={(e) => setEvidenceType(e.target.value)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+            {evidenceTypes.map(type => (
+              <option key={type} value={type}>{t(`evidenceTypes.${type}`)}</option>
+            ))}
+          </select>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.evidence.fields.description')}</label>
+            <input id="description" value={description} onChange={(e) => setDescription(e.target.value)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white" />
+          </div>
           <div>
             <label htmlFor="evidenceDate" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.evidence.fields.date')}</label>
             <input id="evidenceDate" type="date" value={evidenceDate} onChange={(e) => setEvidenceDate(e.target.value)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white" />

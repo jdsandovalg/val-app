@@ -37,8 +37,19 @@ type DetailRow = {
   monto_pagado?: number;
   monto_saldo?: number; // NUEVO CAMPO
   descripcion_gasto?: string;
+  tipo_evidencia?: string;
   url_documento?: string | null;
 };
+
+// NUEVO: Tipo para las evidencias generales
+type GeneralEvidence = {
+  id_evidencia: number;
+  descripcion_evidencia: string;
+  fecha_evidencia: string;
+  nombre_archivo: string;
+  url_publica: string;
+  tipo_evidencia: string;
+}
 
 type ReportDocumentProps = {
   summary: SummaryData;
@@ -48,6 +59,31 @@ type ReportDocumentProps = {
   locale: string;
   currency: string;
   logoBase64: string | null;
+  generalEvidence: GeneralEvidence[]; // NUEVO
+};
+
+const evidenceTypeColors: Record<string, { bg: string; border: string; text: string }> = {
+  COTIZACION: { bg: '#FEFCE8', border: '#D97706', text: '#92400E' }, // Amarillo
+  FACTURA: { bg: '#FEE2E2', border: '#DC2626', text: '#991B1B' },    // Rojo
+  RECIBO: { bg: '#E0E7FF', border: '#4F46E5', text: '#3730A3' },    // Indigo
+  TRANSFERENCIA: { bg: '#D1FAE5', border: '#059669', text: '#065F46' }, // Verde
+  RECOMENDACION: { bg: '#F3F4F6', border: '#6B7280', text: '#374151' }, // Gris (como estaba)
+  FOTOGRAFIA_01: { bg: '#EBF8FF', border: '#4299E1', text: '#2B6CB0' }, // Azul (el que era genérico)
+  FOTOGRAFIA_02: { bg: '#EBF8FF', border: '#4299E1', text: '#2B6CB0' }, // Azul
+  FOTOGRAFIA_03: { bg: '#EBF8FF', border: '#4299E1', text: '#2B6CB0' }, // Azul
+  default: { bg: '#F9FAFB', border: '#D1D5DB', text: '#4B5563' },      // Color por defecto
+};
+
+const getEvidenceCardStyle = (type: string) => {
+  const colors = evidenceTypeColors[type] || evidenceTypeColors.default;
+  return {
+    width: '48%',
+    backgroundColor: colors.bg,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.border,
+    marginBottom: '2%',
+    padding: 10,
+  };
 };
 
 type FinancialReportProps = {
@@ -58,7 +94,9 @@ const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
-    padding: 30,
+    paddingTop: 80, // Aumentado para dejar espacio al header
+    paddingBottom: 50, // Aumentado para dejar espacio al footer
+    paddingHorizontal: 30,
     color: '#333',
   },
   header: {
@@ -66,8 +104,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: '#4A5568',
     paddingBottom: 10,
   },
   logo: {
@@ -257,34 +293,70 @@ const styles = StyleSheet.create({
     width: '48%',
   },
   footer: {
+    // Estilos para el contenedor del pie de página
     position: 'absolute',
-    bottom: 15,
-    left: 30,
-    right: 30,
+    bottom: 20,
+    left: 30, // Coincide con el padding horizontal de la página
+    right: 30, // Coincide con el padding horizontal de la página
     textAlign: 'center',
-    color: 'grey',
+    color: '#666',
     fontSize: 8,
+  },
+  // NUEVO: Estilos para el anexo de documentación general
+  // NUEVO: Estilos para las recomendaciones a ancho completo
+  recommendationItem: {
+    width: '100%', // Ocupa todo el ancho
+    backgroundColor: '#F7FAFC', // Fondo gris muy claro
+    borderLeftWidth: 3,
+    borderLeftColor: '#718096', // Borde gris
+    marginBottom: '2%',
+    padding: 12,
   }
 });
 
-export const ReportDocument = ({ summary, details, projectInfo, t, locale, currency, logoBase64 }: ReportDocumentProps) => {
+// --- INICIO: Componentes Reutilizables para Header y Footer ---
+const ReportHeader = ({ logoBase64, t, locale }: Pick<ReportDocumentProps, 'logoBase64' | 't' | 'locale'>) => (
+  <View style={{ position: 'absolute', top: 20, left: 30, right: 30 }} fixed>
+    <View style={styles.header}>
+      {/* eslint-disable-next-line jsx-a11y/alt-text -- La prop 'alt' no es aplicable en react-pdf */}
+      {logoBase64 && <Image style={styles.logo} src={logoBase64} />}
+      <View style={styles.titleContainer}>
+        <Text style={styles.mainTitle}>{t('projects.summary.reportTitle')}</Text>
+        <Text>{new Date().toLocaleDateString(locale)}</Text>
+      </View>
+    </View>
+  </View>
+);
+
+const ReportFooter = ({ projectInfo, t }: Pick<ReportDocumentProps, 'projectInfo' | 't'>) => (
+  <View style={styles.footer} fixed>
+    {projectInfo.notas_clave && (
+      <Text>{`${t('projects.fields.keyNotes')}: ${projectInfo.notas_clave}`}</Text>
+    )}
+    <Text
+      render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+      fixed
+    />
+  </View>
+);
+// --- FIN: Componentes Reutilizables ---
+
+export const ReportDocument = ({ summary, details, projectInfo, t, locale, currency, logoBase64, generalEvidence }: ReportDocumentProps) => {
   const aportes = details.filter((d: DetailRow) => d.tipo_registro === 'aporte');
   const gastos = details.filter((d: DetailRow) => d.tipo_registro === 'gasto');
   const gastosConEvidencia = gastos.filter(d => d.url_documento);
+
+  // NUEVO: Separar las evidencias generales por tipo
+  const recomendaciones = generalEvidence.filter(e => e.tipo_evidencia === 'RECOMENDACION');
+  const otrasEvidencias = generalEvidence.filter(e => e.tipo_evidencia !== 'RECOMENDACION');
+
   return (
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
   <Document title={`${t('projects.summary.reportTitle')} - ${projectInfo.descripcion_tarea}`}>
     <Page size="LETTER" style={styles.page} wrap={false}>
-      <View style={styles.header}>
-        {/* eslint-disable-next-line jsx-a11y/alt-text -- La prop 'alt' no es aplicable en react-pdf */}
-        {logoBase64 && <Image style={styles.logo} src={logoBase64} />}
-        <View style={styles.titleContainer}>
-          <Text style={styles.mainTitle}>{t('projects.summary.reportTitle')}</Text>
-          <Text>{new Date().toLocaleDateString(locale)}</Text>
-        </View>
-      </View>
-
+      <ReportHeader logoBase64={logoBase64} t={t} locale={locale} />
+      
       <View style={styles.projectInfo}>
         <View style={styles.projectInfoDetails}>
           <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('catalog.fields.group')}:</Text> {projectInfo.grupo_mantenimiento}</Text>
@@ -400,34 +472,84 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
           </View>
         </View>
       </View>
-      {/* CORRECCIÓN FINAL: Mover el footer a la primera página. La prop 'fixed' lo repetirá en las demás. */}
-      {projectInfo.notas_clave && (
-        <View style={styles.footer} fixed>
-          <Text>{`${t('projects.fields.keyNotes')}: ${projectInfo.notas_clave}`}</Text>
-        </View>
-      )}
+      <ReportFooter projectInfo={projectInfo} t={t} />
     </Page>
     {gastosConEvidencia.length > 0 && (
       <Page size="LETTER" style={styles.page} wrap={false}>
-        <Text style={styles.sectionTitle}>{t('projects.evidenceAppendix.title')}</Text>
-        <View style={styles.evidenceGrid} wrap>
-          {gastosConEvidencia.map((item, i) => (
-            <View key={i} style={styles.evidenceItem} debug={false}>
-              <View>
-                <Text style={styles.evidenceText}>{item.nombre_proveedor || 'N/A'}</Text>
-                {/* La dirección no está en los datos, se puede añadir aquí */}
-                <Text style={styles.evidenceDescription}>{item.descripcion_gasto || 'Gasto sin descripción'}</Text>
-                <Text style={styles.evidenceText}>{formatDate(item.fecha, locale)}</Text>
+        <ReportHeader logoBase64={logoBase64} t={t} locale={locale} />
+        {/* Este View es el contenedor principal del contenido de la página */}
+        <View> 
+          <Text style={styles.sectionTitle}>{t('projects.evidenceAppendix.title')}</Text>
+          <View style={styles.evidenceGrid} wrap>
+            {gastosConEvidencia.map((item, i) => (
+              <View key={i} style={styles.evidenceItem} debug={false}>
+                <View>
+                  <Text style={styles.evidenceText}>{item.nombre_proveedor || 'N/A'}</Text>
+                  {/* La dirección no está en los datos, se puede añadir aquí */}
+                  {item.tipo_evidencia && <Text style={[styles.evidenceText, { fontWeight: 'bold', color: '#C53030' }]}>{t(`evidenceTypes.${item.tipo_evidencia}`)}</Text>}
+                  <Text style={styles.evidenceDescription}>{item.descripcion_gasto || 'Gasto sin descripción'}</Text>
+                  <Text style={styles.evidenceText}>{formatDate(item.fecha, locale)}</Text>
+                </View>
+                <Link style={styles.evidenceLink} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/comprobantes-gastos/${item.url_documento!}`}>
+                  {t('projects.evidenceAppendix.viewEvidence')}
+                </Link>
+                <Text style={styles.evidenceAmount}>-{formatCurrency(item.monto, locale, currency)}</Text>
               </View>
-              <Link style={styles.evidenceLink} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/comprobantes-gastos/${item.url_documento!}`}>
-                {t('projects.evidenceAppendix.viewEvidence')}
-              </Link>
-              <Text style={styles.evidenceAmount}>-{formatCurrency(item.monto, locale, currency)}</Text>
+            ))}
+          </View>
+        </View>
+        <ReportFooter projectInfo={projectInfo} t={t} />
+      </Page>
+    )}
+    {/* --- INICIO: NUEVO ANEXO DE DOCUMENTACIÓN GENERAL --- */}
+    {generalEvidence.length > 0 && (
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <ReportHeader logoBase64={logoBase64} t={t} locale={locale} />
+        {/* Este View es el contenedor principal del contenido de la página */}
+        <View> 
+          <Text style={styles.sectionTitle}>{t('projects.generalEvidenceAppendix.title')}</Text>
+          
+          {/* Renderizar primero las evidencias estándar en formato de cuadrícula */}
+          {otrasEvidencias.length > 0 && (
+            <View style={styles.evidenceGrid} wrap>
+              {otrasEvidencias.map((item) => {
+                const cardStyle = getEvidenceCardStyle(item.tipo_evidencia);
+                const textColor = evidenceTypeColors[item.tipo_evidencia]?.text || evidenceTypeColors.default.text;
+                return (
+                  <View key={item.id_evidencia} style={cardStyle}>
+                    <View>
+                      <Text style={[styles.evidenceDescription, { color: textColor }]}>{item.descripcion_evidencia}</Text>
+                      <Text style={[styles.evidenceText, { fontWeight: 'bold', color: textColor, textTransform: 'uppercase' }]}>
+                        {t(`evidenceTypes.${item.tipo_evidencia}`)}
+                      </Text>
+                      <Text style={styles.evidenceText}>{item.nombre_archivo}</Text>
+                      <Text style={styles.evidenceText}>{formatDate(item.fecha_evidencia, locale)}</Text>
+                    </View>
+                    <Link style={[styles.evidenceLink, { backgroundColor: cardStyle.borderLeftColor, marginTop: 8 }]} src={item.url_publica}>
+                      {t('projects.evidenceAppendix.viewEvidence')}
+                    </Link>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Renderizar las recomendaciones a ancho completo */}
+          {recomendaciones.map((item) => (
+            <View key={item.id_evidencia} style={styles.recommendationItem} wrap={false}>
+              <Text style={[styles.evidenceText, { fontWeight: 'bold', color: '#4A5568', textTransform: 'uppercase', marginBottom: 6 }]}>
+                {t(`evidenceTypes.${item.tipo_evidencia}`)}
+              </Text>
+              <Text style={[styles.evidenceDescription, { fontSize: 11, color: '#2D3748', marginBottom: 4 }]}>{item.descripcion_evidencia}</Text>
+              <Text style={styles.evidenceText}>Fecha: {formatDate(item.fecha_evidencia, locale)}</Text>
+              {/* No incluimos el enlace "Ver Documento" ya que la descripción es el contenido principal */}
             </View>
           ))}
         </View>
+        <ReportFooter projectInfo={projectInfo} t={t} />
       </Page>
     )}
+    {/* --- FIN: NUEVO ANEXO --- */}
   </Document>
   );
 };
@@ -442,14 +564,21 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
     if (!projectId) return;
     setIsGenerating(true);
     try {
-      // Refrescar los datos financieros y obtener la información del proyecto
-      await refetch();
-      // Usamos la función RPC que es más robusta y devuelve un objeto plano.
-      const { data: projectInfoResult, error } = await supabase.rpc('get_project_info_with_status', {
-        p_id_proyecto: projectId,
-      });
+      // 1. Ejecutar todas las llamadas a la BD en paralelo para mayor eficiencia
+      const [
+        /* _ */, // Resultado de refetch no es necesario aquí
+        projectInfoResponse,
+        generalEvidenceResponse
+      ] = await Promise.all([
+        refetch(),
+        supabase.rpc('get_project_info_with_status', { p_id_proyecto: projectId }),
+        supabase.rpc('fn_get_proyecto_evidencias_generales', { p_id_proyecto: projectId }) // NUEVA LLAMADA
+      ]);
 
-      if (error) throw error;
+      const { data: projectInfoResult, error: projectInfoError } = projectInfoResponse;
+      const { data: generalEvidence, error: generalEvidenceError } = generalEvidenceResponse;
+
+      if (projectInfoError || generalEvidenceError) throw projectInfoError || generalEvidenceError;
       
       const projectInfoData = projectInfoResult?.[0];
       if (!projectInfoData || !summary || !details) {
@@ -483,6 +612,7 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
         details,
         // CORREGIDO: Asegurarse de que projectInfoData (que tiene notas_clave) se pase correctamente.
         projectInfo: projectInfoData,
+        generalEvidence: generalEvidence || [], // NUEVO: Añadir evidencias generales al payload
         // Añadimos el nombre del archivo al payload
         fileName: fileName,
       };

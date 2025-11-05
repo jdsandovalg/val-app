@@ -470,15 +470,30 @@
       "viewEvidence": "View Evidence",
       "altText": "Expense evidence"
     },
+    "generalEvidenceAppendix": {
+      "title": "General Documentation Appendix"
+    },
     "evidence": {
       "title": "Evidence Management",
       "buttons": {
         "add": "Upload Evidence",
-        "viewFile": "View File"
+        "viewFile": "View File",
+        "type": "Evidence Type"
       },
       "fields": {
         "description": "Evidence Description",
-        "date": "Evidence Date"
+        "date": "Evidence Date",
+        "type": "Evidence Type"
+      },
+      "types": {
+        "COTIZACION": "Quotation",
+        "FACTURA": "Invoice",
+        "RECIBO": "Receipt",
+        "TRANSFERENCIA": "Transfer",
+      "RECOMENDACION": "Recommendation",
+      "FOTOGRAFIA_01": "Photograph 01",
+      "FOTOGRAFIA_02": "Photograph 02",
+      "FOTOGRAFIA_03": "Photograph 03"
       },
       "emptyState": "No evidence has been recorded for this project.",
       "alerts": {
@@ -510,6 +525,16 @@
     "emptyState": {
       "noProjectSelected": "Select a project to manage its evidence."
     }
+  },
+  "evidenceTypes": {
+    "COTIZACION": "Quotation",
+    "FACTURA": "Invoice",
+    "RECIBO": "Receipt",
+    "TRANSFERENCIA": "Transfer",
+    "RECOMENDACION": "Recommendation",
+    "FOTOGRAFIA_01": "Photograph 01",
+    "FOTOGRAFIA_02": "Photograph 02",
+    "FOTOGRAFIA_03": "Photograph 03"
   },
   "projectStatus": {
     "title": "Project Status",

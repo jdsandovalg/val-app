@@ -469,15 +469,30 @@
       "viewEvidence": "Voir la Preuve",
       "altText": "Preuve de dépense"
     },
+    "generalEvidenceAppendix": {
+      "title": "Annexe de Documentation Générale"
+    },
     "evidence": {
       "title": "Gestion des Preuves",
       "buttons": {
         "add": "Télécharger une Preuve",
-        "viewFile": "Voir le Fichier"
+        "viewFile": "Voir le Fichier",
+        "type": "Type de Preuve"
       },
       "fields": {
         "description": "Description de la Preuve",
-        "date": "Date de la Preuve"
+        "date": "Date de la Preuve",
+        "type": "Type de Preuve"
+      },
+      "types": {
+        "COTIZACION": "Devis",
+        "FACTURA": "Facture",
+        "RECIBO": "Reçu",
+        "TRANSFERENCIA": "Virement",
+      "RECOMENDACION": "Recommandation",
+      "FOTOGRAFIA_01": "Photographie 01",
+      "FOTOGRAFIA_02": "Photographie 02",
+      "FOTOGRAFIA_03": "Photographie 03"
       },
       "emptyState": "Aucune preuve n'a été enregistrée pour ce projet.",
       "alerts": {
@@ -509,6 +524,16 @@
     "emptyState": {
       "noProjectSelected": "Sélectionnez un projet pour gérer ses preuves."
     }
+  },
+  "evidenceTypes": {
+    "COTIZACION": "Devis",
+    "FACTURA": "Facture",
+    "RECIBO": "Reçu",
+    "TRANSFERENCIA": "Virement",
+    "RECOMENDACION": "Recommandation",
+    "FOTOGRAFIA_01": "Photographie 01",
+    "FOTOGRAFIA_02": "Photographie 02",
+    "FOTOGRAFIA_03": "Photographie 03"
   },
   "projectStatus": {
     "title": "État du Projet",

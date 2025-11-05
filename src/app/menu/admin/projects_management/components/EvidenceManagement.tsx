@@ -15,6 +15,7 @@ type Evidencia = {
   nombre_archivo: string;
   url_publica: string;
   tipo_mime: string | null;
+  tipo_evidencia: string; // NUEVO CAMPO
   tamano_bytes: number | null;
   fecha_subida: string; // TIMESTAMP WITH TIME ZONE from DB (e.g., "ISO string")
 };
@@ -61,6 +62,7 @@ export default function EvidenceManagement({ projectId }: EvidenceManagementProp
       p_url_publica: item.url_publica,
       p_tipo_mime: item.tipo_mime,
       p_tamano_bytes: item.tamano_bytes,
+      p_tipo_evidencia: item.tipo_evidencia,
     };
   };
 
@@ -90,6 +92,7 @@ export default function EvidenceManagement({ projectId }: EvidenceManagementProp
           <>
             <h4 className="text-lg font-semibold">{item.descripcion_evidencia}</h4>
             <p className="text-sm text-muted-foreground">{item.nombre_archivo}</p>
+            <p className="text-xs font-medium text-blue-600 uppercase mt-1">{t(`evidenceTypes.${item.tipo_evidencia}`)}</p>
             <p className="text-xs text-gray-500 mt-1">{t('projects.evidence.fields.date')}: {formatDate(item.fecha_evidencia, locale)}</p>
             <a
               href={item.url_publica}

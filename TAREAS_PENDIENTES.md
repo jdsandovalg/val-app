@@ -64,6 +64,21 @@ Esta sección documenta las mejores prácticas y lecciones aprendidas durante el
 
 ## IV. Logros Recientes (Tareas Completadas)
 
+### 7. Botón Flotante para Compartir/Descargar PDF en Móvil
+*   ✅ **Solución Robusta para PDF en Móvil:** Se implementó una solución definitiva para el botón de compartir/descargar en la vista de reportes PDF en dispositivos móviles, asegurando que siempre esté visible y funcional.
+*   **Mecanismo Clave de Implementación (Lección Aprendida):**
+    *   **Problema Original:** El componente `<PDFViewer>` de React renderiza un `<iframe>` que, en la mayoría de los navegadores móviles, se superpone a todos los demás elementos HTML, ignorando el `z-index` y ocultando los botones de acción que intentábamos posicionar encima.
+    *   **Solución Aplicada:** Se reemplazó por completo el uso de `<PDFViewer>` por una estrategia más nativa y controlable:
+        1.  **Generación en Cliente:** El PDF se genera como un `Blob` (un objeto de datos binarios) directamente en el navegador del cliente.
+        2.  **URL de Objeto:** Se crea una URL temporal y local para este `Blob` usando `URL.createObjectURL()`.
+        3.  **Renderizado con `<object>`:** En lugar de un `<iframe>` problemático, se utiliza la etiqueta nativa `<object data={pdfUrl} type="application/pdf">` para mostrar el PDF. Este elemento sí respeta el contexto de apilamiento (stacking context) y permite que otros elementos se superpongan.
+        4.  **Botones Flotantes Exitosos:** Con el PDF renderizado en un `<object>`, los botones de "Compartir" y "Descargar" (posicionados de forma absoluta) ahora flotan correctamente sobre el contenido en la esquina inferior derecha, garantizando su visibilidad.
+*   ✅ **Optimización y Experiencia de Usuario:**
+    *   La función de descarga se optimizó para reutilizar la URL del PDF ya generado, haciendo la descarga instantánea para el usuario.
+    *   Se mejoró el formato del nombre de archivo para que sea descriptivo y legible, incluyendo el nombre del proyecto y la fecha de generación (ej: `Resumen_Financiero_mi_proyecto-2025-11-04.pdf`).
+
+---
+
 ### 5. Implementación de Gestión de Cargos por Contribuciones
 *   ✅ **Backend Robusto:** Se crearon y pulieron dos funciones RPC clave:
     *   `procesar_cargos_rotativos`: Genera una previsualización (`PREVIEW`) completa para el año siguiente, manejando correctamente la lógica de rotación tanto para contribuciones por casa como por grupo, e incluyendo el cálculo de la `fecha_maxima_pago`.

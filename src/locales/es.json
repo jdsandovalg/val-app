@@ -470,15 +470,30 @@
       "viewEvidence": "Ver Evidencia",
       "altText": "Evidencia de gasto"
     },
+    "generalEvidenceAppendix": {
+      "title": "Anexo de Documentación General"
+    },
     "evidence": {
       "title": "Gestión de Evidencias",
       "buttons": {
         "add": "Subir Evidencia",
-        "viewFile": "Ver Archivo"
+        "viewFile": "Ver Archivo",
+        "type": "Tipo de Evidencia"
       },
       "fields": {
         "description": "Descripción de la Evidencia",
-        "date": "Fecha de la Evidencia"
+        "date": "Fecha de la Evidencia",
+        "type": "Tipo de Evidencia"
+      },
+      "types": {
+        "COTIZACION": "Cotización",
+        "FACTURA": "Factura",
+        "RECIBO": "Recibo",
+        "TRANSFERENCIA": "Transferencia",
+      "RECOMENDACION": "Recomendación",
+      "FOTOGRAFIA_01": "Fotografía 01",
+      "FOTOGRAFIA_02": "Fotografía 02",
+      "FOTOGRAFIA_03": "Fotografía 03"
       },
       "emptyState": "No se han registrado evidencias para este proyecto.",
       "alerts": {
@@ -510,6 +525,16 @@
     "emptyState": {
       "noProjectSelected": "Seleccione un proyecto para gestionar sus evidencias."
     }
+  },
+  "evidenceTypes": {
+    "COTIZACION": "Cotización",
+    "FACTURA": "Factura",
+    "RECIBO": "Recibo",
+    "TRANSFERENCIA": "Transferencia",
+    "RECOMENDACION": "Recomendación",
+    "FOTOGRAFIA_01": "Fotografía 01",
+    "FOTOGRAFIA_02": "Fotografía 02",
+    "FOTOGRAFIA_03": "Fotografía 03"
   },
   "projectStatus": {
     "title": "Estado del Proyecto",
