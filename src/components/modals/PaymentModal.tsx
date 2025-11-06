@@ -43,7 +43,7 @@ function PaymentModal({
 
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-30 z-50 flex justify-center items-center backdrop-blur-sm">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 border-l-4 border-l-yellow-500 w-full max-w-sm">
         <h2 className="text-xl font-bold mb-2 text-center">{t('paymentModal.title')}</h2>
         <div className="text-center mb-4">
           <p className="text-sm text-gray-600">{t('paymentModal.contribution')}</p>

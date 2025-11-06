@@ -33,6 +33,12 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
+### X. Mejoras en Gestión de Proyectos y UI
+*   ✅ **Seguridad a Nivel de Rol (Puerta Trasera):** Se implementó una capa de seguridad en la lista de proyectos (`ProjectList.tsx`). El botón para editar proyectos archivados (terminados/cancelados) ahora solo es visible para usuarios con perfil de Administrador ('ADM'), leyendo el perfil desde `localStorage` para una lógica autocontenida.
+*   ✅ **Consistencia Visual en Modales:** Se mejoró la UI del modal de edición/creación de proyectos (`ProjectModal.tsx`) para que su diseño (borde izquierdo azul, sombra) sea consistente con las tarjetas de la lista de proyectos, unificando la experiencia de usuario.
+
+---
+
 ## II. Principios de Colaboración y Lecciones Aprendidas
 
 Esta sección documenta las mejores prácticas y lecciones aprendidas durante el desarrollo, con el objetivo de mejorar la comunicación y la eficiencia entre el desarrollador y el asistente de IA.
@@ -61,8 +67,6 @@ Esta sección documenta las mejores prácticas y lecciones aprendidas durante el
     3.  **Frontend:** Refactorizar completamente la página `/menu/calendarios/page.tsx` y sus componentes para que utilicen exclusivamente la nueva función RPC, asegurando que la fecha de pago se guarde y se muestre correctamente.
 
 ---
-
-## IV. Logros Recientes (Tareas Completadas)
 
 ### 7. Botón Flotante para Compartir/Descargar PDF en Móvil
 *   ✅ **Solución Robusta para PDF en Móvil:** Se implementó una solución definitiva para el botón de compartir/descargar en la vista de reportes PDF en dispositivos móviles, asegurando que siempre esté visible y funcional.

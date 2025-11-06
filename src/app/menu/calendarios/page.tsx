@@ -151,7 +151,40 @@ export default function CalendariosPage() {
     } catch (error: unknown) {
       let message = t('calendar.payment.unknownError');
       if (error instanceof Error) message = error.message;
-      toast.error(t('calendar.payment.error', { message }), { id: toastId });
+      else if (typeof error === 'string') message = error;
+      else if (typeof error === 'object' && error !== null && 'message' in error) {
+        message = String(error.message);
+      }
+      toast.error(t('calendar.payment.error', { message: message }), { id: toastId });
+    }
+  };
+
+  const handleAnnulPayment = async (contributionToAnnul: Contribucion) => {
+    if (!usuario) return;
+
+    // Pedir confirmación al usuario
+    if (!window.confirm("¿Estás seguro de que quieres anular este pago? Esta acción no se puede deshacer.")) {
+      return;
+    }
+
+    const toastId = toast.loading("Anulando pago...");
+
+    try {
+      const { data: annulledRecord, error } = await supabase.rpc('anular_pago_contribucion_casa', {
+        p_id_casa: usuario.id,
+        p_id_contribucion: contributionToAnnul.id_contribucion,
+        p_fecha_cargo: contributionToAnnul.fecha_cargo
+      });
+
+      if (error) throw error;
+      if (!annulledRecord || annulledRecord.length === 0) throw new Error("No se recibió confirmación de la anulación.");
+
+      // Actualización optimista
+      setContribuciones(prev => prev.map(c => (c.id_contribucion === contributionToAnnul.id_contribucion && c.fecha_cargo === contributionToAnnul.fecha_cargo) ? { ...c, ...annulledRecord[0] } : c));
+      toast.success("Pago anulado correctamente.", { id: toastId });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Error al anular el pago: ${message}`, { id: toastId });
     }
   };
 
@@ -230,6 +263,7 @@ export default function CalendariosPage() {
               fechapago={row.fechapago}
               onPay={() => handleOpenPaymentModal(row)}
               onViewProof={() => handleOpenImageViewer(row.url_comprobante)}
+              onAnnul={() => handleAnnulPayment(row)}
             />
           ))}
         </div>

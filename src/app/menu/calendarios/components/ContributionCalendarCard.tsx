@@ -19,6 +19,7 @@ interface ContributionCalendarCardProps {
   fechapago?: string | null;
   onPay: () => void;
   onViewProof: () => void;
+  onAnnul: () => void;
 }
 
 const colorToClassMap: { [key: string]: string } = {
@@ -42,6 +43,7 @@ const ContributionCalendarCard: React.FC<ContributionCalendarCardProps> = ({
   fechapago,
   onPay,
   onViewProof,
+  onAnnul,
 }) => {
   const { t, lang } = useI18n();
   const dbColor = color_del_borde?.toLowerCase() || '';
@@ -81,6 +83,12 @@ const ContributionCalendarCard: React.FC<ContributionCalendarCardProps> = ({
           >
             {t('calendar.payment.viewProofButton')}
           </button>
+        )}
+        {realizado === 'S' && (
+          <button
+            onClick={onAnnul}
+            className="bg-red-500 text-white font-bold py-1 px-3 rounded-md text-xs hover:bg-red-600"
+          >{t('projects.contributions.buttons.cancelPayment')}</button>
         )}
       </div>
     </div>
