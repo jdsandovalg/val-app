@@ -103,7 +103,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg p-6 bg-white rounded-lg shadow-lg"
+        className="relative w-full max-w-lg p-6 bg-white rounded-lg shadow-md border border-gray-200 border-l-4 border-l-blue-500"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-semibold mb-4">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import type { Usuario } from '@/types/database';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 import { FilePenLine } from 'lucide-react';
@@ -31,14 +32,14 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
   const { t } = useI18n();
   const [projects, setProjects] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(true);
-  // Estado para controlar la visibilidad de la lista de archivados
   const [showArchived, setShowArchived] = useState(false);
+  const [userProfile, setUserProfile] = useState<string | null>(null);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.rpc('gestionar_proyectos', {
-        p_action: 'SELECT_ALL', // Cambiamos la acción para traer todos los proyectos
+        p_action: 'SELECT_ALL',
       });
 
       if (error) throw error;
@@ -55,6 +56,18 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
     fetchProjects();
   }, [fetchProjects]);
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem('usuario');
+    if (storedUser) {
+      try {
+        const user: Usuario = JSON.parse(storedUser);
+        setUserProfile(user.tipo_usuario);
+      } catch (e) {
+        console.error("Error parsing user data from localStorage", e);
+      }
+    }
+  }, []);
+
   if (loading) {
     return <p className="text-center text-gray-500 py-4">{t('loading')}</p>;
   }
@@ -69,13 +82,12 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
     cancelado: { badge: 'bg-red-100 text-red-800', border: 'border-red-400' },
   };
 
-  // Separar proyectos en activos y archivados
   const activeProjects = projects.filter(p => !['terminado', 'cancelado'].includes(p.estado));
   const archivedProjects = projects.filter(p => ['terminado', 'cancelado'].includes(p.estado));
 
   const handleSelect = (project: Proyecto) => {
     if (selectedProject?.id_proyecto === project.id_proyecto) {
-      onProjectSelect(null); // Deseleccionar si se hace clic en el mismo
+      onProjectSelect(null);
     } else {
       onProjectSelect(project);
     }
@@ -108,7 +120,7 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
                     </span>
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // Evita que el evento de clic se propague al div padre
+                        e.stopPropagation();
                         onEditProject(project);
                       }}
                       className="p-1 rounded-full hover:bg-gray-200 transition-colors"
@@ -125,7 +137,6 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
         </div>
       )}
 
-      {/* Nueva sección para proyectos archivados */}
       {archivedProjects.length > 0 && (
         <div className="mt-8">
           <button
@@ -157,7 +168,18 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
                         <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
                           {t(`projectStatus.${project.estado}`)}
                         </span>
-                        {/* El botón de editar está deshabilitado para proyectos archivados */}
+                        {userProfile === 'ADM' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditProject(project);
+                            }}
+                            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                            title={t('manageUsers.card.edit')}
+                          >
+                            <FilePenLine size={16} className="text-gray-600" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
