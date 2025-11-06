@@ -217,6 +217,9 @@
     "changeAvatar": "Cambiar",
     "avatarAlt": "Avatar de usuario"
   },
+  "common": {
+    "confirmButton": "Confirmar"
+  },
   "manageContributions": {
     "title": "Gestionar Aportaciones",
     "loading": "Cargando datos de la tabla...",

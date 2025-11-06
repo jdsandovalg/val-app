@@ -217,6 +217,9 @@
     "changeAvatar": "Change",
     "avatarAlt": "User avatar"
   },
+  "common": {
+    "confirmButton": "Confirm"
+  },
   "manageContributions": {
     "title": "Manage Contributions",
     "loading": "Loading table data...",

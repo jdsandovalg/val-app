@@ -20,6 +20,7 @@ import { toast } from 'react-hot-toast';
 import PaymentModal, { type PayableContribution } from '@/components/modals/PaymentModal';
 import ImageViewerModal from '@/components/modals/ImageViewerModal';
 import ContributionCalendarCard from './components/ContributionCalendarCard';
+import ConfirmationModal from '@/components/modals/ConfirmationModal'; // 1. Importar el nuevo modal
 
 
 type Contribucion = {
@@ -45,6 +46,8 @@ export default function CalendariosPage() {
   const [selectedContribution, setSelectedContribution] = useState<Contribucion | null>(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false); // 2. Estado para el modal de confirmación
+  const [contributionToAnnul, setContributionToAnnul] = useState<Contribucion | null>(null); // 3. Estado para guardar la contribución a anular
 
   // Ordenamiento por defecto. Ya no se necesita configuración de ordenamiento o filtros.
   const filteredAndSortedContribuciones = useMemo(() => {
@@ -159,18 +162,24 @@ export default function CalendariosPage() {
     }
   };
 
-  const handleAnnulPayment = async (contributionToAnnul: Contribucion) => {
-    if (!usuario) return;
+  const openAnnulConfirmation = (contribution: Contribucion) => {
+    setContributionToAnnul(contribution);
+    setIsConfirmationModalOpen(true);
+  };
 
-    // Pedir confirmación al usuario
-    if (!window.confirm("¿Estás seguro de que quieres anular este pago? Esta acción no se puede deshacer.")) {
-      return;
-    }
+  const closeAnnulConfirmation = () => {
+    setContributionToAnnul(null);
+    setIsConfirmationModalOpen(false);
+  };
 
+  const confirmAnnulPayment = async () => {
+    if (!contributionToAnnul || !usuario) return;
+
+    closeAnnulConfirmation(); // Cerrar el modal antes de empezar
     const toastId = toast.loading("Anulando pago...");
 
     try {
-      const { data: annulledRecord, error } = await supabase.rpc('anular_pago_contribucion_casa', {
+      const { data: annulledRecord, error } = await supabase.rpc('anular_pago_contribucion_casa', { // La llamada a la BD se mantiene igual
         p_id_casa: usuario.id,
         p_id_contribucion: contributionToAnnul.id_contribucion,
         p_fecha_cargo: contributionToAnnul.fecha_cargo
@@ -263,7 +272,7 @@ export default function CalendariosPage() {
               fechapago={row.fechapago}
               onPay={() => handleOpenPaymentModal(row)}
               onViewProof={() => handleOpenImageViewer(row.url_comprobante)}
-              onAnnul={() => handleAnnulPayment(row)}
+              onAnnul={() => openAnnulConfirmation(row)} // 4. Llamar a la función que abre el modal
             />
           ))}
         </div>
@@ -278,6 +287,15 @@ export default function CalendariosPage() {
         <ImageViewerModal
           src={viewingImageUrl}
           onClose={handleCloseImageViewer}
+        />
+      )}
+      {isConfirmationModalOpen && (
+        <ConfirmationModal
+          isOpen={isConfirmationModalOpen}
+          onClose={closeAnnulConfirmation}
+          onConfirm={confirmAnnulPayment}
+          title="Anular Pago"
+          message="¿Estás seguro de que quieres anular este pago? Esta acción revertirá el estado a 'PENDIENTE' y no se puede deshacer."
         />
       )}
     </>

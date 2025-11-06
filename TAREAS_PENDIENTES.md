@@ -33,6 +33,16 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
+### 7. Refactorización y Corrección de Lógica de Pago en Calendario
+*   ✅ **Diagnóstico y Corrección de RPC:** Se diagnosticó y corrigió la función RPC `gestionar_pago_contribucion_casa`, alineando los nombres de los parámetros (`p_fecha_cargo`) y las columnas de la tabla (`estado`, `monto_pagado`) con la implementación del frontend. Esto solucionó el bug crítico que impedía registrar pagos.
+*   ✅ **Implementación de Anulación de Pagos:**
+    *   **Backend:** Se creó una nueva función RPC `anular_pago_contribucion_casa` para revertir un pago de forma segura, cambiando el estado a 'PENDIENTE' y limpiando los datos de pago.
+    *   **Frontend:** Se añadió un botón "Anular Pago" en las contribuciones pagadas.
+    *   **Mejora de UX:** Se reemplazó el `window.confirm` nativo por un modal de confirmación personalizado (`ConfirmationModal.tsx`) para una experiencia de usuario consistente y centrada.
+*   ✅ **Consistencia Visual en Modal de Pago:** Se mejoró la UI del `PaymentModal.tsx` para que su diseño (borde izquierdo amarillo, sombra sutil) sea coherente con el resto de la aplicación.
+
+---
+
 ### X. Mejoras en Gestión de Proyectos y UI
 *   ✅ **Seguridad a Nivel de Rol (Puerta Trasera):** Se implementó una capa de seguridad en la lista de proyectos (`ProjectList.tsx`). El botón para editar proyectos archivados (terminados/cancelados) ahora solo es visible para usuarios con perfil de Administrador ('ADM'), leyendo el perfil desde `localStorage` para una lógica autocontenida.
 *   ✅ **Consistencia Visual en Modales:** Se mejoró la UI del modal de edición/creación de proyectos (`ProjectModal.tsx`) para que su diseño (borde izquierdo azul, sombra) sea consistente con las tarjetas de la lista de proyectos, unificando la experiencia de usuario.
@@ -58,28 +68,17 @@ Esta sección documenta las mejores prácticas y lecciones aprendidas durante el
 
 ## III. Próxima Tarea Crítica (A Diagnosticar)
 
-### 7. Refactorizar y Corregir Lógica de Pago en Calendario (Deuda Técnica Crítica)
+### 8. Finalizar Refactorización de Gestión de Aportaciones (Admin)
 *   **Prioridad:** Crítica.
-*   **Problema:** La funcionalidad para registrar un pago desde la página de "Calendarios" está rota. La fecha de pago no se guarda en la base de datos y no se muestra en la interfaz. La causa raíz es una combinación de una vista (`v_usuarios_contribuciones`) desactualizada y una lógica de guardado incorrecta que mezclaba contextos (proyectos vs. calendario) y rompía la arquitectura de la aplicación.
-*   **Plan de Diagnóstico y Solución:**
-    1.  **Diagnosticar:** Revisar la página `/menu/calendarios/page.tsx` y la función RPC `gestionar_pago_contribucion_casa` para identificar el punto exacto de la falla con la lógica actual.
-    2.  **Backend:** Modificar o crear la función RPC necesaria para que maneje la acción `UPDATE` de un pago de forma aislada y segura, sin depender de vistas complejas.
-    3.  **Frontend:** Refactorizar completamente la página `/menu/calendarios/page.tsx` y sus componentes para que utilicen exclusivamente la nueva función RPC, asegurando que la fecha de pago se guarde y se muestre correctamente.
-
----
-
-### 7. Botón Flotante para Compartir/Descargar PDF en Móvil
-*   ✅ **Solución Robusta para PDF en Móvil:** Se implementó una solución definitiva para el botón de compartir/descargar en la vista de reportes PDF en dispositivos móviles, asegurando que siempre esté visible y funcional.
-*   **Mecanismo Clave de Implementación (Lección Aprendida):**
-    *   **Problema Original:** El componente `<PDFViewer>` de React renderiza un `<iframe>` que, en la mayoría de los navegadores móviles, se superpone a todos los demás elementos HTML, ignorando el `z-index` y ocultando los botones de acción que intentábamos posicionar encima.
-    *   **Solución Aplicada:** Se reemplazó por completo el uso de `<PDFViewer>` por una estrategia más nativa y controlable:
-        1.  **Generación en Cliente:** El PDF se genera como un `Blob` (un objeto de datos binarios) directamente en el navegador del cliente.
-        2.  **URL de Objeto:** Se crea una URL temporal y local para este `Blob` usando `URL.createObjectURL()`.
-        3.  **Renderizado con `<object>`:** En lugar de un `<iframe>` problemático, se utiliza la etiqueta nativa `<object data={pdfUrl} type="application/pdf">` para mostrar el PDF. Este elemento sí respeta el contexto de apilamiento (stacking context) y permite que otros elementos se superpongan.
-        4.  **Botones Flotantes Exitosos:** Con el PDF renderizado en un `<object>`, los botones de "Compartir" y "Descargar" (posicionados de forma absoluta) ahora flotan correctamente sobre el contenido en la esquina inferior derecha, garantizando su visibilidad.
-*   ✅ **Optimización y Experiencia de Usuario:**
-    *   La función de descarga se optimizó para reutilizar la URL del PDF ya generado, haciendo la descarga instantánea para el usuario.
-    *   Se mejoró el formato del nombre de archivo para que sea descriptivo y legible, incluyendo el nombre del proyecto y la fecha de generación (ej: `Resumen_Financiero_mi_proyecto-2025-11-04.pdf`).
+*   **Objetivo:** Completar la refactorización iniciada, alineando las pantallas de administración con la nueva estructura de base de datos y las funciones RPC para la gestión de aportaciones.
+*   **Contexto:** Después de estabilizar las vistas del usuario (`Calendario`, `Avisos`, `Grupos de Trabajo`), es imperativo corregir las pantallas de administración que quedaron rotas.
+*   **Plan de Acción por Pasos:**
+    1.  **Crear Pantalla de Catálogo de Contribuciones:**
+        *   **Tarea:** Crear una nueva página en `/menu/admin/contributions-catalog/page.tsx`.
+        *   **Implementación:** Utilizar el componente genérico `CatalogManagement` para permitir el CRUD (Crear, Leer, Actualizar, Eliminar) de los tipos de aportes, conectándolo a la función RPC `gestionar_contribuciones_catalogo`.
+    2.  **Refactorizar Pantalla de Gestión de Aportes por Casa:**
+        *   **Tarea:** Corregir la página `/menu/admin/manage-house-contributions/page.tsx`.
+        *   **Implementación:** Modificar la página para que obtenga y guarde los datos utilizando la función RPC `gestionar_contribuciones_casa`.
 
 ---
 
@@ -115,18 +114,6 @@ Esta sección documenta las mejores prácticas y lecciones aprendidas durante el
 *   **Prioridad:** Baja.
 *   **Problema:** El modal de confirmación (`ConfirmationModal`) muestra un fondo negro que cubre toda la pantalla (`bg-black bg-opacity-50`), lo cual resulta visualmente intrusivo en la versión de escritorio.
 *   **Solución Propuesta:** Reducir la opacidad del fondo (ej. `bg-opacity-30`) y añadir un efecto de desenfoque (`backdrop-blur-sm`) para una apariencia más moderna y menos agresiva.
-
-### 8. Finalizar Refactorización de Gestión de Aportaciones (Admin)
-*   **Prioridad:** Crítica.
-*   **Objetivo:** Completar la refactorización iniciada, alineando las pantallas de administración con la nueva estructura de base de datos y las funciones RPC para la gestión de aportaciones.
-*   **Contexto:** Después de estabilizar las vistas del usuario (`Calendario`, `Avisos`, `Grupos de Trabajo`), es imperativo corregir las pantallas de administración que quedaron rotas.
-*   **Plan de Acción por Pasos:**
-    1.  **Crear Pantalla de Catálogo de Contribuciones:**
-        *   **Tarea:** Crear una nueva página en `/menu/admin/contributions-catalog/page.tsx`.
-        *   **Implementación:** Utilizar el componente genérico `CatalogManagement` para permitir el CRUD (Crear, Leer, Actualizar, Eliminar) de los tipos de aportes, conectándolo a la función RPC `gestionar_contribuciones_catalogo`.
-    2.  **Refactorizar Pantalla de Gestión de Aportes por Casa:**
-        *   **Tarea:** Corregir la página `/menu/admin/manage-house-contributions/page.tsx`.
-        *   **Implementación:** Modificar la página para que obtenga y guarde los datos utilizando la función RPC `gestionar_contribuciones_casa`.
 
 ---
 
