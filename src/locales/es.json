@@ -537,7 +537,10 @@
     "RECOMENDACION": "Recomendación",
     "FOTOGRAFIA_01": "Fotografía 01",
     "FOTOGRAFIA_02": "Fotografía 02",
-    "FOTOGRAFIA_03": "Fotografía 03"
+    "FOTOGRAFIA_03": "Fotografía 03",
+    "COTIZACION_PARA_VOTACION": "Cotización para Votación",
+    "default": "Documento",
+    "CONTRATO": "Contrato"
   },
   "projectStatus": {
     "title": "Estado del Proyecto",

@@ -62,20 +62,48 @@ type ReportDocumentProps = {
   generalEvidence: GeneralEvidence[]; // NUEVO
 };
 
+// Paleta de colores base para los tipos de evidencia conocidos.
 const evidenceTypeColors: Record<string, { bg: string; border: string; text: string }> = {
   COTIZACION: { bg: '#FEFCE8', border: '#D97706', text: '#92400E' }, // Amarillo
   FACTURA: { bg: '#FEE2E2', border: '#DC2626', text: '#991B1B' },    // Rojo
   RECIBO: { bg: '#E0E7FF', border: '#4F46E5', text: '#3730A3' },    // Indigo
   TRANSFERENCIA: { bg: '#D1FAE5', border: '#059669', text: '#065F46' }, // Verde
-  RECOMENDACION: { bg: '#F3F4F6', border: '#6B7280', text: '#374151' }, // Gris (como estaba)
-  FOTOGRAFIA_01: { bg: '#EBF8FF', border: '#4299E1', text: '#2B6CB0' }, // Azul (el que era genérico)
-  FOTOGRAFIA_02: { bg: '#EBF8FF', border: '#4299E1', text: '#2B6CB0' }, // Azul
-  FOTOGRAFIA_03: { bg: '#EBF8FF', border: '#4299E1', text: '#2B6CB0' }, // Azul
-  default: { bg: '#F9FAFB', border: '#D1D5DB', text: '#4B5563' },      // Color por defecto
+  RECOMENDACION: { bg: '#F3F4F6', border: '#6B7280', text: '#374151' }, // Gris
+  FOTOGRAFIA: { bg: '#EBF8FF', border: '#4299E1', text: '#2B6CB0' }, // Azul para todas las fotografías
 };
 
-const getEvidenceCardStyle = (type: string) => {
-  const colors = evidenceTypeColors[type] || evidenceTypeColors.default;
+// Paleta de respaldo para tipos de evidencia nuevos o no definidos explícitamente.
+const fallbackPalette = [
+  { bg: '#FCE7F3', border: '#DB2777', text: '#9D174D' }, // Rosa
+  { bg: '#F5D0FE', border: '#A855F7', text: '#7E22CE' }, // Púrpura
+  { bg: '#ECFCCB', border: '#65A30D', text: '#3F6212' }, // Lima
+  { bg: '#CCFBF1', border: '#0D9488', text: '#115E59' }, // Teal
+  { bg: '#FEF9C3', border: '#CA8A04', text: '#854D0E' }, // Ámbar
+];
+
+// Función para obtener un color consistente para cualquier tipo de evidencia.
+const getEvidenceColor = (type: string) => {
+  // Manejo especial para agrupar todas las fotografías bajo un mismo color
+  if (type.startsWith('FOTOGRAFIA')) {
+    return evidenceTypeColors['FOTOGRAFIA'];
+  }
+  // Si el tipo está definido explícitamente, lo usamos
+  if (evidenceTypeColors[type]) {
+    return evidenceTypeColors[type];
+  }
+
+  // Si no, generamos un índice basado en el hash del string para elegir un color de la paleta de respaldo
+  let hash = 0;
+  for (let i = 0; i < type.length; i++) {
+    hash = type.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash % fallbackPalette.length);
+  return fallbackPalette[index];
+};
+
+// Obtiene el estilo de la tarjeta de evidencia, utilizando la lógica de color dinámica.
+const getEvidenceCardStyle = (type: string | null | undefined) => {
+  const colors = getEvidenceColor(type || 'default');
   return {
     width: '48%',
     backgroundColor: colors.bg,
@@ -514,7 +542,7 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
             <View style={styles.evidenceGrid} wrap>
               {otrasEvidencias.map((item) => {
                 const cardStyle = getEvidenceCardStyle(item.tipo_evidencia);
-                const textColor = evidenceTypeColors[item.tipo_evidencia]?.text || evidenceTypeColors.default.text;
+                const textColor = getEvidenceColor(item.tipo_evidencia).text;
                 return (
                   <View key={item.id_evidencia} style={cardStyle}>
                     <View>

@@ -1,3 +1,29 @@
+## II. Logros Recientes (Tareas Completadas)
+
+### 9. Refactorización de Tipos de Evidencia (Enums) para Escalabilidad
+*   ✅ **Diagnóstico del Problema:** Se identificó que los tipos de evidencia (`COTIZACION`, `FACTURA`, etc.) estaban definidos de forma estática (hardcodeados) en múltiples archivos del frontend (`EvidenceUploader`, `FinancialReport`, `locales/*.json`). Esto hacía que agregar un nuevo tipo de evidencia fuera un proceso manual, propenso a errores y difícil de mantener.
+*   ✅ **Solución de Backend Genérica:** Se creó una única función RPC en la base de datos (`get_enum_values`) capaz de leer y devolver los valores de cualquier tipo `ENUM` de PostgreSQL, eliminando la necesidad de funciones específicas por cada catálogo.
+*   ✅ **Frontend Dinámico y Resiliente:**
+    *   **Formulario de Carga:** El componente `EvidenceUploader` ahora consume la lista de tipos de evidencia directamente desde la base de datos, asegurando que el formulario siempre esté sincronizado.
+    *   **Reporte PDF Inteligente:** Se implementó una función (`getEvidenceColor`) que asigna colores dinámicamente. Mantiene colores predefinidos para los tipos conocidos y genera colores únicos y consistentes para cualquier nuevo tipo (como `CONTRATO`), evitando que el reporte se rompa o muestre colores genéricos.
+*   ✅ **Prueba de Fuego Superada:** Se validó la arquitectura agregando el nuevo tipo `CONTRATO` a la base de datos. El sistema lo integró automáticamente en la UI y el reporte PDF sin necesidad de modificar la lógica de los componentes, solo requiriendo la actualización de los archivos de traducción.
+*   **Resultado:** El sistema es ahora significativamente más robusto, escalable y fácil de mantener. La dependencia del frontend en listas estáticas ha sido eliminada.
+
+---
+
+## II. Logros Recientes (Tareas Completadas)
+
+### 9. Refactorización de Tipos de Evidencia (Enums) para Escalabilidad
+*   ✅ **Diagnóstico del Problema:** Se identificó que los tipos de evidencia (`COTIZACION`, `FACTURA`, etc.) estaban definidos de forma estática (hardcodeados) en múltiples archivos del frontend (`EvidenceUploader`, `FinancialReport`, `locales/*.json`). Esto hacía que agregar un nuevo tipo de evidencia fuera un proceso manual, propenso a errores y difícil de mantener.
+*   ✅ **Solución de Backend Genérica:** Se creó una única función RPC en la base de datos (`get_enum_values`) capaz de leer y devolver los valores de cualquier tipo `ENUM` de PostgreSQL, eliminando la necesidad de funciones específicas por cada catálogo.
+*   ✅ **Frontend Dinámico y Resiliente:**
+    *   **Formulario de Carga:** El componente `EvidenceUploader` ahora consume la lista de tipos de evidencia directamente desde la base de datos, asegurando que el formulario siempre esté sincronizado.
+    *   **Reporte PDF Inteligente:** Se implementó una función (`getEvidenceColor`) que asigna colores dinámicamente. Mantiene colores predefinidos para los tipos conocidos y genera colores únicos y consistentes para cualquier nuevo tipo (como `CONTRATO`), evitando que el reporte se rompa o muestre colores genéricos.
+*   ✅ **Prueba de Fuego Superada:** Se validó la arquitectura agregando el nuevo tipo `CONTRATO` a la base de datos. El sistema lo integró automáticamente en la UI y el reporte PDF sin necesidad de modificar la lógica de los componentes, solo requiriendo la actualización de los archivos de traducción.
+*   **Resultado:** El sistema es ahora significativamente más robusto, escalable y fácil de mantener. La dependencia del frontend en listas estáticas ha sido eliminada.
+
+---
+
 # I. REGLAS DE COLABORACIÓN PROFESIONAL (Inamovible)
 
 Estas son las reglas de nuestra relación profesional. Este documento es la única fuente de verdad sobre la arquitectura y el flujo de trabajo, y debe ser respetado en todo momento.
@@ -30,22 +56,6 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
     5.  **Frontend - Integrar Modal de Perfil:**
         *   **Tarea:** Integrar el `UserModal` en el layout principal (`/src/app/menu/layout.tsx`).
         *   **Implementación:** Controlar su visibilidad con un estado y crear una función `handleSaveProfile` que llame a `manage_user_data` para guardar los cambios del perfil del usuario actual.
-
----
-
-### 7. Refactorización y Corrección de Lógica de Pago en Calendario
-*   ✅ **Diagnóstico y Corrección de RPC:** Se diagnosticó y corrigió la función RPC `gestionar_pago_contribucion_casa`, alineando los nombres de los parámetros (`p_fecha_cargo`) y las columnas de la tabla (`estado`, `monto_pagado`) con la implementación del frontend. Esto solucionó el bug crítico que impedía registrar pagos.
-*   ✅ **Implementación de Anulación de Pagos:**
-    *   **Backend:** Se creó una nueva función RPC `anular_pago_contribucion_casa` para revertir un pago de forma segura, cambiando el estado a 'PENDIENTE' y limpiando los datos de pago.
-    *   **Frontend:** Se añadió un botón "Anular Pago" en las contribuciones pagadas.
-    *   **Mejora de UX:** Se reemplazó el `window.confirm` nativo por un modal de confirmación personalizado (`ConfirmationModal.tsx`) para una experiencia de usuario consistente y centrada.
-*   ✅ **Consistencia Visual en Modal de Pago:** Se mejoró la UI del `PaymentModal.tsx` para que su diseño (borde izquierdo amarillo, sombra sutil) sea coherente con el resto de la aplicación.
-
----
-
-### X. Mejoras en Gestión de Proyectos y UI
-*   ✅ **Seguridad a Nivel de Rol (Puerta Trasera):** Se implementó una capa de seguridad en la lista de proyectos (`ProjectList.tsx`). El botón para editar proyectos archivados (terminados/cancelados) ahora solo es visible para usuarios con perfil de Administrador ('ADM'), leyendo el perfil desde `localStorage` para una lógica autocontenida.
-*   ✅ **Consistencia Visual en Modales:** Se mejoró la UI del modal de edición/creación de proyectos (`ProjectModal.tsx`) para que su diseño (borde izquierdo azul, sombra) sea consistente con las tarjetas de la lista de proyectos, unificando la experiencia de usuario.
 
 ---
 
@@ -99,25 +109,23 @@ Esta sección documenta las mejores prácticas y lecciones aprendidas durante el
 
 ---
 
-## V. Tareas Futuras (Post-implementación actual)
-### 4. Implementar Sistema de Votación
-*   **Prioridad:** Alta.
-*   **Objetivo:** Desarrollar la funcionalidad para que los usuarios puedan votar sobre propuestas de proyectos.
-*   **Detalle Clave de Implementación:** Esto implicará la creación de tablas para registrar votos, funciones RPC para gestionar el proceso de votación y una interfaz de usuario para que los usuarios puedan emitir sus votos y ver los resultados.
+## II. Logros Recientes (Tareas Completadas)
 
-### 5. Generar Reporte Final (Rubros -> Evidencias -> Votaciones)
-*   **Prioridad:** Alta.
-*   **Objetivo:** Crear un reporte consolidado que muestre la información detallada de un proyecto, incluyendo sus rubros, las evidencias adjuntas y los resultados de las votaciones.
-*   **Detalle Clave de Implementación:** Este reporte probablemente será en formato PDF y requerirá la integración de datos de múltiples fuentes (tablas de proyectos, rubros, evidencias y votaciones) a través de funciones RPC.
-
-### 6. Corregir Fondo de Modal de Confirmación (Deuda Técnica)
-*   **Prioridad:** Baja.
-*   **Problema:** El modal de confirmación (`ConfirmationModal`) muestra un fondo negro que cubre toda la pantalla (`bg-black bg-opacity-50`), lo cual resulta visualmente intrusivo en la versión de escritorio.
-*   **Solución Propuesta:** Reducir la opacidad del fondo (ej. `bg-opacity-30`) y añadir un efecto de desenfoque (`backdrop-blur-sm`) para una apariencia más moderna y menos agresiva.
+### 7. Refactorización y Corrección de Lógica de Pago en Calendario
+*   ✅ **Diagnóstico y Corrección de RPC:** Se diagnosticó y corrigió la función RPC `gestionar_pago_contribucion_casa`, alineando los nombres de los parámetros y columnas con el frontend. Esto solucionó el bug crítico que impedía registrar pagos.
+*   ✅ **Implementación de Anulación de Pagos:**
+    *   **Backend:** Se creó una nueva función RPC `anular_pago_contribucion_casa` para revertir un pago de forma segura.
+    *   **Frontend:** Se añadió un botón "Anular Pago" en las contribuciones pagadas.
+    *   **Mejora de UX:** Se reemplazó el `window.confirm` nativo por un modal de confirmación personalizado (`ConfirmationModal.tsx`) para una experiencia de usuario consistente y centrada.
+*   ✅ **Consistencia Visual en Modal de Pago:** Se mejoró la UI del `PaymentModal.tsx` para que su diseño (borde izquierdo amarillo, sombra sutil) sea coherente con el resto de la aplicación.
 
 ---
 
-## II. Logros Recientes (Tareas Completadas)
+### X. Mejoras en Gestión de Proyectos y UI
+*   ✅ **Seguridad a Nivel de Rol (Puerta Trasera):** Se implementó una capa de seguridad en `ProjectList.tsx`. El botón para editar proyectos archivados ahora solo es visible para usuarios con perfil 'ADM'.
+*   ✅ **Consistencia Visual en Modales:** Se mejoró la UI del `ProjectModal.tsx` para que su diseño sea consistente con las tarjetas de la lista de proyectos.
+
+---
 
 ### 4. Mejoras en Gestión de Proyectos y Reporte Financiero
 *   ✅ **Edición Completa de Proyectos:** Se implementó la funcionalidad para editar proyectos existentes. Esto incluye un nuevo botón de edición, la adaptación del modal para pre-rellenar datos y la capacidad de cambiar el estado de un proyecto (ej. de "Abierto" a "En Progreso").

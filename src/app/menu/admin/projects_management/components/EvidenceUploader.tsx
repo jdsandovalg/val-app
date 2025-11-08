@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'react-hot-toast';
@@ -18,17 +18,27 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
   const [evidenceDate, setEvidenceDate] = useState(new Date().toISOString().split('T')[0]);
   const [evidenceType, setEvidenceType] = useState('COTIZACION'); // Valor por defecto
   const [file, setFile] = useState<File | null>(null);
+  const [evidenceTypes, setEvidenceTypes] = useState<string[]>([]);
 
-  const evidenceTypes = [
-    'COTIZACION',
-    'FACTURA',
-    'RECIBO',
-    'TRANSFERENCIA',
-    'RECOMENDACION',
-    'FOTOGRAFIA_01',
-    'FOTOGRAFIA_02',
-    'FOTOGRAFIA_03'
-  ];
+  useEffect(() => {
+    const fetchEvidenceTypes = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_enum_values', { p_enum_type_name: 'tipo_evidencia' });
+        if (error) throw error;
+        
+        const types = data.map((item: { enum_value: string }) => item.enum_value);
+        setEvidenceTypes(types);
+        if (types.length > 0) {
+          setEvidenceType(types[0]); // Establecer el primer tipo como valor por defecto
+        }
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : (typeof error === 'object' && error !== null && 'message' in error ? String((error as { message: string }).message) : String(error));
+        console.error("Error fetching evidence types:", errorMessage);
+        toast.error(t('projects.alerts.fetchError', { message: errorMessage }));
+      }
+    };
+    fetchEvidenceTypes();
+  }, [supabase, t]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -78,7 +88,7 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
       // Limpiar formulario y notificar al padre para que refresque la lista
       setDescription('');
       setEvidenceDate(new Date().toISOString().split('T')[0]);
-      setEvidenceType('COTIZACION');
+      if (evidenceTypes.length > 0) setEvidenceType(evidenceTypes[0]);
       setFile(null);
       if (e.target instanceof HTMLFormElement) e.target.reset();
       onUploadSuccess();
