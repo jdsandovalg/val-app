@@ -13,6 +13,18 @@
 
 ## II. Logros Recientes (Tareas Completadas)
 
+### XI. Corrección y Robustecimiento de la Lógica de Creación de Proyectos
+*   ✅ **Diagnóstico del Bug Crítico:** Se detectó que la creación de proyectos por la vía "heredada" (con costos) no estaba generando las cuotas de aporte correspondientes para cada casa, un error introducido en una refactorización previa.
+*   ✅ **Refactorización y Reutilización de Lógica:**
+    *   Se corrigió la función `gestionar_proyectos` para que, al crear un proyecto con costos, invoque correctamente a la función ya existente `crear_contribuciones_para_proyecto`.
+    *   Se eliminó la lógica duplicada y se mejoró la robustez del sistema al modificar `crear_contribuciones_para_proyecto` para que reciba el `valor_estimado` como parámetro directo. Esto hace el flujo de datos explícito, elimina consultas redundantes a la base de datos y previene posibles fallos de transaccionalidad (OLTP).
+*   ✅ **Creación de Activo de Prueba Reutilizable:** Se encapsuló el script de prueba en un procedimiento almacenado (`test_creacion_proyecto_y_aportes`), convirtiéndolo en un activo de DDL permanente. Esto permite validar la funcionalidad completa (creación, validación y limpieza) de forma rápida y segura en el futuro.
+*   **Resultado:** El flujo de creación de proyectos con costos ahora es fiable, robusto y genera automáticamente los aportes por casa como se esperaba. La base de datos cuenta con un procedimiento de prueba para garantizar la estabilidad a largo plazo.
+
+---
+
+## II. Logros Recientes (Tareas Completadas)
+
 ### X. Integración de Fechas de Proyecto y Mejoras de UI en Modal
 *   ✅ **Ampliación de la Base de Datos:** Se añadieron los campos `fecha_inicial_proyecto` y `fecha_final_proyecto` a la tabla `proyectos` y se actualizaron las funciones RPC (`gestionar_proyectos`, `get_project_info_with_status`) para soportar su inserción y consulta.
 *   ✅ **Mejora Radical de UI en Modal (`ProjectModal.tsx`):**
