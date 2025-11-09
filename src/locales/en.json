@@ -389,7 +389,9 @@
       "estimatedValue": "Estimated Value ($)",
       "suggestedFrequency": "Suggested Frequency",
       "keyNotes": "Key Notes",
-      "amount": "Amount"
+      "amount": "Amount",
+      "projectStartDate": "Start Date",
+      "projectEndDate": "End Date"
     },
     "alerts": {
       "fetchError": "Error loading projects: {message}",

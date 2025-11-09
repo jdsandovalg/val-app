@@ -19,6 +19,8 @@ type Proyecto = {
   valor_estimado: number | null;
   activo: boolean;
   estado: ProjectStatus;
+  fecha_inicial_proyecto?: string | null;
+  fecha_final_proyecto?: string | null;
 };
 
 type ProjectListProps = {

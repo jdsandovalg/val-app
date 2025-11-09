@@ -26,6 +26,8 @@ type ProjectInfo = {
   tipo_proyecto: string;
   grupo_mantenimiento: string;
   estado: ProjectStatus;
+  fecha_inicial_proyecto?: string | null;
+  fecha_final_proyecto?: string | null;
 };
 
 type DetailRow = {
@@ -391,6 +393,12 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
           <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('catalog.toggle_types')}:</Text> {projectInfo.tipo_proyecto}</Text>
           <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('projects.fields.description')}:</Text> {projectInfo.descripcion_tarea}</Text>
           {projectInfo.detalle_tarea && <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('projects.fields.details')}:</Text> {projectInfo.detalle_tarea}</Text>}
+          {projectInfo.fecha_inicial_proyecto && (
+            <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('projects.fields.projectStartDate')}:</Text> {formatDate(projectInfo.fecha_inicial_proyecto, locale)}</Text>
+          )}
+          {projectInfo.fecha_final_proyecto && (
+            <Text style={styles.projectInfoText}><Text style={{ fontWeight: 'bold' }}>{t('projects.fields.projectEndDate')}:</Text> {formatDate(projectInfo.fecha_final_proyecto, locale)}</Text>
+          )}
         </View>
         <View style={[styles.statusCard, { backgroundColor: '#FEFCE8', borderLeft: '3px solid #D97706' }]}>
           <Text style={[styles.summaryTitle, { color: '#92400E', marginBottom: 2 }]}>{t('projectStatus.title')}</Text>

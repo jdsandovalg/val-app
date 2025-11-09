@@ -388,7 +388,9 @@
       "estimatedValue": "Valeur Estimée (€)",
       "suggestedFrequency": "Fréquence Suggérée",
       "keyNotes": "Notes Clés",
-      "amount": "Montant"
+      "amount": "Montant",
+      "projectStartDate": "Date Début",
+      "projectEndDate": "Date Fin"
     },
     "alerts": {
       "fetchError": "Erreur lors du chargement des projets : {message}",

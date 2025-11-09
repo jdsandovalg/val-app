@@ -28,6 +28,8 @@ type Proyecto = {
   valor_estimado: number | null;
   activo: boolean;
   estado: ProjectStatus;
+  fecha_inicial_proyecto?: string | null;
+  fecha_final_proyecto?: string | null;
 };
 
 type RubroCatalogo = {
@@ -131,7 +133,9 @@ export default function ProjectClassificationManagementPage() {
         p_frecuencia_sugerida: projectData.frecuencia_sugerida,
         p_notas_clave: projectData.notas_clave,
         p_valor_estimado: action === 'INSERT' || action === 'UPDATE' ? projectData.valor_estimado : null,
-        p_estado: projectData.estado // Enviamos el nuevo estado
+        p_estado: projectData.estado, // Enviamos el nuevo estado
+        p_fecha_inicial_proyecto: projectData.fecha_inicial_proyecto || null,
+        p_fecha_final_proyecto: projectData.fecha_final_proyecto || null
       });
 
       if (error) throw error;

@@ -13,6 +13,19 @@
 
 ## II. Logros Recientes (Tareas Completadas)
 
+### X. Integración de Fechas de Proyecto y Mejoras de UI en Modal
+*   ✅ **Ampliación de la Base de Datos:** Se añadieron los campos `fecha_inicial_proyecto` y `fecha_final_proyecto` a la tabla `proyectos` y se actualizaron las funciones RPC (`gestionar_proyectos`, `get_project_info_with_status`) para soportar su inserción y consulta.
+*   ✅ **Mejora Radical de UI en Modal (`ProjectModal.tsx`):**
+    *   Se añadieron controles de fecha (`<input type="date">`) optimizados para una experiencia "mobile-first".
+    *   Se refactorizó el modal para usar un sistema de pestañas ("Información General" y "Detalles y Notas"), solucionando el problema de sobrecarga de campos en pantallas pequeñas y mejorando drásticamente la usabilidad.
+*   ✅ **Internacionalización Completa:** Se actualizaron los archivos de traducción (`es.json`, `en.json`, `fr.json`) con etiquetas más cortas y claras para los nuevos campos, asegurando una UI consistente en todos los idiomas.
+*   ✅ **Integración en Reporte Financiero:** Las nuevas fechas de inicio y fin ahora se muestran de manera prominente en el reporte PDF (`FinancialReport.tsx`), proporcionando un contexto temporal completo del proyecto.
+*   **Resultado:** La creación y edición de proyectos es ahora más completa y la experiencia de usuario en el modal ha sido significativamente mejorada, especialmente en dispositivos móviles.
+
+---
+
+## II. Logros Recientes (Tareas Completadas)
+
 ### 9. Refactorización de Tipos de Evidencia (Enums) para Escalabilidad
 *   ✅ **Diagnóstico del Problema:** Se identificó que los tipos de evidencia (`COTIZACION`, `FACTURA`, etc.) estaban definidos de forma estática (hardcodeados) en múltiples archivos del frontend (`EvidenceUploader`, `FinancialReport`, `locales/*.json`). Esto hacía que agregar un nuevo tipo de evidencia fuera un proceso manual, propenso a errores y difícil de mantener.
 *   ✅ **Solución de Backend Genérica:** Se creó una única función RPC en la base de datos (`get_enum_values`) capaz de leer y devolver los valores de cualquier tipo `ENUM` de PostgreSQL, eliminando la necesidad de funciones específicas por cada catálogo.

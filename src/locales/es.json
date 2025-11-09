@@ -389,7 +389,9 @@
       "estimatedValue": "Valor Estimado (Q)",
       "suggestedFrequency": "Frecuencia Sugerida",
       "keyNotes": "Notas Clave",
-      "amount": "Monto"
+      "amount": "Monto",
+      "projectStartDate": "Fecha Inicial",
+      "projectEndDate": "Fecha Final"
     },
     "alerts": {
       "fetchError": "Error al cargar proyectos: {message}",
