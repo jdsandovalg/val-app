@@ -42,10 +42,10 @@ const initialFormData = {
 
 export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto, projectToEdit }: ProjectModalProps) {
   const { t } = useI18n();
-  const [formData, setFormData] = useState(initialFormData);
-  const [activeTab, setActiveTab] = useState<'proposal' | 'legacy'>('proposal');
-  // Nuevo estado para las pestañas internas (General / Detalles)
-  const [mainInfoTab, setMainInfoTab] = useState<'general' | 'details'>('general');
+  const [formData, setFormData] = useState<Partial<Proyecto>>(initialFormData);
+  const [view, setView] = useState<'selection' | 'form'>('selection');
+  const [currentProjectType, setCurrentProjectType] = useState<'proposal' | 'legacy' | null>(null);
+  const [formTab, setFormTab] = useState<'general' | 'details'>('general');
 
   const isEditing = !!projectToEdit;
 
@@ -53,37 +53,31 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
     if (isOpen) {
       if (isEditing && projectToEdit) {
         // Modo Edición: Rellenar el formulario con los datos del proyecto
+        const isLegacy = projectToEdit.valor_estimado && projectToEdit.valor_estimado > 0;
         setFormData({
           descripcion_tarea: projectToEdit.descripcion_tarea || '',
           detalle_tarea: projectToEdit.detalle_tarea || '',
           frecuencia_sugerida: projectToEdit.frecuencia_sugerida || '',
           notas_clave: projectToEdit.notas_clave || '',
-          valor_estimado: projectToEdit.valor_estimado || 0,
+          valor_estimado: isLegacy ? projectToEdit.valor_estimado : 0,
           estado: projectToEdit.estado || 'abierto',
           fecha_inicial_proyecto: projectToEdit.fecha_inicial_proyecto ? new Date(projectToEdit.fecha_inicial_proyecto).toISOString().split('T')[0] : '',
           fecha_final_proyecto: projectToEdit.fecha_final_proyecto ? new Date(projectToEdit.fecha_final_proyecto).toISOString().split('T')[0] : '',
         });
-        // En modo edición, la pestaña se ajusta según si hay valor estimado o no
-        setActiveTab(projectToEdit.valor_estimado && projectToEdit.valor_estimado > 0 ? 'legacy' : 'proposal');
+        setCurrentProjectType(isLegacy ? 'legacy' : 'proposal'); // Establecer el tipo de proyecto actual
+        setView('form'); // Saltar la selección en modo edición
       } else {
         // Modo Creación: Resetear el formulario y la pestaña interna
         setFormData(initialFormData);
-        setActiveTab('proposal');
+        setCurrentProjectType(null); // Resetear el tipo para la nueva selección
+        setView('selection'); // Empezar en la selección
       }
       // Siempre empezar en la pestaña "General" al abrir el modal
-      setMainInfoTab('general');
+      setFormTab('general');
     } else {
-      setFormData(initialFormData);
     }
   }, [isOpen, isEditing, projectToEdit]);
   
-  useEffect(() => {
-    // Si cambiamos a la pestaña de propuesta, nos aseguramos de que el valor estimado sea 0
-    if (activeTab === 'proposal') {
-      setFormData(prev => ({ ...prev, valor_estimado: 0 }));
-    }
-  }, [activeTab]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -105,11 +99,21 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
     onSave(payload);
   };
 
+  const handleTypeSelection = (type: 'proposal' | 'legacy') => {
+    const valor_estimado = type === 'legacy' ? formData.valor_estimado || 0 : 0;
+    setFormData(prev => ({ ...prev, valor_estimado }));
+    setCurrentProjectType(type); // Guardar el tipo de proyecto seleccionado
+    setView('form');
+  };
+
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ${
+        currentProjectType === 'proposal' ? 'border-l-4 border-l-blue-500' :
+        currentProjectType === 'legacy' ? 'border-l-4 border-l-yellow-500' : ''
+      }`}
       onClick={onClose}
     >
       <div
@@ -120,112 +124,107 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
           {isEditing ? t('userModal.titleEdit') + ' Proyecto' : t('projects.modals.addProject')} 
         </h3>
 
-        {/* Pestañas / Toggle */}
-        {!isEditing && (
-          <div className="mb-4 border-b border-gray-200">
-            <nav className="-mb-px flex space-x-4" aria-label="Tabs">
-              <button
-                onClick={() => setActiveTab('proposal')}
-                className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'proposal'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {t('projects.modals.tabs.newProject')}
-              </button>
-              <button
-                onClick={() => setActiveTab('legacy')}
-                className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'legacy'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {t('projects.modals.tabs.projectWithCosts')}
-              </button>
-            </nav>
+        {view === 'selection' && !isEditing && (
+          <div className="space-y-3">
+            <button 
+              onClick={() => handleTypeSelection('proposal')}
+              className="w-full text-left p-4 rounded-lg shadow-sm transition-all bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500"
+            >
+              <h4 className="font-semibold text-blue-800">{t('projects.modals.tabs.newProject')}</h4>
+              <p className="text-xs text-blue-700 mt-1">Para proyectos nuevos sin costos iniciales. Ideal para fases de planificación y votación.</p>
+            </button>
+            <button 
+              onClick={() => handleTypeSelection('legacy')}
+              className="w-full text-left p-4 rounded-lg shadow-sm transition-all bg-yellow-50 hover:bg-yellow-100 border-l-4 border-yellow-500"
+            >
+              <h4 className="font-semibold text-yellow-800">{t('projects.modals.tabs.projectWithCosts')}</h4>
+              <p className="text-xs text-yellow-700 mt-1">Para proyectos que ya tienen un monto definido y generan cuotas de inmediato.</p>
+            </button>
           </div>
         )}
 
-        {/* Pestañas Internas */}
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-4" aria-label="Tabs">
-            <button onClick={() => setMainInfoTab('general')} className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${mainInfoTab === 'general' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
-              Información General
-            </button>
-            <button onClick={() => setMainInfoTab('details')} className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${mainInfoTab === 'details' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
-              Detalles y Notas
-            </button>
-          </nav>
-        </div>
+        {view === 'form' && (
+          <>
+            {/* Pestañas Internas */}
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-2" aria-label="Tabs">
+                <button onClick={() => setFormTab('general')} className={`whitespace-nowrap py-2 px-3 rounded-t-md font-medium text-xs ${formTab === 'general' ? 'bg-gray-100 text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>
+                  Información General
+                </button>
+                <button onClick={() => setFormTab('details')} className={`whitespace-nowrap py-2 px-3 rounded-t-md font-medium text-xs ${formTab === 'details' ? 'bg-gray-100 text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>
+                  Detalles y Notas
+                </button>
+              </nav>
+            </div>
 
-        <div className="pt-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-          {mainInfoTab === 'general' && (
-            <div className="space-y-4">
-              {isEditing && (
-                <div>
-                  <label htmlFor="estado" className="block text-sm font-medium text-gray-700 mb-1">{t('projectStatus.title')}</label>
-                  <select id="estado" name="estado" value={formData.estado} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50">
-                    <option value="abierto">{t('projectStatus.abierto')}</option>
-                    <option value="en_votacion">{t('projectStatus.en_votacion')}</option>
-                    <option value="aprobado">{t('projectStatus.aprobado')}</option>
-                    <option value="rechazado">{t('projectStatus.rechazado')}</option>
-                    <option value="en_progreso">{t('projectStatus.en_progreso')}</option>
-                    <option value="terminado">{t('projectStatus.terminado')}</option>
-                    <option value="cancelado">{t('projectStatus.cancelado')}</option>
-                  </select>
+            <div className="pt-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              {formTab === 'general' && (
+                <div className="space-y-4">
+                  {isEditing && (
+                    <div className="text-sm">
+                      <label htmlFor="estado" className="block text-sm font-medium text-gray-700 mb-1">{t('projectStatus.title')}</label>
+                      <select id="estado" name="estado" value={formData.estado} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50">
+                        <option value="abierto">{t('projectStatus.abierto')}</option>
+                        <option value="en_votacion">{t('projectStatus.en_votacion')}</option>
+                        <option value="aprobado">{t('projectStatus.aprobado')}</option>
+                        <option value="rechazado">{t('projectStatus.rechazado')}</option>
+                        <option value="en_progreso">{t('projectStatus.en_progreso')}</option>
+                        <option value="terminado">{t('projectStatus.terminado')}</option>
+                        <option value="cancelado">{t('projectStatus.cancelado')}</option>
+                      </select>
+                    </div>
+                  )}
+                  {currentProjectType === 'legacy' &&
+                    <div className="text-sm">
+                      <label htmlFor="valor_estimado" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.estimatedValue')}</label>
+                      <input id="valor_estimado" name="valor_estimado" type="number" value={formData.valor_estimado || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                    </div>
+                  }
+                  <div className="text-sm">
+                    <label htmlFor="frecuencia_sugerida" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.suggestedFrequency')}</label>
+                    <input id="frecuencia_sugerida" name="frecuencia_sugerida" value={formData.frecuencia_sugerida || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="text-sm">
+                      <label htmlFor="fecha_inicial_proyecto" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.projectStartDate')}</label>
+                      <input id="fecha_inicial_proyecto" name="fecha_inicial_proyecto" type="date" value={formData.fecha_inicial_proyecto || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                    </div>
+                    <div>
+                      <label htmlFor="fecha_final_proyecto" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.projectEndDate')}</label>
+                      <input id="fecha_final_proyecto" name="fecha_final_proyecto" type="date" value={formData.fecha_final_proyecto || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                    </div>
+                  </div>
                 </div>
               )}
-              {activeTab === 'legacy' && (
-                <div>
-                  <label htmlFor="valor_estimado" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.estimatedValue')}</label>
-                  <input id="valor_estimado" name="valor_estimado" type="number" value={formData.valor_estimado || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+
+              {formTab === 'details' && (
+                <div className="space-y-4">
+                  <div className="text-sm">
+                    <label htmlFor="descripcion_tarea" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.description')}</label>
+                    <textarea id="descripcion_tarea" name="descripcion_tarea" value={formData.descripcion_tarea} onChange={handleChange} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                  </div>
+                  <div className="text-sm">
+                    <label htmlFor="detalle_tarea" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.details')}</label>
+                    <textarea id="detalle_tarea" name="detalle_tarea" value={formData.detalle_tarea || ''} onChange={handleChange} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                  </div>
+                  <div className="text-sm">
+                    <label htmlFor="notas_clave" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.keyNotes')}</label>
+                    <textarea id="notas_clave" name="notas_clave" value={formData.notas_clave || ''} onChange={handleChange} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                  </div>
                 </div>
               )}
-              <div>
-                <label htmlFor="frecuencia_sugerida" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.suggestedFrequency')}</label>
-                <input id="frecuencia_sugerida" name="frecuencia_sugerida" value={formData.frecuencia_sugerida || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="fecha_inicial_proyecto" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.projectStartDate')}</label>
-                  <input id="fecha_inicial_proyecto" name="fecha_inicial_proyecto" type="date" value={formData.fecha_inicial_proyecto || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-                </div>
-                <div>
-                  <label htmlFor="fecha_final_proyecto" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.projectEndDate')}</label>
-                  <input id="fecha_final_proyecto" name="fecha_final_proyecto" type="date" value={formData.fecha_final_proyecto || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-                </div>
-              </div>
             </div>
-          )}
 
-          {mainInfoTab === 'details' && (
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="descripcion_tarea" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.description')}</label>
-                <textarea id="descripcion_tarea" name="descripcion_tarea" value={formData.descripcion_tarea} onChange={handleChange} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <div>
-                <label htmlFor="detalle_tarea" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.details')}</label>
-                <textarea id="detalle_tarea" name="detalle_tarea" value={formData.detalle_tarea || ''} onChange={handleChange} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <div>
-                <label htmlFor="notas_clave" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.keyNotes')}</label>
-                <textarea id="notas_clave" name="notas_clave" value={formData.notas_clave || ''} onChange={handleChange} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
+            <div className="mt-6 flex justify-end space-x-2">
+              <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                {t('userModal.cancelButton')}
+              </button>
+              <button type="button" onClick={handleSubmit} className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md hover:bg-gray-900">
+                {t('userModal.saveButton')}
+              </button>
             </div>
-          )}
-        </div>
-
-        <div className="mt-6 flex justify-end space-x-2">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
-            {t('userModal.cancelButton')}
-          </button>
-          <button type="button" onClick={handleSubmit} className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md hover:bg-gray-900">
-            {t('userModal.saveButton')}
-          </button>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
