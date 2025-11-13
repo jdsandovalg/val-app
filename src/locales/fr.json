@@ -396,7 +396,10 @@
       "fetchError": "Erreur lors du chargement des projets : {message}",
       "saveSuccess": "Projet avec contributions créé avec succès !",
       "proposalSaveSuccess": "Proposition de projet créée avec succès !",
-      "saveError": "Erreur lors de la création du projet : {message}"
+      "saveError": "Erreur lors de la création du projet : {message}",
+      "sendingToVote": "Envoi au vote...",
+      "sendToVoteSuccess": "Projet envoyé au vote avec succès !",
+      "sendToVoteError": "Erreur lors de l'envoi au vote : {message}"
     },
     "activeProjectsTitle": "Projets Actifs",
     "emptyState": {
@@ -525,6 +528,10 @@
         "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce poste de coût ?",
         "deleteSuccess": "Poste de coût supprimé avec succès."
       }
+    },
+    "tooltips": {
+      "sendToVote": "Envoyer au Vote",
+      "addQuotesToVote": "Ajouter des devis pour pouvoir voter"
     },
     "emptyState": {
       "noProjectSelected": "Sélectionnez un projet pour gérer ses preuves."

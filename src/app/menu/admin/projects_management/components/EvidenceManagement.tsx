@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import CatalogManagement from '@/app/menu/admin/projects_catalogs/CatalogManagement'; 
 import EvidenceUploader from './EvidenceUploader';
-import { formatDate } from '@/utils/format'; // Assuming you have a formatDate utility
+import { formatDate, formatCurrency } from '@/utils/format'; // Assuming you have a formatDate utility
 
 // Define the type for an Evidence item
 type Evidencia = {
@@ -17,6 +17,7 @@ type Evidencia = {
   tipo_mime: string | null;
   tipo_evidencia: string; // NUEVO CAMPO
   tamano_bytes: number | null;
+  valor_de_referencia: number | null; // NUEVO CAMPO
   fecha_subida: string; // TIMESTAMP WITH TIME ZONE from DB (e.g., "ISO string")
 };
 
@@ -39,7 +40,7 @@ type EvidenceManagementProps = {
 };
 
 export default function EvidenceManagement({ projectId }: EvidenceManagementProps) {
-  const { t, locale } = useI18n();
+  const { t, locale, currency } = useI18n();
   const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   const fetchRpcConfig = useMemo(() => ({
@@ -93,6 +94,12 @@ export default function EvidenceManagement({ projectId }: EvidenceManagementProp
             <h4 className="text-lg font-semibold">{item.descripcion_evidencia}</h4>
             <p className="text-sm text-muted-foreground">{item.nombre_archivo}</p>
             <p className="text-xs font-medium text-blue-600 uppercase mt-1">{t(`evidenceTypes.${item.tipo_evidencia}`)}</p>
+            {/* Mostrar el valor de referencia si existe */}
+            {item.valor_de_referencia != null && (
+              <p className="text-lg font-bold text-green-600 mt-2">
+                {formatCurrency(item.valor_de_referencia, locale, currency)}
+              </p>
+            )}
             <p className="text-xs text-gray-500 mt-1">{t('projects.evidence.fields.date')}: {formatDate(item.fecha_evidencia, locale)}</p>
             <a
               href={item.url_publica}

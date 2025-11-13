@@ -397,7 +397,10 @@
       "fetchError": "Error loading projects: {message}",
       "saveSuccess": "Project with contributions created successfully!",
       "proposalSaveSuccess": "Project proposal created successfully!",
-      "saveError": "Error creating project: {message}"
+      "saveError": "Error creating project: {message}",
+      "sendingToVote": "Sending to vote...",
+      "sendToVoteSuccess": "Project sent to vote successfully!",
+      "sendToVoteError": "Error sending to vote: {message}"
     },
     "activeProjectsTitle": "Active Projects",
     "emptyState": {
@@ -526,6 +529,10 @@
         "deleteConfirm": "Are you sure you want to delete this line item?",
         "deleteSuccess": "Line item deleted successfully."
       }
+    },
+    "tooltips": {
+      "sendToVote": "Send to Vote",
+      "addQuotesToVote": "Add quotes to be able to vote"
     },
     "emptyState": {
       "noProjectSelected": "Select a project to manage its evidence."

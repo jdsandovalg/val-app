@@ -397,7 +397,10 @@
       "fetchError": "Error al cargar proyectos: {message}",
       "saveSuccess": "¡Proyecto con cuotas creado exitosamente!",
       "proposalSaveSuccess": "¡Propuesta de proyecto creada exitosamente!",
-      "saveError": "Error al crear el proyecto: {message}"
+      "saveError": "Error al crear el proyecto: {message}",
+      "sendingToVote": "Enviando a votación...",
+      "sendToVoteSuccess": "¡Proyecto enviado a votación exitosamente!",
+      "sendToVoteError": "Error al enviar a votación: {message}"
     },
     "activeProjectsTitle": "Proyectos Activos",
     "emptyState": {
@@ -526,6 +529,10 @@
         "deleteConfirm": "¿Estás seguro de que quieres eliminar este rubro?",
         "deleteSuccess": "Rubro eliminado exitosamente."
       }
+    },
+    "tooltips": {
+      "sendToVote": "Enviar a Votación",
+      "addQuotesToVote": "Añadir cotizaciones para poder votar"
     },
     "emptyState": {
       "noProjectSelected": "Seleccione un proyecto para gestionar sus evidencias."

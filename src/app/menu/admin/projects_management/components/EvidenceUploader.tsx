@@ -18,6 +18,7 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
   const [evidenceDate, setEvidenceDate] = useState(new Date().toISOString().split('T')[0]);
   const [evidenceType, setEvidenceType] = useState('COTIZACION'); // Valor por defecto
   const [file, setFile] = useState<File | null>(null);
+  const [referenceValue, setReferenceValue] = useState(''); // Nuevo estado para el valor de referencia
   const [evidenceTypes, setEvidenceTypes] = useState<string[]>([]);
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
         p_nombre_archivo: file.name,
         p_tipo_evidencia: evidenceType, // Añadido el nuevo campo
         p_url_publica: urlData.publicUrl,
+        p_valor_de_referencia: referenceValue ? parseFloat(referenceValue) : null, // Añadir el nuevo campo
         p_tipo_mime: file.type,
         p_tamano_bytes: file.size,
       });
@@ -89,6 +91,7 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
       setDescription('');
       setEvidenceDate(new Date().toISOString().split('T')[0]);
       if (evidenceTypes.length > 0) setEvidenceType(evidenceTypes[0]);
+      setReferenceValue(''); // Limpiar el campo de referencia
       setFile(null);
       if (e.target instanceof HTMLFormElement) e.target.reset();
       onUploadSuccess();
@@ -120,6 +123,19 @@ export default function EvidenceUploader({ projectId, onUploadSuccess }: Evidenc
           <div>
             <label htmlFor="evidenceDate" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.evidence.fields.date')}</label>
             <input id="evidenceDate" type="date" value={evidenceDate} onChange={(e) => setEvidenceDate(e.target.value)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white" />
+          </div>
+          <div>
+            <label htmlFor="referenceValue" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.estimatedValue')}</label>
+            <input
+              id="referenceValue"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={referenceValue}
+              onChange={(e) => setReferenceValue(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+              // El campo es opcional, no se marca como 'required'
+            />
           </div>
           <div>
             <label htmlFor="file-upload" className="block text-sm font-medium text-gray-700 mb-1">{t('paymentModal.proof')}</label>

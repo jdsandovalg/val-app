@@ -38,6 +38,20 @@
 
 ## II. Logros Recientes (Tareas Completadas)
 
+### 12. Optimización del Flujo "Enviar a Votación"
+*   ✅ **Diagnóstico del Problema de UX:** Se identificó que el proceso para cambiar un proyecto de estado "Abierto" a "En Votación" era ineficiente, ya que requería que el administrador entrara al modal de edición para realizar esta acción.
+*   ✅ **Inteligencia en el Backend:** Se refactorizó la función `gestionar_proyectos` para que devuelva un campo dinámico `es_propuesta`. Este campo booleano indica si un proyecto tiene al menos una evidencia del tipo `COTIZACION_PARA_VOTACION`, sirviendo como una fuente de verdad para la lógica del frontend.
+*   ✅ **Mejora de UI en la Lista de Proyectos:**
+    *   Se añadió un nuevo botón "Enviar a Votación" directamente en la tarjeta de cada proyecto en `ProjectList.tsx`, visible solo para administradores y en proyectos con estado "Abierto".
+    *   El botón se habilita o deshabilita dinámicamente basándose en el campo `es_propuesta`, previniendo que se envíen a votación proyectos que no tienen cotizaciones.
+    *   Se implementaron tooltips informativos para guiar al administrador sobre por qué el botón podría estar deshabilitado.
+*   ✅ **Depuración y Robustecimiento de la Base de Datos:** Se diagnosticó y corrigió un error crítico de ambigüedad (`ERROR: 42702`) en la acción `UPDATE` de la función `gestionar_proyectos`, aplicando la norma de calificar explícitamente todas las columnas con un alias de tabla.
+*   **Resultado:** El flujo para iniciar una votación es ahora significativamente más rápido, intuitivo y seguro. Se ha mejorado la experiencia del administrador al reducir los pasos necesarios y proporcionar retroalimentación visual directa en la lista de proyectos.
+
+---
+
+## II. Logros Recientes (Tareas Completadas)
+
 ### 9. Refactorización de Tipos de Evidencia (Enums) para Escalabilidad
 *   ✅ **Diagnóstico del Problema:** Se identificó que los tipos de evidencia (`COTIZACION`, `FACTURA`, etc.) estaban definidos de forma estática (hardcodeados) en múltiples archivos del frontend (`EvidenceUploader`, `FinancialReport`, `locales/*.json`). Esto hacía que agregar un nuevo tipo de evidencia fuera un proceso manual, propenso a errores y difícil de mantener.
 *   ✅ **Solución de Backend Genérica:** Se creó una única función RPC en la base de datos (`get_enum_values`) capaz de leer y devolver los valores de cualquier tipo `ENUM` de PostgreSQL, eliminando la necesidad de funciones específicas por cada catálogo.
@@ -98,6 +112,13 @@ Esta sección documenta las mejores prácticas y lecciones aprendidas durante el
 *   **Norma de Trabajo:**
     *   **Plan de Trabajo Detallado:** Antes de implementar cualquier funcionalidad compleja, debo proponer un plan de trabajo detallado.
     *   **Aprobación Explícita:** El desarrollador debe revisar y aprobar explícitamente el plan antes de que se escriba cualquier línea de código. Esto asegura que ambos entendemos el objetivo y la estrategia.
+
+---
+
+### 3. Desambiguación Explícita en Funciones PL/pgSQL
+*   **Lección Aprendida:** Un error recurrente y difícil de depurar fue el `ERROR: 42702: column reference "..." is ambiguous`. Este error ocurre cuando, dentro de una función de PostgreSQL, los nombres de los parámetros (ej. `p_id_proyecto`) son similares a los nombres de las columnas de la tabla (`id_proyecto`). La base de datos no puede distinguir entre ellos, especialmente en sentencias `UPDATE`. Intentar corregir solo la cláusula `WHERE` o `RETURNING` no fue suficiente.
+*   **Norma de Trabajo (Regla de Oro para Funciones):**
+    > **Al escribir sentencias DML (especialmente `UPDATE`) dentro de una función PL/pgSQL, si existe la más mínima posibilidad de ambigüedad entre los nombres de los parámetros y las columnas, se debe ser explícito. La solución robusta es: 1. Asignar un alias a la tabla (ej. `UPDATE mi_tabla t`). 2. Prefijar *todas* las referencias a las columnas de esa tabla con el alias (ej. `SET t.columna = ...`, `WHERE t.otra_columna = ...`).**
 
 ---
 

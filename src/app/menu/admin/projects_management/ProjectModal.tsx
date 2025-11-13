@@ -13,6 +13,7 @@ type Proyecto = {
   detalle_tarea?: string | null;
   frecuencia_sugerida?: string | null;
   notas_clave?: string | null;
+  es_propuesta: boolean; // Aseguramos que este campo esté presente
   valor_estimado?: number | null;
   // Añadimos los campos que faltaban para que coincida con el tipo en page.tsx
   activo: boolean;
@@ -35,6 +36,7 @@ const initialFormData = {
   frecuencia_sugerida: '',
   notas_clave: '',
   valor_estimado: 0,
+  es_propuesta: true, // Por defecto, un nuevo proyecto es una propuesta
   estado: 'abierto' as ProjectStatus,
   fecha_inicial_proyecto: '',
   fecha_final_proyecto: '',
@@ -43,8 +45,7 @@ const initialFormData = {
 export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto, projectToEdit }: ProjectModalProps) {
   const { t } = useI18n();
   const [formData, setFormData] = useState<Partial<Proyecto>>(initialFormData);
-  const [view, setView] = useState<'selection' | 'form'>('selection');
-  const [currentProjectType, setCurrentProjectType] = useState<'proposal' | 'legacy' | null>(null);
+  const [view, setView] = useState<'selection' | 'form'>(projectToEdit ? 'form' : 'selection');
   const [formTab, setFormTab] = useState<'general' | 'details'>('general');
 
   const isEditing = !!projectToEdit;
@@ -53,23 +54,21 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
     if (isOpen) {
       if (isEditing && projectToEdit) {
         // Modo Edición: Rellenar el formulario con los datos del proyecto
-        const isLegacy = projectToEdit.valor_estimado && projectToEdit.valor_estimado > 0;
         setFormData({
           descripcion_tarea: projectToEdit.descripcion_tarea || '',
           detalle_tarea: projectToEdit.detalle_tarea || '',
           frecuencia_sugerida: projectToEdit.frecuencia_sugerida || '',
           notas_clave: projectToEdit.notas_clave || '',
-          valor_estimado: isLegacy ? projectToEdit.valor_estimado : 0,
+          valor_estimado: projectToEdit.valor_estimado || 0,
           estado: projectToEdit.estado || 'abierto',
           fecha_inicial_proyecto: projectToEdit.fecha_inicial_proyecto ? new Date(projectToEdit.fecha_inicial_proyecto).toISOString().split('T')[0] : '',
           fecha_final_proyecto: projectToEdit.fecha_final_proyecto ? new Date(projectToEdit.fecha_final_proyecto).toISOString().split('T')[0] : '',
+          es_propuesta: projectToEdit.es_propuesta ?? true, // Usar el valor real, con fallback a 'true'
         });
-        setCurrentProjectType(isLegacy ? 'legacy' : 'proposal'); // Establecer el tipo de proyecto actual
         setView('form'); // Saltar la selección en modo edición
       } else {
         // Modo Creación: Resetear el formulario y la pestaña interna
         setFormData(initialFormData);
-        setCurrentProjectType(null); // Resetear el tipo para la nueva selección
         setView('selection'); // Empezar en la selección
       }
       // Siempre empezar en la pestaña "General" al abrir el modal
@@ -100,30 +99,41 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
   };
 
   const handleTypeSelection = (type: 'proposal' | 'legacy') => {
-    const valor_estimado = type === 'legacy' ? formData.valor_estimado || 0 : 0;
-    setFormData(prev => ({ ...prev, valor_estimado }));
-    setCurrentProjectType(type); // Guardar el tipo de proyecto seleccionado
+    setFormData(prev => ({
+      ...prev,
+      es_propuesta: type === 'proposal',
+      // Si es legacy, aseguramos que valor_estimado no sea null, si es propuesta, puede ser 0
+      valor_estimado: type === 'legacy' ? (prev.valor_estimado || 0) : 0
+    }));
     setView('form');
   };
 
   if (!isOpen) return null;
 
+  const projectTypeLabel = formData.es_propuesta === false ? t('projects.modals.tabs.projectWithCosts') : t('projects.modals.tabs.newProject');
+
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ${
-        currentProjectType === 'proposal' ? 'border-l-4 border-l-blue-500' :
-        currentProjectType === 'legacy' ? 'border-l-4 border-l-yellow-500' : ''
-      }`}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50`}
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg p-6 bg-white rounded-lg shadow-md border border-gray-200 border-l-4 border-l-blue-500"
+        className={`relative w-full max-w-lg p-6 bg-white rounded-lg shadow-md border border-gray-200 ${
+          formData.es_propuesta ? 'border-l-4 border-l-blue-500' : 'border-l-4 border-l-yellow-500'
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-semibold mb-4">
           {isEditing ? t('userModal.titleEdit') + ' Proyecto' : t('projects.modals.addProject')} 
         </h3>
 
+        {isEditing && (
+          <div className="mb-4 -mt-2">
+            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${formData.es_propuesta ? 'text-blue-800 bg-blue-100' : 'text-yellow-800 bg-yellow-100'}`}>
+              {projectTypeLabel}
+            </span>
+          </div>
+        )}
         {view === 'selection' && !isEditing && (
           <div className="space-y-3">
             <button 
@@ -174,12 +184,10 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
                       </select>
                     </div>
                   )}
-                  {currentProjectType === 'legacy' &&
-                    <div className="text-sm">
-                      <label htmlFor="valor_estimado" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.estimatedValue')}</label>
-                      <input id="valor_estimado" name="valor_estimado" type="number" value={formData.valor_estimado || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-                    </div>
-                  }
+                  <div className="text-sm">
+                    <label htmlFor="valor_estimado" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.estimatedValue')}</label>
+                    <input id="valor_estimado" name="valor_estimado" type="number" value={formData.valor_estimado || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                  </div>
                   <div className="text-sm">
                     <label htmlFor="frecuencia_sugerida" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.suggestedFrequency')}</label>
                     <input id="frecuencia_sugerida" name="frecuencia_sugerida" value={formData.frecuencia_sugerida || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />

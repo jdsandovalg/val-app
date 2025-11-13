@@ -26,6 +26,7 @@ type Proyecto = {
   frecuencia_sugerida: string | null;
   notas_clave: string | null;
   valor_estimado: number | null;
+  es_propuesta: boolean;
   activo: boolean;
   estado: ProjectStatus;
   fecha_inicial_proyecto?: string | null;
@@ -111,6 +112,33 @@ export default function ProjectClassificationManagementPage() {
     });
   }, [activeView, setActiveView]);
 
+  const handleSendToVote = useCallback(async (projectId: number) => {
+    // Usamos una promesa con toast para una mejor UX
+    const promise = (async () => {
+      const { error } = await supabase.rpc('gestionar_proyectos', {
+        p_action: 'UPDATE',
+        p_id_proyecto: projectId,
+        p_estado: 'en_votacion'
+      });
+      if (error) throw error;
+    })();
+
+    toast.promise(promise, {
+      loading: t('projects.alerts.sendingToVote'),
+      success: () => {
+        // Forzamos un refresh para que la lista se actualice con el nuevo estado.
+        // TODO: Reemplazar con actualización de estado local para una mejor UX.
+        window.location.reload();
+        return t('projects.alerts.sendToVoteSuccess');
+      },
+      error: (err: unknown) => {
+        // Corregido para manejar el tipo 'unknown' de forma segura
+        const errorMessage = (err && typeof err === 'object' && 'message' in err) ? String((err as { message: string }).message) : t('calendar.payment.unknownError');
+        return t('projects.alerts.sendToVoteError', { message: errorMessage });
+      }
+    });
+  }, [supabase, t]);
+
   const handleSaveProject = useCallback(async (projectData: Partial<Proyecto>) => {
     const isEditing = !!projectData.id_proyecto;
 
@@ -119,6 +147,7 @@ export default function ProjectClassificationManagementPage() {
       if (isEditing) {
         action = 'UPDATE';
       } else {
+        // Determine action based on es_propuesta flag
         action = projectData.valor_estimado && projectData.valor_estimado > 0 ? 'INSERT' : 'INSERT_PROPOSAL';
       }
 
@@ -126,16 +155,17 @@ export default function ProjectClassificationManagementPage() {
 
       const { error } = await supabase.rpc('gestionar_proyectos', {
         p_action: action,
-        p_id_proyecto: projectData.id_proyecto, // Se envía para UPDATE, es ignorado en INSERT
+        p_id_proyecto: projectData.id_proyecto,
         p_id_tipo_proyecto: projectData.id_tipo_proyecto,
         p_descripcion_tarea: projectData.descripcion_tarea,
         p_detalle_tarea: projectData.detalle_tarea,
         p_frecuencia_sugerida: projectData.frecuencia_sugerida,
         p_notas_clave: projectData.notas_clave,
-        p_valor_estimado: action === 'INSERT' || action === 'UPDATE' ? projectData.valor_estimado : null,
+        p_valor_estimado: projectData.valor_estimado, // Always send, DB function will handle if it's a proposal
         p_estado: projectData.estado, // Enviamos el nuevo estado
         p_fecha_inicial_proyecto: projectData.fecha_inicial_proyecto || null,
-        p_fecha_final_proyecto: projectData.fecha_final_proyecto || null
+        p_fecha_final_proyecto: projectData.fecha_final_proyecto || null,
+        //p_es_propuesta: projectData.es_propuesta // NUEVO: Enviar el flag es_propuesta
       });
 
       if (error) throw error;
@@ -147,7 +177,7 @@ export default function ProjectClassificationManagementPage() {
       window.location.reload(); 
 
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error); // Mantener esto por ahora
       toast.error(t('projects.alerts.saveError', { message }));
     }
   }, [supabase, t, handleCloseModal]);
@@ -236,6 +266,7 @@ export default function ProjectClassificationManagementPage() {
               onProjectSelect={handleProjectSelect}
               selectedProject={selectedProject}
               onEditProject={handleOpenEditModal}
+              onSendToVote={handleSendToVote}
             />
           )}
           {activeView === 'overview' && <RelationshipView onTypeClick={handleOpenModal} />}

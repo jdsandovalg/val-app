@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
-import { FilePenLine } from 'lucide-react';
+import { FilePenLine, Gavel } from 'lucide-react';
 
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 
@@ -17,6 +17,7 @@ type Proyecto = {
   frecuencia_sugerida: string | null;
   notas_clave: string | null;
   valor_estimado: number | null;
+  es_propuesta: boolean; // Campo que indica si es una propuesta (true) o heredado (false)
   activo: boolean;
   estado: ProjectStatus;
   fecha_inicial_proyecto?: string | null;
@@ -27,9 +28,10 @@ type ProjectListProps = {
   onProjectSelect: (project: Proyecto | null) => void;
   selectedProject: Proyecto | null;
   onEditProject: (project: Proyecto) => void;
+  onSendToVote: (projectId: number) => void; // Nueva prop para la acción de votar
 };
 
-export default function ProjectList({ onProjectSelect, selectedProject, onEditProject }: ProjectListProps) {
+export default function ProjectList({ onProjectSelect, selectedProject, onEditProject, onSendToVote }: ProjectListProps) {
   const supabase = createClient();
   const { t } = useI18n();
   const [projects, setProjects] = useState<Proyecto[]>([]);
@@ -117,9 +119,32 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
                 <div className="flex justify-between items-start">
                   <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
                   <div className="flex items-center gap-2">
+                    {project.es_propuesta ? (
+                      <span className="text-xs font-semibold text-blue-800 bg-blue-100 border-l-4 border-blue-500 px-2 py-1 rounded-r-md hidden sm:inline">
+                        {t('projects.modals.tabs.newProject')}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold text-yellow-800 bg-yellow-100 border-l-4 border-yellow-500 px-2 py-1 rounded-r-md hidden sm:inline">
+                        {t('projects.modals.tabs.projectWithCosts')}
+                      </span>
+                    )}
                     <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
                       {t(`projectStatus.${project.estado}`)}
                     </span>
+                    {/* Botón para Enviar a Votación */}
+                    {userProfile === 'ADM' && project.estado === 'abierto' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSendToVote(project.id_proyecto);
+                        }}
+                        disabled={!project.es_propuesta}
+                        className="p-1 rounded-full hover:bg-blue-100 disabled:hover:bg-transparent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        title={project.es_propuesta ? t('projects.tooltips.sendToVote') : t('projects.tooltips.addQuotesToVote')}
+                      >
+                        <Gavel size={16} className="text-blue-600" />
+                      </button>
+                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -167,6 +192,15 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
                     <div className="flex justify-between items-start">
                       <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
                       <div className="flex items-center gap-2">
+                        {project.es_propuesta ? (
+                          <span className="text-xs font-semibold text-blue-800 bg-blue-100 border-l-4 border-blue-500 px-2 py-1 rounded-r-md hidden sm:inline">
+                            {t('projects.modals.tabs.newProject')}
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-yellow-800 bg-yellow-100 border-l-4 border-yellow-500 px-2 py-1 rounded-r-md hidden sm:inline">
+                            {t('projects.modals.tabs.projectWithCosts')}
+                          </span>
+                        )}
                         <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
                           {t(`projectStatus.${project.estado}`)}
                         </span>
