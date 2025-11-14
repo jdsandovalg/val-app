@@ -9,7 +9,6 @@
     "calendar": "Calendar",
     "groups": "Groups",
     "notices": "Notices",
-    "voting": "Voting",
     "profile": "My Profile",
     "languageMenu": "Language",
     "language": "Language",
@@ -600,23 +599,15 @@
       "house": "House",
       "responsible": "Responsible",
       "maxPaymentDate": "Max. Payment Date"
+    },
+    "voting": {
+      "title": "Voting",
+      "selectProject": "Select Project for Voting",
+      "selectHouse": "Select House to Vote",
+      "noProjects": "No projects in voting",
+      "projectQuotes": "Project Quotes",
+      "noQuotes": "No quotes available to vote on for this project.",
+      "vote": "Vote"
     }
-  },
-  "voting": {
-    "title": "Voting",
-    "selectProject": "Select Project for Voting",
-    "selectHouse": "Select House to Vote",
-    "disabledHouseExplanation": "Only your house is enabled to vote. If you authorize an administrator, they can vote on behalf of other houses.",
-    "disabledHouseTooltip": "You can only vote for your house. An administrator can vote for other houses if authorized.",
-    "noProjects": "No projects in voting",
-    "noProjectsTitle": "No Projects in Voting",
-    "noProjectsMessage": "There are currently no projects available for voting. Projects will appear here when the administrator activates them for voting.",
-    "noProjectsHint": "In the meantime, you can review work groups or the activity calendar.",
-    "projectQuotes": "Project Quotes",
-    "noQuotes": "No quotes available to vote on for this project.",
-    "vote": "Vote",
-    "generateReport": "Generate PDF Report",
-    "reportTitle": "Voting Report",
-    "downloadPdf": "Download PDF"
   }
 }

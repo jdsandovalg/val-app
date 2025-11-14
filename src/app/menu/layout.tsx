@@ -9,6 +9,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { useI18n } from '@/app/i18n-provider';
+import { Gavel } from 'lucide-react';
 
 type Aviso = {
   id_contribucion: string;
@@ -364,6 +365,15 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
             {avisos.length > 0 && (
               <span className="absolute top-1 right-4 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
             )}
+          </Link>
+
+          {/* --- Botón de Votación --- */}
+          <Link
+            href="/menu/voting"
+            className={`flex flex-col items-center justify-center p-2 w-full text-center transition-colors duration-200 hover:bg-gray-200 hover:text-blue-600 ${pathname === '/menu/voting' ? 'text-blue-600' : 'text-gray-600'}`}
+          >
+            <Gavel size={24} className="mb-1" />
+            <span className="text-[10px]">{t('navigation.voting')}</span>
           </Link>
 
         {/* --- Botón de Idioma (rápido — recarga) --- */}

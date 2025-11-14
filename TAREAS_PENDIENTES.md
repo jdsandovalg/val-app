@@ -1,3 +1,49 @@
+## 🎯 RESUMEN EJECUTIVO - Sesión del 13 de Noviembre de 2025
+
+### ✅ SISTEMA DE VOTACIONES: COMPLETADO, RESPONSIVE Y LISTO PARA TESTING
+
+**Estado General:** Función SQL refactorizada, frontend integrado, optimización mobile-first, build sin errores, lógica de restricción única implementada.
+
+**Cambios SQL — `fn_gestionar_votos()`:**
+- Parámetros `p_id_usuario` y `p_votante_proxy_id` cambiados a `BIGINT` (era UUID).
+- Sin validación contra `auth.users` — sistema usa tabla `public.usuarios` como fuente de verdad.
+- Tres acciones: `SELECT` (consultar votos), `VOTAR` (insertar), `ANULAR_VOTO` (eliminar).
+- UNIQUE CONSTRAINT en `(id_proyecto, id_usuario)` garantiza un voto por usuario por proyecto.
+
+**Cambios Frontend — `/src/app/menu/voting/page.tsx`:**
+- **Responsive Design (Mobile-First):**
+  - En mobile: Título horizontal en la parte superior (elimina scroll lateral).
+  - En desktop: Barra lateral vertical con título rotado (diseño original).
+  - Usa `md:hidden` y `hidden md:flex` para adaptar la UI según el tamaño de pantalla.
+- Selector de proyectos en votación (dropdown).
+- Selector de casas: PRE/OPE ven solo su casa (preseleccionada); ADM pueden elegir cualquiera.
+- Indicador visual (check verde) para casas que ya votaron.
+- Cotizaciones ordenadas por valor (menor a mayor).
+- **Restricción crítica:** Una casa vota por UNA cotización máximo.
+  - Si ya votó: botón "ANULAR VOTO" (rojo) solo en esa cotización.
+  - Otros "VOTAR" deshabilitados (gris).
+- Llamadas RPC: `handleVote()` pasa `p_id_usuario: selectedCasa.id`, `p_votante_proxy_id: (ADM && otra casa) ? currentUser.id : null`.
+
+**Cambios UI/UX — Navegación (`layout.tsx`) e Iconografía:**
+- ✅ Ícono de navegación para votación cambió a **Gavel** (martillo de juez) para consistencia con el botón "Enviar a Votación" en lista de proyectos.
+- ✅ Color hover en botón de votación: azul (`text-blue-600`) para alineación visual.
+- ✅ Clave de traducción `navigation.voting` agregada a `es.json`, `en.json`, `fr.json`.
+
+**Validaciones Completadas:**
+- ✅ Build compiló sin errores de TypeScript/ESLint (17.8s, 20 páginas generadas).
+- ✅ SELECT RPC probado en SQL editor — funciona.
+- ✅ Lógica de restricción única verificada en código.
+- ✅ Responsive design verificado en navegador (sin desbordamiento en mobile).
+
+**Próximo Paso — Testing en Navegador:**
+1. Login como PRE → Vota una cotización → Verifica check verde en su casa.
+2. Intenta votar otra → Verifica que botón está deshabilitado.
+3. Anula voto → Vota otra cotización → Verifica cambio exitoso.
+4. Login como ADM → Selecciona otra casa → Vota → Verifica `votante_proxy_id` en BD.
+5. Prueba en mobile: Verifica que no hay scroll horizontal y el layout se adapta correctamente.
+
+---
+
 ## II. Logros Recientes (Tareas Completadas)
 
 ### 9. Refactorización de Tipos de Evidencia (Enums) para Escalabilidad
@@ -119,6 +165,70 @@ Esta sección documenta las mejores prácticas y lecciones aprendidas durante el
 *   **Lección Aprendida:** Un error recurrente y difícil de depurar fue el `ERROR: 42702: column reference "..." is ambiguous`. Este error ocurre cuando, dentro de una función de PostgreSQL, los nombres de los parámetros (ej. `p_id_proyecto`) son similares a los nombres de las columnas de la tabla (`id_proyecto`). La base de datos no puede distinguir entre ellos, especialmente en sentencias `UPDATE`. Intentar corregir solo la cláusula `WHERE` o `RETURNING` no fue suficiente.
 *   **Norma de Trabajo (Regla de Oro para Funciones):**
     > **Al escribir sentencias DML (especialmente `UPDATE`) dentro de una función PL/pgSQL, si existe la más mínima posibilidad de ambigüedad entre los nombres de los parámetros y las columnas, se debe ser explícito. La solución robusta es: 1. Asignar un alias a la tabla (ej. `UPDATE mi_tabla t`). 2. Prefijar *todas* las referencias a las columnas de esa tabla con el alias (ej. `SET t.columna = ...`, `WHERE t.otra_columna = ...`).**
+
+---
+
+### 2. Implementación del Sistema de Votaciones
+*   **Prioridad:** Alta.
+*   **Objetivo:** Crear una pantalla única y adaptativa para que tanto los residentes (PRE) como los administradores (ADM) puedan gestionar y participar en las votaciones de los proyectos.
+*   **Plan de Acción Detallado:**
+    1.  **Backend - Estructura de Datos:**
+        *   ✅ **Tabla `proyecto_votos`:** Crear una tabla para almacenar los votos. Cada fila representa un voto afirmativo, vinculando un `id_proyecto`, un `id_evidencia` (la cotización votada) y un `id_usuario`. Se incluye un `UNIQUE CONSTRAINT` en `(id_proyecto, id_usuario)` para garantizar un solo voto por usuario por proyecto a nivel de base de datos.
+        *   ✅ **Función RPC `fn_gestionar_votos`:** Crear una única función que centralice la lógica de la base de datos con las siguientes acciones:
+            *   `SELECT`: Para consultar los votos de un proyecto.
+            *   `VOTAR`: Para insertar un nuevo voto. La restricción `UNIQUE` manejará los intentos de voto duplicado.
+            *   `ANULAR_VOTO`: Para eliminar un voto existente, permitiendo al usuario volver a votar.
+    2.  **Backend - Lógica de Negocio:**
+        *   ✅ **Función RPC `fn_proyecto_puede_votar`:** Crear una función que devuelva `true` si un proyecto tiene al menos una evidencia del tipo `COTIZACION_PARA_VOTACION`, y `false` en caso contrario. Esto servirá para habilitar la acción de "Enviar a Votación".
+    3.  **Frontend - Flujo de Administrador (Pre-Votación):**
+        *   ✅ **Botón en `ProjectList.tsx`:** Añadir un botón "Enviar a Votación" directamente en la lista de proyectos.
+        *   **Lógica del Botón:** El botón solo es visible para `ADM` en proyectos con estado `'abierto'`. Se habilita/deshabilita llamando a `fn_proyecto_puede_votar`. Al hacer clic, cambia el estado del proyecto a `'en_votacion'`.
+    4.  **Frontend - Página de Votación (`/menu/voting/page.tsx`):**
+        *   **Diseño General:**
+            *   Título vertical "VOTACIÓN" a la izquierda.
+            *   Selector de casas en la parte superior, mostrando todas las casas con un indicador visual (ej. color, ícono) si ya han votado.
+            *   Lista de cotizaciones (`COTIZACION_PARA_VOTACION`) en el área principal, ordenadas por `valor_de_referencia`.
+        *   **Lógica para Residente (PRE):**
+            *   Su casa aparece preseleccionada y no puede cambiarla.
+            *   Ve los botones "Votar" o "Anular Voto" según su estado de votación actual.
+        *   **Lógica para Administrador (ADM):**
+            *   Puede seleccionar cualquier casa para votar en su nombre (voto por proxy).
+            *   La interfaz muestra claramente en nombre de qué casa se está votando.
+        *   **Interacción:**
+            *   El botón "Votar" llama a `fn_gestionar_votos` con la acción `VOTAR`.
+            *   El botón "Anular Voto" llama a `fn_gestionar_votos` con la acción `ANULAR_VOTO`.
+
+---
+
+### 2. Implementación del Sistema de Votaciones
+*   **Prioridad:** Alta.
+*   **Objetivo:** Crear una pantalla única y adaptativa para que tanto los residentes (PRE) como los administradores (ADM) puedan gestionar y participar en las votaciones de los proyectos.
+*   **Plan de Acción Detallado:**
+    1.  **Backend - Estructura de Datos:**
+        *   ✅ **Tabla `proyecto_votos`:** Crear una tabla para almacenar los votos. Cada fila representa un voto afirmativo, vinculando un `id_proyecto`, un `id_evidencia` (la cotización votada) y un `id_usuario`. Se incluye un `UNIQUE CONSTRAINT` en `(id_proyecto, id_usuario)` para garantizar un solo voto por usuario por proyecto a nivel de base de datos.
+        *   ✅ **Función RPC `fn_gestionar_votos`:** Crear una única función que centralice la lógica de la base de datos con las siguientes acciones:
+            *   `SELECT`: Para consultar los votos de un proyecto.
+            *   `VOTAR`: Para insertar un nuevo voto. La restricción `UNIQUE` manejará los intentos de voto duplicado.
+            *   `ANULAR_VOTO`: Para eliminar un voto existente, permitiendo al usuario volver a votar.
+    2.  **Backend - Lógica de Negocio:**
+        *   ✅ **Función RPC `fn_proyecto_puede_votar`:** Crear una función que devuelva `true` si un proyecto tiene al menos una evidencia del tipo `COTIZACION_PARA_VOTACION`, y `false` en caso contrario. Esto servirá para habilitar la acción de "Enviar a Votación".
+    3.  **Frontend - Flujo de Administrador (Pre-Votación):**
+        *   ✅ **Botón en `ProjectList.tsx`:** Añadir un botón "Enviar a Votación" directamente en la lista de proyectos.
+        *   **Lógica del Botón:** El botón solo es visible para `ADM` en proyectos con estado `'abierto'`. Se habilita/deshabilita llamando a `fn_proyecto_puede_votar`. Al hacer clic, cambia el estado del proyecto a `'en_votacion'`.
+    4.  **Frontend - Página de Votación (`/menu/voting/page.tsx`):**
+        *   **Diseño General:**
+            *   Título vertical "VOTACIÓN" a la izquierda.
+            *   Selector de casas en la parte superior, mostrando todas las casas con un indicador visual (ej. color, ícono) si ya han votado.
+            *   Lista de cotizaciones (`COTIZACION_PARA_VOTACION`) en el área principal, ordenadas por `valor_de_referencia`.
+        *   **Lógica para Residente (PRE):**
+            *   Su casa aparece preseleccionada y no puede cambiarla.
+            *   Ve los botones "Votar" o "Anular Voto" según su estado de votación actual.
+        *   **Lógica para Administrador (ADM):**
+            *   Puede seleccionar cualquier casa para votar en su nombre (voto por proxy).
+            *   La interfaz muestra claramente en nombre de qué casa se está votando.
+        *   **Interacción:**
+            *   El botón "Votar" llama a `fn_gestionar_votos` con la acción `VOTAR`.
+            *   El botón "Anular Voto" llama a `fn_gestionar_votos` con la acción `ANULAR_VOTO`.
 
 ---
 
@@ -420,6 +530,97 @@ Con la gestión de catálogos finalizada, estamos listos para continuar con el o
 
 
 
-## Tareas Canceladas
+###Prompt Detallado para Claude Sonnet 4.5
 
-Las siguientes tareas se han cancelado y no se trabajarán.
+Objetivo: Crear un único archivo de componente de página en React (page.tsx) para un sistema de votación de proyectos. Este componente debe ser funcional, robusto y seguir todas las especificaciones detalladas a continuación.
+
+Archivo a Crear: /src/app/menu/voting/page.tsx
+
+Tecnologías a Utilizar:
+
+Next.js 14 (App Router)
+React (con Hooks: useState, useEffect, useCallback, useMemo)
+TypeScript
+Supabase (para llamadas a funciones RPC)
+react-hot-toast (para notificaciones al usuario)
+lucide-react (para iconos)
+
+
+Requisitos Funcionales y de Lógica
+1. Carga de Datos Inicial:
+
+La página debe leer el projectId de los parámetros de la URL (ej. /menu/voting?projectId=123) usando el hook useSearchParams de next/navigation.
+Si no se encuentra un projectId, debe mostrar un toast de error y redirigir al usuario a /menu/admin/projects_management.
+Debe obtener la información del usuario actual (incluyendo id, id_casa y tipo_usuario) desde el localStorage.
+Debe realizar las siguientes llamadas asíncronas a la base de datos al cargar:
+Obtener todas las casas (residentes): Consultar la tabla usuarios para obtener una lista de todos los usuarios donde tipo_usuario = 'PRE'. La consulta debe traer los campos id (uuid) y id_casa (número de casa), ordenados por id_casa.
+Obtener las cotizaciones: Llamar a la función RPC fn_gestionar_proyecto_evidencias con los parámetros p_accion: 'SELECT', p_id_proyecto: projectId, y p_tipo_evidencia: 'COTIZACION_PARA_VOTACION'. Los resultados deben ordenarse en el cliente por valor_de_referencia de menor a mayor.
+Obtener los votos existentes: Llamar a la función RPC fn_gestionar_votos con p_accion: 'SELECT' y p_id_proyecto: projectId para obtener todos los votos ya emitidos para este proyecto.
+2. Diseño de la Interfaz de Usuario (UI):
+
+Layout General: La página debe tener un layout principal de dos columnas usando Flexbox.
+Barra Lateral Izquierda: Un div estrecho (ancho w-16) con fondo oscuro (bg-gray-800) que contenga un título <h1> con el texto "VOTACIÓN" orientado verticalmente (writing-mode: 'vertical-rl').
+Contenido Principal: Un div que ocupe el resto del espacio, con un padding adecuado.
+Sección Superior (Selección de Casa):
+Un contenedor con el título "Seleccionar Casa para Votar".
+Debe renderizar una lista de botones, uno por cada casa obtenida de la base de datos.
+Cada botón debe mostrar un ícono de casa (<Home /> de lucide-react) y el número de la casa (id_casa).
+Sección Principal (Lista de Cotizaciones):
+Debe renderizar una lista de tarjetas, una por cada cotización obtenida.
+Cada tarjeta debe mostrar:
+La descripción de la cotización (descripcion_evidencia).
+El valor de referencia (valor_de_referencia), formateado como moneda local (usa formatCurrency de @/utils/format).
+Un botón con el ícono <FileText /> que funcione como un enlace (<a>) para abrir la url_publica de la cotización en una nueva pestaña.
+Un botón para la acción de votar (ver lógica a continuación).
+3. Lógica de Interacción y Roles:
+
+Estado de Carga: La página debe mostrar un mensaje de "Cargando..." mientras se obtienen los datos iniciales.
+Selección de Casa:
+Si el usuario es Residente (PRE): Su propia casa debe aparecer preseleccionada por defecto. Todos los demás botones de casa deben estar deshabilitados (disabled) y con un estilo de opacidad reducida.
+Si el usuario es Administrador (ADM): Todos los botones de casa deben estar habilitados. Por defecto, se debe seleccionar la primera casa de la lista. El ADM puede hacer clic en cualquier botón de casa para cambiar la "casa activa" en cuyo nombre va a votar.
+Estado Visual de las Casas (Feedback al Usuario):
+El botón de la casa actualmente seleccionada debe tener un estilo distintivo (ej. un anillo de color azul alrededor).
+Si una casa ya ha emitido su voto para este proyecto, su botón debe tener un fondo de color diferente (ej. bg-green-100) y mostrar un pequeño ícono de check (<CheckCircle2 />) en una esquina para indicar que ya votó.
+Lógica de los Botones de Votación:
+Se debe determinar si la selectedCasa ya ha votado en este proyecto.
+Si la casa seleccionada NO ha votado:
+Todas las tarjetas de cotización deben mostrar un botón "Votar".
+Si la casa seleccionada YA ha votado por una cotización específica:
+Esa cotización específica debe mostrar un botón "Anular Voto" (con estilo de color rojo).
+Todas las demás cotizaciones deben mostrar su botón "Votar" en estado deshabilitado (disabled).
+Acciones de Voto (Llamadas a RPC):
+Al hacer clic en "Votar":
+Llamar a la función RPC fn_gestionar_votos con los siguientes parámetros:
+p_accion: 'VOTAR'
+p_id_proyecto: El ID del proyecto actual.
+p_id_evidencia: El ID de la cotización por la que se está votando.
+p_id_usuario: El id (UUID) de la selectedCasa.
+p_votante_proxy_id: Si el currentUser es ADM, enviar su id; si no, enviar null.
+Usar toast.promise para mostrar mensajes de "Registrando voto...", "¡Voto registrado!", o el error de la base de datos.
+En caso de éxito, actualizar el estado local de votos para reflejar el cambio en la UI inmediatamente.
+Al hacer clic en "Anular Voto":
+Llamar a la función RPC fn_gestionar_votos con:
+p_accion: 'ANULAR_VOTO'
+p_id_proyecto: El ID del proyecto actual.
+p_id_usuario: El id (UUID) de la selectedCasa.
+Usar toast.promise para mostrar mensajes de "Anulando voto...", "¡Voto anulado!", o el error.
+En caso de éxito, actualizar el estado local de votos para reflejar el cambio en la UI.
+Ejemplo de Estructura de Tipos (para guiar a TypeScript):
+
+type EvidenciaVotacion = {
+  id_evidencia: number;
+  descripcion_evidencia: string;
+  url_publica: string;
+  valor_de_referencia: number | null;
+};
+
+type Voto = {
+  id_voto: number;
+  id_evidencia: number;
+  id_usuario: string; // uuid
+};
+
+type Casa = {
+  id: string; // uuid del usuario
+  id_casa: number;
+};

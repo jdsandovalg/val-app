@@ -9,6 +9,7 @@
     "calendar": "Calendario",
     "groups": "Grupos",
     "notices": "Avisos",
+    "voting": "Votación",
     "profile": "Mi Perfil",
     "languageMenu": "Idioma",
     "language": "Idioma",
@@ -601,5 +602,22 @@
       "responsible": "Responsable",
       "maxPaymentDate": "Fecha Máx. Pago"
     }
+  },
+  "voting": {
+    "title": "Votación",
+    "selectProject": "Seleccionar Proyecto en Votación",
+    "selectHouse": "Seleccionar Casa para Votar",
+    "disabledHouseExplanation": "Solo está habilitada tu casa para votar. Si autorizas a un administrador, él podrá votar por otras casas.",
+    "disabledHouseTooltip": "Solo puedes votar por tu casa. Un administrador puede votar por otras casas si cuenta con autorización.",
+    "noProjects": "No hay proyectos en votación",
+    "noProjectsTitle": "Sin Proyectos en Votación",
+    "noProjectsMessage": "Actualmente no hay proyectos disponibles para votación. Los proyectos aparecerán aquí cuando el administrador los active para votación.",
+    "noProjectsHint": "Mientras tanto, puedes revisar los grupos de trabajo o el calendario de actividades.",
+    "projectQuotes": "Cotizaciones del Proyecto",
+    "noQuotes": "No hay cotizaciones disponibles para votar en este proyecto.",
+    "vote": "Votar",
+    "generateReport": "Generar Reporte PDF",
+    "reportTitle": "Reporte de Votación",
+    "downloadPdf": "Descargar PDF"
   }
 }

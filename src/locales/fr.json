@@ -9,6 +9,7 @@
     "calendar": "Calendrier",
     "groups": "Groupes",
     "notices": "Avis",
+    "voting": "Scrutin",
     "profile": "Mon Profil",
     "languageMenu": "Langue",
     "language": "Langue",
@@ -117,7 +118,7 @@
     "membersTitle": "Membres du Groupe",
     "house": "Maison",
     "groupTitle": "Groupe #{number}",
-    "status_done": "Réalisé", 
+    "status_done": "Réalisé",
     "status_pending": "En attente",
     "status_overdue": "En retard"
   },
@@ -205,11 +206,11 @@
     "passwordPlaceholderOptional": "Laisser vide pour ne pas changer",
     "passwordConfirmLabel": "Confirmer le nouveau mot de passe",
     "passwordConfirmPlaceholder": "Répétez le nouveau mot de passe",
-      "locationLabel": "Emplacement",
-      "locationPlaceholder": "Ex: XX00",
-      "emailLabel": "Courriel",
-      "emailPlaceholder": "courriel@exemple.com",
-      "emailInvalid": "Veuillez entrer une adresse de courriel valide.",
+    "locationLabel": "Emplacement",
+    "locationPlaceholder": "Ex: XX00",
+    "emailLabel": "Courriel",
+    "emailPlaceholder": "courriel@exemple.com",
+    "emailInvalid": "Veuillez entrer une adresse de courriel valide.",
     "userTypeLabel": "Type d'Utilisateur",
     "saveButton": "Enregistrer",
     "cancelButton": "Annuler",
@@ -497,10 +498,10 @@
         "FACTURA": "Facture",
         "RECIBO": "Reçu",
         "TRANSFERENCIA": "Virement",
-      "RECOMENDACION": "Recommandation",
-      "FOTOGRAFIA_01": "Photographie 01",
-      "FOTOGRAFIA_02": "Photographie 02",
-      "FOTOGRAFIA_03": "Photographie 03"
+        "RECOMENDACION": "Recommandation",
+        "FOTOGRAFIA_01": "Photographie 01",
+        "FOTOGRAFIA_02": "Photographie 02",
+        "FOTOGRAFIA_03": "Photographie 03"
       },
       "emptyState": "Aucune preuve n'a été enregistrée pour ce projet.",
       "alerts": {
@@ -600,5 +601,22 @@
       "responsible": "Responsable",
       "maxPaymentDate": "Date Max. Paiement"
     }
+  },
+  "voting": {
+    "title": "Votation",
+    "selectProject": "Sélectionner un projet en votation",
+    "selectHouse": "Sélectionner la maison pour voter",
+    "disabledHouseExplanation": "Seule votre maison est autorisée à voter. Si vous autorisez un administrateur, il peut voter au nom d'autres maisons.",
+    "disabledHouseTooltip": "Vous ne pouvez voter que pour votre maison. Un administrateur peut voter pour d'autres maisons si autorisé.",
+    "noProjects": "Aucun projet en votation",
+    "noProjectsTitle": "Aucun Projet en Votation",
+    "noProjectsMessage": "Il n'y a actuellement aucun projet disponible pour voter. Les projets apparaîtront ici lorsque l'administrateur les activera pour la votation.",
+    "noProjectsHint": "En attendant, vous pouvez consulter les groupes de travail ou le calendrier des activités.",
+    "projectQuotes": "Devis du Projet",
+    "noQuotes": "Aucun devis disponible pour voter sur ce projet.",
+    "vote": "Voter",
+    "generateReport": "Générer un rapport PDF",
+    "reportTitle": "Rapport de Votation",
+    "downloadPdf": "Télécharger PDF"
   }
 }

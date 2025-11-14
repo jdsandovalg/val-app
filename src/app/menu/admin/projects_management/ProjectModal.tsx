@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 
+
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 
 type Proyecto = {
