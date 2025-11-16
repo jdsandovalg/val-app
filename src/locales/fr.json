@@ -617,6 +617,27 @@
     "vote": "Voter",
     "generateReport": "Générer un rapport PDF",
     "reportTitle": "Rapport de Votation",
-    "downloadPdf": "Télécharger PDF"
+    "downloadPdf": "Télécharger PDF",
+    "projectStatus": "État du Projet",
+    "votingFinalized": "Le vote est terminé. Les boutons de vote sont désactivés.",
+    "votingClosed": "Vote Fermé",
+    "votingFinishedSelector": "Vote terminé - Sélecteur de maisons désactivé",
+    "adminDecision": "Décision de l'Administrateur",
+    "consensusReached": "Consensus atteint !",
+    "consensusMessage": "Toutes les maisons ont voté pour le même devis.",
+    "winningQuote": "Devis gagnant",
+    "invalidAmountWarning": "Le devis n'a pas de montant valide. Mettez à jour la valeur de référence avant d'approuver.",
+    "approveAndGenerate": "Approuver et Générer les Contributions",
+    "approveTooltip": "Approuver le projet et générer les contributions",
+    "invalidAmountTooltip": "Valeur de référence invalide",
+    "noConsensus": "Pas de consensus.",
+    "noConsensusMessage": "Les votes sont divisés entre les devis.",
+    "chooseAction": "Choisissez une action pour clôturer le processus de vote :",
+    "rejectProject": "Rejeter le Projet",
+    "cancelProject": "Annuler le Projet",
+    "statusApproved": "Approuvé",
+    "statusRejected": "Rejeté",
+    "statusCanceled": "Annulé",
+    "statusInVoting": "En Votation"
   }
 }

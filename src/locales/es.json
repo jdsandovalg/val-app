@@ -618,6 +618,27 @@
     "vote": "Votar",
     "generateReport": "Generar Reporte PDF",
     "reportTitle": "Reporte de Votación",
-    "downloadPdf": "Descargar PDF"
+    "downloadPdf": "Descargar PDF",
+    "projectStatus": "Estado del Proyecto",
+    "votingFinalized": "La votación ha finalizado. Los botones de votación están deshabilitados.",
+    "votingClosed": "Votación Cerrada",
+    "votingFinishedSelector": "Votación finalizada - Selector de casas deshabilitado",
+    "adminDecision": "Decisión del Administrador",
+    "consensusReached": "¡Consenso alcanzado!",
+    "consensusMessage": "Todas las casas votaron por la misma cotización.",
+    "winningQuote": "Cotización ganadora",
+    "invalidAmountWarning": "La cotización no tiene un monto válido. Actualiza el valor de referencia antes de aprobar.",
+    "approveAndGenerate": "Aprobar y Generar Contribuciones",
+    "approveTooltip": "Aprobar proyecto y generar contribuciones",
+    "invalidAmountTooltip": "Valor de referencia inválido",
+    "noConsensus": "No hay consenso.",
+    "noConsensusMessage": "Los votos están divididos entre cotizaciones.",
+    "chooseAction": "Elige una acción para cerrar el proceso de votación:",
+    "rejectProject": "Rechazar Proyecto",
+    "cancelProject": "Cancelar Proyecto",
+    "statusApproved": "Aprobado",
+    "statusRejected": "Rechazado",
+    "statusCanceled": "Cancelado",
+    "statusInVoting": "En Votación"
   }
 }

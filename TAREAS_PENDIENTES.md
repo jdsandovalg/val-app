@@ -1,3 +1,192 @@
+## 🎯 RESUMEN EJECUTIVO - Sesión del 14 de Noviembre de 2025
+
+### ✅ SISTEMA DE REPORTES PDF DE VOTACIÓN: COMPLETADO Y FUNCIONAL
+
+**Estado General:** Sistema completo de generación de reportes PDF para votaciones implementado, con indicadores visuales profesionales, tabla de criterios de aprobación, estado vacío amigable, y soporte multi-idioma.
+
+**Cambios Backend — Nueva Función RPC:**
+- ✅ **`fn_gestionar_votos_con_responsable`**: Nueva función RPC que retorna votos con JOIN a tabla `usuarios`
+- Devuelve todos los votos de un proyecto con nombres de responsables (texto, no solo IDs)
+- Permite generar reportes completos sin necesidad de múltiples consultas
+- Estructura: `id_voto, id_proyecto, id_evidencia, id_usuario, responsable (text), fecha_voto, votante_proxy_id`
+
+**Cambios Frontend — Generación de Reportes PDF:**
+1. **Componente VotingReport.tsx (`/src/app/menu/voting/VotingReport.tsx`):**
+   - Componente PDF completo con @react-pdf/renderer
+   - Header con logo y título "Reporte de Votación"
+   - Sección de información del proyecto (sin campo notas_clave)
+   - **Indicadores visuales sin estrellas Unicode:**
+     - Contador numérico grande (20pt, bold) para votos
+     - Barra de progreso visual que muestra porcentaje relativo
+     - Eliminadas estrellas ★ que no renderizaban en PDFs
+   - **Badge de aprobación verde:**
+     - Aparece solo cuando hay 100% de consenso
+     - Texto: "✓ PROYECTO APROBADO - 100% DE CONSENSO"
+     - Color verde (#10B981) destacado
+   - **Lista de responsables en grid de 3 columnas:**
+     - Cada columna 33% del ancho
+     - Formato: "• Casa X - Nombre"
+     - Mejor para nombres largos
+   - **Tabla de criterios de aprobación:**
+     - 4 escenarios explicados (100% consenso, mayoría simple, empate, dispersión)
+     - Colores: verde para APROBADO, rojo para NO APROBADO
+     - Nota explicativa sobre distribución de costos
+   - **Filtrado inteligente:**
+     - Solo muestra cotizaciones con votos > 0
+     - Ordenamiento descendente por votos
+     - Cotizaciones sin votos no aparecen (transparencia)
+   - Paleta de 8 colores para cotizaciones
+   - Warning de ESLint suprimido con comentario
+
+2. **Página de visualización (`/src/app/menu/voting/report/page.tsx`):**
+   - Visor full-screen del PDF generado
+   - Carga datos desde localStorage ('votingReportData')
+   - Botones de compartir y descargar
+   - Nombre de archivo sanitizado y descriptivo
+
+3. **Actualización página de votación (`/src/app/menu/voting/page.tsx`):**
+   - ✅ Botón verde "Generar Reporte PDF" con icono Download
+   - ✅ Tipo `Vote` actualizado: agregado campo `responsable?: string`
+   - ✅ Función `handleGenerateReport()` refactorizada:
+     - Usa nueva RPC `fn_gestionar_votos_con_responsable`
+     - Campo `notas_clave: null` para no mostrarlo en reporte
+     - Cuenta TODOS los votos por cotización (no solo casa seleccionada)
+     - Crea campo `responsables` (plural): "Casa 1 - Name, Casa 2 - Name, ..."
+   - ✅ Import `useRouter` removido (no usado)
+
+**Lógica de Aprobación (100% Consenso):**
+```typescript
+const todasVotaronPorGanador = 
+  ganadorVotos === totalCasas &&           // Ganador tiene todos los votos
+  totalCasas > 0 &&                        // Hay al menos 1 voto
+  sortedCotizaciones.filter(c => c.votos === totalCasas).length === 1;  // Solo 1 con máximo
+```
+
+**Estado Vacío — Sin Proyectos en Votación:**
+- ✅ Diseño moderno con icono checkmark circular en fondo azul
+- ✅ Tarjeta blanca centrada con sombra y bordes redondeados
+- ✅ Mensaje claro: "Sin Proyectos en Votación"
+- ✅ Explicación: "Los proyectos aparecerán cuando el administrador los active"
+- ✅ Sugerencia con emoji 💡: "Revisar grupos o calendario"
+- ✅ Botones de navegación:
+  - "Ver Grupos de Trabajo" (azul sólido)
+  - "Ver Calendario" (borde azul)
+- ✅ Responsive para móvil y desktop
+- ✅ Solo se muestra cuando `votableProjects.length === 0 && !loading`
+
+**Traducciones (i18n) — `/src/locales/*.json`:**
+- ✅ Español: `voting.noProjectsTitle`, `voting.noProjectsMessage`, `voting.noProjectsHint`
+- ✅ Inglés: Traducciones correspondientes
+- ✅ Francés: Traducciones correspondientes
+- ✅ Claves existentes: `voting.generateReport`, `voting.reportTitle`, `voting.downloadPdf`
+
+**Mejoras UI/UX Adicionales:**
+- ✅ Icono de navegación actualizado: CheckCircle2 → Gavel (consistencia)
+- ✅ Color hover botón votación: azul
+- ✅ Mobile overflow corregido: `w-screen overflow-x-hidden`
+
+**Validaciones Completadas:**
+- ✅ Build compiló exitosamente sin errores
+- ✅ Warning de ESLint eliminado (imagen PDF)
+- ✅ Tipos TypeScript sincronizados (`Vote`, `Cotizacion`)
+- ✅ PDF genera correctamente con datos reales
+- ✅ Estado vacío muestra correctamente cuando no hay proyectos
+- ✅ Tabla de criterios renderiza en PDF
+
+**Comando Git para Commit:**
+```bash
+feat(voting): add PDF report generation with approval criteria table and empty state UI - includes vote tracking with responsible names, progress bars, 100% consensus validation, 3-column layout for voters, professional empty state with navigation buttons, and multi-language support (es/en/fr)
+```
+
+---
+
+## 🔍 OPORTUNIDADES DE MEJORA IDENTIFICADAS
+
+### **A. Técnicas (Arquitectura y Rendimiento):**
+
+1. **⚠️ Paginación en Reportes PDF:**
+   - **Problema:** Si hay muchas cotizaciones o muchos responsables por cotización, el contenido puede desbordar una página
+   - **Impacto:** Medio - puede cortarse información en PDFs con datos extensos
+   - **Solución sugerida:** Implementar lógica de paginación automática en VotingReport.tsx
+
+2. **⚠️ Fuentes limitadas en PDF:**
+   - **Problema:** @react-pdf/renderer solo soporta fuentes estándar (Helvetica, Times, Courier)
+   - **Impacto:** Bajo - limita símbolos Unicode avanzados (por eso se removieron estrellas)
+   - **Solución actual:** Usar indicadores visuales (números, barras, colores) en lugar de símbolos
+
+3. **⚠️ Cache de reportes en localStorage:**
+   - **Problema:** localStorage puede llenarse con reportes grandes (límite ~5-10MB)
+   - **Impacto:** Bajo - solo afecta si se generan muchos reportes sin cerrar navegador
+   - **Solución sugerida:** Limpiar localStorage después de descargar o implementar TTL
+
+4. **🔄 Validación dinámica de número de casas:**
+   - **Problema:** Lógica de 100% asume número fijo de casas
+   - **Impacto:** Bajo - funciona correctamente pero podría ser más flexible
+   - **Solución sugerida:** Consultar total de casas activas desde DB dinámicamente
+
+### **B. UX/UI (Experiencia de Usuario):**
+
+1. **💡 Preview del PDF antes de generar:**
+   - **Problema:** No hay vista previa, solo se ve después de generar
+   - **Impacto:** Medio - usuario no sabe cómo se verá hasta generarlo
+   - **Solución sugerida:** Modal con preview en miniatura antes de generar
+
+2. **💡 Historial de reportes generados:**
+   - **Problema:** No se guardan reportes anteriores, solo el último en localStorage
+   - **Impacto:** Medio - si cierran el navegador pierden el reporte
+   - **Solución sugerida:** Tabla `reportes_votacion` en BD con URLs a bucket de Supabase
+
+3. **💡 Feedback visual durante generación:**
+   - **Problema:** No hay loading spinner o progress indicator al generar PDF
+   - **Impacto:** Bajo - puede parecer que no pasa nada en proyectos grandes
+   - **Solución sugerida:** Toast de "Generando PDF..." con spinner
+
+4. **💡 Notificación cuando todos voten:**
+   - **Problema:** Admin no recibe alerta cuando se alcanza 100% de participación
+   - **Impacto:** Medio - tiene que revisar manualmente
+   - **Solución sugerida:** Sistema de notificaciones push web (ver roadmap)
+
+### **C. Funcionales (Lógica de Negocio):**
+
+1. **🔄 Votación en tiempo real:**
+   - **Problema:** Votos no se actualizan automáticamente, requiere refresh manual
+   - **Impacto:** Medio - admin debe recargar para ver nuevos votos
+   - **Solución sugerida:** Implementar Supabase Realtime subscriptions
+
+2. **🔄 Estados intermedios no visibles:**
+   - **Problema:** En UI principal no se ve estado "parcialmente votado" claramente
+   - **Impacto:** Bajo - solo afecta visibilidad de progreso
+   - **Solución sugerida:** Barra de progreso en tarjeta de proyecto (ej. "7/10 casas han votado")
+
+3. **🔄 Export adicional a Excel/CSV:**
+   - **Problema:** Solo se puede exportar a PDF, no a formatos editables
+   - **Impacto:** Bajo - suficiente para reporte formal, pero limitado para análisis
+   - **Solución sugerida:** Botón adicional "Exportar a Excel" con biblioteca xlsx
+
+---
+
+## 📋 CONSIDERACIONES PARA PRÓXIMAS SESIONES
+
+### **Corto Plazo (Próxima Sesión):**
+- [ ] Agregar loading spinner al generar PDF
+- [ ] Implementar botón "Refrescar votos" sin reload completo de página
+- [ ] Mejorar mensajes de error si falla generación de PDF
+
+### **Mediano Plazo (1-2 Meses):**
+- [ ] Sistema de notificaciones cuando todos voten (Supabase Realtime)
+- [ ] Historial de reportes generados con fechas (tabla en BD + bucket)
+- [ ] Preview en miniatura antes de generar reporte completo
+- [ ] Export adicional a Excel/CSV para análisis
+
+### **Largo Plazo (Roadmap 2025-2026):**
+- [ ] Dashboard de estadísticas de votación con gráficos
+- [ ] Gráficos visuales de distribución de votos (Chart.js o Recharts)
+- [ ] Sistema de recordatorios automáticos para casas sin votar
+- [ ] Análisis histórico de votaciones por proyecto
+- [ ] Integración con sistema de mensajería para notificar resultados
+
+---
+
 ## 🎯 RESUMEN EJECUTIVO - Sesión del 13 de Noviembre de 2025
 
 ### ✅ SISTEMA DE VOTACIONES: COMPLETADO, RESPONSIVE Y LISTO PARA TESTING
@@ -624,3 +813,21 @@ type Casa = {
   id: string; // uuid del usuario
   id_casa: number;
 };
+
+
+---
+
+## 📚 ARCHIVOS DE CONTEXTO PARA COPILOT
+
+**Importante:** Al iniciar nuevas sesiones, GitHub Copilot debe leer estos archivos primero:
+
+1. **CONTEXTO_COPILOT.md** - Historial completo de sesiones, arquitectura, reglas de negocio
+2. **ESTILO_DE_TRABAJO.md** - Metodología de colaboración, preferencias técnicas, patrones
+3. **PLAN_DE_TRABAJO_PROFESIONAL.md** - Roadmap estratégico, análisis completo del proyecto
+4. **TAREAS_PENDIENTES.md** - Este archivo (estado actual de tareas)
+
+Estos archivos garantizan que no se pierda contexto entre sesiones.
+
+---
+
+**Última actualización:** 14 de Noviembre de 2025, 23:50 hrs

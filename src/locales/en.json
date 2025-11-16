@@ -617,6 +617,27 @@
     "vote": "Vote",
     "generateReport": "Generate PDF Report",
     "reportTitle": "Voting Report",
-    "downloadPdf": "Download PDF"
+    "downloadPdf": "Download PDF",
+    "projectStatus": "Project Status",
+    "votingFinalized": "Voting has been finalized. Voting buttons are disabled.",
+    "votingClosed": "Voting Closed",
+    "votingFinishedSelector": "Voting finalized - House selector disabled",
+    "adminDecision": "Administrator Decision",
+    "consensusReached": "Consensus reached!",
+    "consensusMessage": "All houses voted for the same quote.",
+    "winningQuote": "Winning quote",
+    "invalidAmountWarning": "The quote does not have a valid amount. Update the reference value before approving.",
+    "approveAndGenerate": "Approve and Generate Contributions",
+    "approveTooltip": "Approve project and generate contributions",
+    "invalidAmountTooltip": "Invalid reference value",
+    "noConsensus": "No consensus.",
+    "noConsensusMessage": "Votes are divided among quotes.",
+    "chooseAction": "Choose an action to close the voting process:",
+    "rejectProject": "Reject Project",
+    "cancelProject": "Cancel Project",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "statusCanceled": "Canceled",
+    "statusInVoting": "In Voting"
   }
 }

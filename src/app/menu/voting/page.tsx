@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'react-hot-toast';
-import { Home, CheckCircle2, FileText, Download } from 'lucide-react';
+import { Home, CheckCircle2, FileText, Download, CheckCircle, XCircle, Ban } from 'lucide-react';
 import type { Usuario } from '@/types/database'; 
 import { formatCurrency } from '@/utils/format';
 
@@ -73,17 +73,24 @@ export default function VotingPage() {
         }
 
         const { data: projectsData, error: projectsError } = await supabase.rpc('gestionar_proyectos', { p_action: 'SELECT_ALL' });
-        if (projectsError) throw projectsError;
+        if (projectsError) {
+          console.error('Error completo:', projectsError);
+          throw new Error(projectsError.message || JSON.stringify(projectsError));
+        }
 
-        const projectsInVoting = (projectsData || []).filter((p: Proyecto) => p.estado === 'en_votacion');
+        // Mostrar proyectos en votación, aprobados, rechazados o cancelados
+        const projectsInVoting = (projectsData || []).filter((p: Proyecto) => 
+          ['en_votacion', 'aprobado', 'rechazado', 'cancelado'].includes(p.estado)
+        );
         setVotableProjects(projectsInVoting);
 
         if (projectsInVoting.length > 0) {
           setSelectedProjectId(String(projectsInVoting[0].id_proyecto));
         }
       } catch (error: unknown) {
+        console.error('Error detallado:', error);
         const message = error instanceof Error ? error.message : String(error);
-        toast.error(`${t('projects.alerts.fetchError', { message: 'proyectos en votación' })}: ${message}`);
+        toast.error(`Error al cargar proyectos: ${message}`);
       } finally {
         setLoading(false);
       }
@@ -225,7 +232,6 @@ export default function VotingPage() {
       const { data: projectDetailsData, error: detailsError } = await supabase.rpc('get_project_info_with_status', {
         p_id_proyecto: Number(selectedProjectId),
       });
-
       if (detailsError) throw detailsError;
 
       const projectDetails = projectDetailsData?.[0] || {};
@@ -285,6 +291,84 @@ export default function VotingPage() {
       const message = error instanceof Error ? error.message : String(error);
       toast.error(`Error al generar reporte: ${message}`);
     }
+  };
+
+  const handleApproveProject = async () => {
+    if (!selectedProjectId) return;
+
+    // Encontrar la cotización ganadora (la que tiene todos los votos)
+    const totalCasas = casas.length;
+    const cotizacionGanadora = cotizaciones.find(cot => {
+      const votosCot = votes.filter(v => Number(v.id_evidencia) === Number(cot.id_evidencia));
+      return votosCot.length === totalCasas;
+    });
+
+    if (!cotizacionGanadora) {
+      toast.error('No se encontró la cotización ganadora');
+      return;
+    }
+
+    if (!cotizacionGanadora.valor_de_referencia || cotizacionGanadora.valor_de_referencia <= 0) {
+      toast.error('La cotización ganadora no tiene un monto válido');
+      return;
+    }
+
+    await toast.promise(
+      (async () => {
+        // Llamada única que maneja la transacción completa
+        const { error } = await supabase.rpc('aprobar_proyecto_y_generar_contribuciones', {
+          p_id_proyecto: Number(selectedProjectId),
+          p_valor_cotizacion: cotizacionGanadora.valor_de_referencia,
+        });
+        if (error) throw error;
+
+        // Recargar proyectos para actualizar el estado
+        const { data: projectsData, error: projectsError } = await supabase.rpc('gestionar_proyectos', { p_action: 'SELECT_ALL' });
+        if (!projectsError) {
+          const projectsInVoting = (projectsData || []).filter((p: Proyecto) => 
+            ['en_votacion', 'aprobado', 'rechazado', 'cancelado'].includes(p.estado)
+          );
+          setVotableProjects(projectsInVoting);
+        }
+      })(),
+      {
+        loading: 'Aprobando proyecto y generando contribuciones...',
+        success: `¡Proyecto aprobado! Contribuciones generadas: ${formatCurrency(cotizacionGanadora.valor_de_referencia / totalCasas, locale, currency)} por casa`,
+        error: (err) => `Error: ${err?.message || String(err)}`,
+      }
+    );
+  };
+
+  const handleChangeProjectState = async (newState: 'rechazado' | 'cancelado') => {
+    if (!selectedProjectId) return;
+
+    const stateLabel = newState === 'rechazado' ? 'Rechazado' : 'Cancelado';
+
+    await toast.promise(
+      (async () => {
+        const { error } = await supabase.rpc('gestionar_proyectos', {
+          p_action: 'UPDATE',
+          p_id_proyecto: Number(selectedProjectId),
+          p_estado: newState,
+        });
+        if (error) throw error;
+
+        // Recargar proyectos para actualizar el estado
+        const { data: projectsData, error: projectsError } = await supabase.rpc('gestionar_proyectos', { p_action: 'SELECT_ALL' });
+        if (!projectsError) {
+          const projectsInVoting = (projectsData || []).filter((p: Proyecto) => 
+            ['en_votacion', 'aprobado', 'rechazado', 'cancelado'].includes(p.estado)
+          );
+          setVotableProjects(projectsInVoting);
+          // Mantener el proyecto actual seleccionado para ver el resultado
+        }
+      })(),
+      {
+        loading: `Cambiando estado a ${stateLabel}...`,
+        success: `Proyecto marcado como ${stateLabel}`,
+        error: (err) => `Error: ${err?.message || String(err)}`,
+      }
+    );
   };
 
   return (
@@ -382,47 +466,84 @@ export default function VotingPage() {
 
           {selectedProjectId && (
             <>
+              {/* Badge de Estado del Proyecto */}
+              {(() => {
+                const selectedProject = votableProjects.find(p => String(p.id_proyecto) === selectedProjectId);
+                const estado = selectedProject?.estado || 'en_votacion';
+                const estadoConfig = {
+                  'en_votacion': { label: t('voting.statusInVoting'), color: 'bg-blue-100 text-blue-800 border-blue-300' },
+                  'aprobado': { label: t('voting.statusApproved'), color: 'bg-green-100 text-green-800 border-green-300' },
+                  'rechazado': { label: t('voting.statusRejected'), color: 'bg-red-100 text-red-800 border-red-300' },
+                  'cancelado': { label: t('voting.statusCanceled'), color: 'bg-gray-100 text-gray-800 border-gray-300' },
+                };
+                const config = estadoConfig[estado as keyof typeof estadoConfig] || estadoConfig['en_votacion'];
+                
+                return estado !== 'en_votacion' ? (
+                  <div className={`mb-6 p-4 border-2 rounded-lg ${config.color}`}>
+                    <p className="text-sm font-semibold">
+                      {t('voting.projectStatus')}: <span className="uppercase">{config.label}</span>
+                    </p>
+                    <p className="text-xs mt-1 opacity-80">
+                      {t('voting.votingFinalized')}
+                    </p>
+                  </div>
+                ) : null;
+              })()}
+
               {/* Sección Superior: Selección de Casa */}
               <div className="mb-8 p-4 bg-white rounded-lg shadow">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('voting.selectHouse')}</h2>
                 {loading ? <p>Cargando casas...</p> : (
                   <>
-                    <div className="mb-2 text-sm text-gray-500">
-                      { (currentUser?.tipo_usuario === 'PRE' || currentUser?.tipo_usuario === 'OPE')
-                        ? t('voting.disabledHouseExplanation')
-                        : t('voting.selectHouse')
-                      }
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                      {casas.map(casa => {
-                        const isSelected = selectedCasa?.id === casa.id;
-                        const isUserLimited = currentUser?.tipo_usuario === 'PRE' || currentUser?.tipo_usuario === 'OPE';
-                        // Solo deshabilitar otras casas para PRE/OPE; la propia casa queda habilitada
-                        const isDisabled = isUserLimited && currentUser?.id !== casa.id;
-                        const hasVoted = hasCasaVoted(casa.id);
-                        const title = isDisabled
-                          ? t('voting.disabledHouseTooltip')
-                          : `${t('voting.selectHouse')} ${casa.id}`;
+                    {(() => {
+                      const selectedProject = votableProjects.find(p => String(p.id_proyecto) === selectedProjectId);
+                      const proyectoEnVotacion = selectedProject?.estado === 'en_votacion';
+                      
+                      return (
+                        <>
+                          <div className="mb-2 text-sm text-gray-500">
+                            { !proyectoEnVotacion
+                              ? `🔒 ${t('voting.votingFinishedSelector')}`
+                              : (currentUser?.tipo_usuario === 'PRE' || currentUser?.tipo_usuario === 'OPE')
+                              ? t('voting.disabledHouseExplanation')
+                              : t('voting.selectHouse')
+                            }
+                          </div>
+                          <div className="flex flex-wrap gap-3">
+                            {casas.map(casa => {
+                              const isSelected = selectedCasa?.id === casa.id;
+                              const isUserLimited = currentUser?.tipo_usuario === 'PRE' || currentUser?.tipo_usuario === 'OPE';
+                              // Deshabilitar si el proyecto no está en votación O si es usuario limitado en otra casa
+                              const isDisabled = !proyectoEnVotacion || (isUserLimited && currentUser?.id !== casa.id);
+                              const hasVoted = hasCasaVoted(casa.id);
+                              const title = !proyectoEnVotacion
+                                ? t('voting.votingClosed')
+                                : isDisabled
+                                ? t('voting.disabledHouseTooltip')
+                                : `${t('voting.selectHouse')} ${casa.id}`;
 
-                        return (
-                        <div key={casa.id} className="relative">
-                          <button
-                            onClick={() => handleCasaSelect(casa)}
-                            disabled={isDisabled}
-                            title={title}
-                            className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors ${isSelected ? 'bg-blue-200 text-blue-800 ring-2 ring-blue-500' : hasVoted ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600 hover:bg-blue-100'} ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
-                            <Home size={20} />
-                            <span className="text-xs font-bold text-gray-700 mt-1">{casa.id}</span>
-                          </button>
-                          {hasVoted && (
-                            <span className="absolute -top-1 -right-1 bg-white rounded-full p-0.5">
-                              <CheckCircle2 size={14} className="text-green-600" />
-                            </span>
-                          )}
-                        </div>
-                        );
-                      })}
-                    </div>
+                              return (
+                              <div key={casa.id} className="relative">
+                                <button
+                                  onClick={() => handleCasaSelect(casa)}
+                                  disabled={isDisabled}
+                                  title={title}
+                                  className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors ${isSelected ? 'bg-blue-200 text-blue-800 ring-2 ring-blue-500' : hasVoted ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600 hover:bg-blue-100'} ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                  <Home size={20} />
+                                  <span className="text-xs font-bold text-gray-700 mt-1">{casa.id}</span>
+                                </button>
+                                {hasVoted && (
+                                  <span className="absolute -top-1 -right-1 bg-white rounded-full p-0.5">
+                                    <CheckCircle2 size={14} className="text-green-600" />
+                                  </span>
+                                )}
+                              </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </>
                 )}
               </div>
@@ -441,45 +562,161 @@ export default function VotingPage() {
                   </button>
                 </div>
                 {loading ? <p>Cargando cotizaciones...</p> : cotizaciones.length > 0 ? (
-                  cotizaciones.map(cot => {
-                    const selectedCasaExists = !!selectedCasa;
-                    const selectedCasaVoted = selectedCasaExists ? hasCasaVoted(selectedCasa!.id) : false;
-                    const votedForThis = selectedCasaExists ? hasCasaVotedForEvidence(selectedCasa!.id, cot.id_evidencia) : false;
+                  <>
+                    {(() => {
+                      const selectedProject = votableProjects.find(p => String(p.id_proyecto) === selectedProjectId);
+                      const proyectoEnVotacion = selectedProject?.estado === 'en_votacion';
 
-                    return (
-                      <div key={cot.id_evidencia} className="p-4 bg-white rounded-lg shadow-md border-l-4 border-gray-300 flex justify-between items-center">
-                        <div>
-                          <p className="font-semibold text-gray-800">{cot.descripcion_evidencia}</p>
-                          {cot.valor_de_referencia != null && (
-                            <p className="text-xl font-bold text-green-700 mt-1">
-                              {formatCurrency(cot.valor_de_referencia, locale, currency)}
-                            </p>
+                      return cotizaciones.map(cot => {
+                        const selectedCasaExists = !!selectedCasa;
+                        const selectedCasaVoted = selectedCasaExists ? hasCasaVoted(selectedCasa!.id) : false;
+                        const votedForThis = selectedCasaExists ? hasCasaVotedForEvidence(selectedCasa!.id, cot.id_evidencia) : false;
+
+                        return (
+                          <div key={cot.id_evidencia} className="p-4 bg-white rounded-lg shadow-md border-l-4 border-gray-300 flex justify-between items-center">
+                            <div>
+                              <p className="font-semibold text-gray-800">{cot.descripcion_evidencia}</p>
+                              {cot.valor_de_referencia != null && (
+                                <p className="text-xl font-bold text-green-700 mt-1">
+                                  {formatCurrency(cot.valor_de_referencia, locale, currency)}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <a href={cot.url_publica} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900">
+                                <FileText size={18} />
+                              </a>
+
+                              {/* Si el proyecto NO está en votación, deshabilitar todos los botones */}
+                              {!proyectoEnVotacion && (
+                                <button 
+                                  disabled 
+                                  className="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg cursor-not-allowed"
+                                  title={t('voting.votingClosed')}
+                                >
+                                  🔒 {t('voting.votingClosed')}
+                                </button>
+                              )}
+
+                              {/* Si está en votación, mantener lógica original */}
+                              {proyectoEnVotacion && !selectedCasaExists && (
+                                <button disabled className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed">{t('voting.vote')}</button>
+                              )}
+
+                              {proyectoEnVotacion && selectedCasaExists && !selectedCasaVoted && (
+                                <button onClick={() => handleVote(cot.id_evidencia)} className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">{t('voting.vote')}</button>
+                              )}
+
+                              {proyectoEnVotacion && selectedCasaExists && selectedCasaVoted && votedForThis && (
+                                <button onClick={handleUnvote} className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700">Anular Voto</button>
+                              )}
+
+                              {proyectoEnVotacion && selectedCasaExists && selectedCasaVoted && !votedForThis && (
+                                <button disabled className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed">{t('voting.vote')}</button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+
+                    {/* Sección de Decisión del Administrador - Solo si el proyecto está EN VOTACIÓN */}
+                    {currentUser?.tipo_usuario === 'ADM' && (() => {
+                      const selectedProject = votableProjects.find(p => String(p.id_proyecto) === selectedProjectId);
+                      const proyectoEnVotacion = selectedProject?.estado === 'en_votacion';
+
+                      // Solo mostrar si está en votación
+                      if (!proyectoEnVotacion) return null;
+
+                      const totalCasas = casas.length;
+                      const totalVotos = votes.length;
+                      const todosVotaron = totalVotos === totalCasas && totalCasas > 0;
+
+                      // Calcular consenso
+                      const votosPorCotizacion = cotizaciones.map(cot => ({
+                        ...cot,
+                        votos: votes.filter(v => Number(v.id_evidencia) === Number(cot.id_evidencia)).length,
+                      }));
+
+                      const cotizacionConMasVotos = votosPorCotizacion.reduce((prev, current) => 
+                        (current.votos > prev.votos) ? current : prev
+                      , votosPorCotizacion[0]);
+
+                      const tieneConsenso = cotizacionConMasVotos?.votos === totalCasas && totalCasas > 0;
+                      const valorValido = (cotizacionConMasVotos?.valor_de_referencia || 0) > 0;
+
+                      return todosVotaron ? (
+                        <div className="mt-6 p-6 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                          <h3 className="text-lg font-bold text-gray-800 mb-4">
+                            ⚖️ {t('voting.adminDecision')}
+                          </h3>
+
+                          {tieneConsenso ? (
+                            <>
+                              {/* 100% Consenso alcanzado */}
+                              <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500 rounded">
+                                <p className="text-sm text-green-800 mb-2">
+                                  <CheckCircle className="inline mr-2" size={18} />
+                                  <strong>{t('voting.consensusReached')}</strong> {t('voting.consensusMessage')}
+                                </p>
+                                <p className="text-xs text-green-700">
+                                  {t('voting.winningQuote')}: <strong>{cotizacionConMasVotos.descripcion_evidencia}</strong>
+                                </p>
+                                {!valorValido && (
+                                  <p className="text-xs text-red-600 mt-2">
+                                    ⚠️ {t('voting.invalidAmountWarning')}
+                                  </p>
+                                )}
+                              </div>
+                              
+                              <button
+                                onClick={handleApproveProject}
+                                disabled={!valorValido}
+                                className={`w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md transition-colors ${
+                                  valorValido
+                                    ? 'bg-green-600 text-white hover:bg-green-700'
+                                    : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                }`}
+                                title={valorValido ? t('voting.approveTooltip') : t('voting.invalidAmountTooltip')}
+                              >
+                                <CheckCircle size={20} />
+                                {t('voting.approveAndGenerate')}
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {/* No hay consenso (votos divididos) */}
+                              <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+                                <p className="text-sm text-yellow-800 mb-2">
+                                  <strong>{t('voting.noConsensus')}</strong> {t('voting.noConsensusMessage')}
+                                </p>
+                                <p className="text-xs text-yellow-700">
+                                  {t('voting.chooseAction')}
+                                </p>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button
+                                  onClick={() => handleChangeProjectState('rechazado')}
+                                  className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors"
+                                >
+                                  <XCircle size={20} />
+                                  {t('voting.rejectProject')}
+                                </button>
+                                <button
+                                  onClick={() => handleChangeProjectState('cancelado')}
+                                  className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition-colors"
+                                >
+                                  <Ban size={20} />
+                                  {t('voting.cancelProject')}
+                                </button>
+                              </div>
+                            </>
                           )}
                         </div>
-                        <div className="flex items-center gap-3">
-                          <a href={cot.url_publica} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900">
-                            <FileText size={18} />
-                          </a>
-
-                          {!selectedCasaExists && (
-                            <button disabled className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed">{t('voting.vote')}</button>
-                          )}
-
-                          {selectedCasaExists && !selectedCasaVoted && (
-                            <button onClick={() => handleVote(cot.id_evidencia)} className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">{t('voting.vote')}</button>
-                          )}
-
-                          {selectedCasaExists && selectedCasaVoted && votedForThis && (
-                            <button onClick={handleUnvote} className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700">Anular Voto</button>
-                          )}
-
-                          {selectedCasaExists && selectedCasaVoted && !votedForThis && (
-                            <button disabled className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed">{t('voting.vote')}</button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
+                      ) : null;
+                    })()}
+                  </>
                 ) : (
                   <div className="p-6 bg-white rounded-lg shadow text-center text-gray-500"><p>{t('voting.noQuotes')}</p></div>
                 )}
