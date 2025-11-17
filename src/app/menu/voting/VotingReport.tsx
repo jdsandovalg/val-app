@@ -93,8 +93,8 @@ const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingTop: 55,
+    paddingBottom: 35,
     paddingHorizontal: 30,
     color: '#333',
   },
@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
     top: 15,
     left: 30,
     right: 30,
-    height: 50,
+    height: 45,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
-    paddingBottom: 8,
+    paddingBottom: 6,
   },
   logo: {
     width: 50,
@@ -136,13 +136,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 4,
-    padding: 8,
-    marginBottom: 12,
+    padding: 5,
+    marginBottom: 6,
   },
   projectInfoGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   projectInfoItem: {
     width: '48%',
@@ -161,29 +161,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: 'bold',
     color: '#1F2937',
-    marginTop: 10,
-    marginBottom: 8,
-    paddingBottom: 4,
+    marginTop: 5,
+    marginBottom: 5,
+    paddingBottom: 2,
     borderBottomWidth: 2,
     borderBottomColor: '#2563EB',
   },
   cotizacionCard: {
-    marginBottom: 8,
+    marginBottom: 5,
     borderRadius: 4,
     overflow: 'hidden',
   },
   cotizacionCardInner: {
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingLeft: 8,
+    paddingRight: 8,
+    paddingTop: 4,
+    paddingBottom: 4,
     borderLeftWidth: 4,
   },
   cotizacionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 3,
   },
   cotizacionDescription: {
     flex: 1,
@@ -218,59 +218,57 @@ const styles = StyleSheet.create({
   responsablesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 6,
-    paddingTop: 6,
+    marginTop: 4,
+    paddingTop: 4,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.1)',
   },
   responsableColumn: {
     width: '33%',
     fontSize: 8,
-    paddingVertical: 2,
+    paddingVertical: 1,
   },
   approvalBadge: {
     backgroundColor: '#10B981',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 5,
     alignItems: 'center',
   },
   approvalText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   votesBadge: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
     minWidth: 100,
+    gap: 6,
   },
   votesCount: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 2,
   },
   votesLabel: {
-    fontSize: 8,
-    marginTop: 2,
+    fontSize: 7,
   },
   progressBarContainer: {
-    width: 80,
-    height: 8,
+    width: 40,
+    height: 6,
     backgroundColor: '#E5E7EB',
-    borderRadius: 4,
+    borderRadius: 3,
     overflow: 'hidden',
-    marginTop: 4,
   },
   progressBarFill: {
     height: '100%',
     backgroundColor: '#10B981',
   },
   criteriaSection: {
-    marginTop: 10,
-    paddingTop: 10,
+    marginTop: 5,
+    paddingTop: 5,
     borderTopWidth: 2,
     borderTopColor: '#E5E7EB',
   },
@@ -278,7 +276,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 6,
+    marginBottom: 3,
   },
   criteriaTable: {
     borderWidth: 1,
@@ -291,26 +289,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderBottomWidth: 1,
     borderBottomColor: '#D1D5DB',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
   },
   tableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
-    paddingVertical: 5,
-    paddingHorizontal: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
   },
   tableRowLast: {
     borderBottomWidth: 0,
   },
   tableCellScenario: {
-    width: '35%',
+    width: '25%',
     fontSize: 8,
     paddingRight: 4,
   },
   tableCellVotes: {
-    width: '40%',
+    width: '25%',
     fontSize: 8,
     paddingRight: 4,
   },
@@ -318,6 +316,11 @@ const styles = StyleSheet.create({
     width: '25%',
     fontSize: 8,
     fontWeight: 'bold',
+  },
+  tableCellIcon: {
+    width: '25%',
+    fontSize: 8,
+    textAlign: 'center',
   },
   tableHeaderText: {
     fontWeight: 'bold',
@@ -353,8 +356,8 @@ const styles = StyleSheet.create({
   },
   // Estilos para tabla de contribuciones
   contribucionesSection: {
-    marginTop: 10,
-    paddingTop: 10,
+    marginTop: 5,
+    paddingTop: 5,
     borderTopWidth: 2,
     borderTopColor: '#E5E7EB',
   },
@@ -363,20 +366,20 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     borderRadius: 4,
     overflow: 'hidden',
-    marginTop: 8,
+    marginTop: 3,
   },
   contribTableHeader: {
     flexDirection: 'row',
     backgroundColor: '#F3F4F6',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#D1D5DB',
   },
   contribTableRow: {
     flexDirection: 'row',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
@@ -384,42 +387,42 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   contribCellCasa: {
-    width: '10%',
+    width: '7%',
     fontSize: 8,
-    paddingRight: 4,
+    paddingRight: 3,
   },
   contribCellResponsable: {
-    width: '35%',
+    width: '23%',
     fontSize: 8,
-    paddingRight: 4,
+    paddingRight: 3,
   },
   contribCellMonto: {
-    width: '20%',
+    width: '18%',
     fontSize: 8,
-    paddingRight: 4,
+    paddingRight: 3,
     textAlign: 'right',
     fontWeight: 'bold',
   },
   contribCellNotas: {
-    width: '35%',
+    width: '52%',
     fontSize: 7,
     color: '#6B7280',
   },
   contribTotalRow: {
     flexDirection: 'row',
     backgroundColor: '#F9FAFB',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
     borderTopWidth: 2,
     borderTopColor: '#D1D5DB',
   },
   contribDistType: {
     fontSize: 8,
     color: '#059669',
-    marginTop: 6,
+    marginTop: 4,
     fontStyle: 'italic',
     backgroundColor: '#ECFDF5',
-    padding: 4,
+    padding: 3,
     borderRadius: 4,
     borderLeftWidth: 3,
     borderLeftColor: '#059669',
@@ -573,7 +576,7 @@ export const VotingReport = ({
                 </View>
 
                 {/* Monto */}
-                <View style={{ marginTop: 6 }}>
+                <View style={{ marginTop: 3 }}>
                   <Text style={[styles.cotizacionAmount, { color: colors.text }]}>
                     {formatCurrency(cot.valor_de_referencia, locale, currency)}
                   </Text>
@@ -645,12 +648,21 @@ export const VotingReport = ({
                   <Text style={styles.contribCellNotas}>
                     {(() => {
                       const detalles = [];
-                      if (contrib.metadata_json?.controles) {
-                        detalles.push(`${contrib.metadata_json.controles} controles`);
+                      
+                      // Mostrar controles si existen en metadata
+                      if (contrib.metadata_json && typeof contrib.metadata_json === 'object') {
+                        const metadata = contrib.metadata_json as { controles?: number; [key: string]: unknown };
+                        if (metadata.controles) {
+                          detalles.push(`${metadata.controles} controles`);
+                        }
                       }
-                      if (contrib.notas) {
-                        detalles.push(contrib.notas.substring(0, 40));
+                      
+                      // Mostrar notas si existen
+                      if (contrib.notas && contrib.notas.trim()) {
+                        const notaCorta = contrib.notas.trim().substring(0, 35);
+                        detalles.push(notaCorta);
                       }
+                      
                       return detalles.join(' • ') || '-';
                     })()}
                   </Text>
@@ -683,36 +695,41 @@ export const VotingReport = ({
             {/* Header */}
             <View style={styles.tableHeader}>
               <Text style={[styles.tableCellScenario, styles.tableHeaderText]}>Escenario</Text>
-              <Text style={[styles.tableCellVotes, styles.tableHeaderText]}>Distribución de Votos</Text>
+              <Text style={[styles.tableCellVotes, styles.tableHeaderText]}>Distribución</Text>
+              <Text style={[styles.tableCellIcon, styles.tableHeaderText]}>Estado</Text>
               <Text style={[styles.tableCellResult, styles.tableHeaderText]}>Resultado</Text>
             </View>
             
             {/* Fila 1: 100% consenso */}
             <View style={styles.tableRow}>
               <Text style={styles.tableCellScenario}>100% consenso</Text>
-              <Text style={styles.tableCellVotes}>Todas las casas votan por la misma cotización</Text>
-              <Text style={[styles.tableCellResult, styles.approvedText]}>✓ APROBADO</Text>
+              <Text style={styles.tableCellVotes}>Todas las casas votan igual</Text>
+              <Text style={styles.tableCellIcon}>✓</Text>
+              <Text style={[styles.tableCellResult, styles.approvedText]}>APROBADO</Text>
             </View>
             
             {/* Fila 2: Mayoría simple */}
             <View style={styles.tableRow}>
               <Text style={styles.tableCellScenario}>Mayoría simple</Text>
-              <Text style={styles.tableCellVotes}>Una cotización tiene más votos pero no todos</Text>
-              <Text style={[styles.tableCellResult, styles.rejectedText]}>✗ NO APROBADO</Text>
+              <Text style={styles.tableCellVotes}>Una tiene más votos</Text>
+              <Text style={styles.tableCellIcon}>✗</Text>
+              <Text style={[styles.tableCellResult, styles.rejectedText]}>NO APROBADO</Text>
             </View>
             
             {/* Fila 3: Empate */}
             <View style={styles.tableRow}>
               <Text style={styles.tableCellScenario}>Empate</Text>
-              <Text style={styles.tableCellVotes}>Dos o más cotizaciones tienen la misma cantidad</Text>
-              <Text style={[styles.tableCellResult, styles.rejectedText]}>✗ NO APROBADO</Text>
+              <Text style={styles.tableCellVotes}>Dos o más iguales</Text>
+              <Text style={styles.tableCellIcon}>✗</Text>
+              <Text style={[styles.tableCellResult, styles.rejectedText]}>NO APROBADO</Text>
             </View>
             
             {/* Fila 4: Dispersión */}
             <View style={[styles.tableRow, styles.tableRowLast]}>
-              <Text style={styles.tableCellScenario}>Dispersión de votos</Text>
-              <Text style={styles.tableCellVotes}>Votos repartidos entre varias cotizaciones</Text>
-              <Text style={[styles.tableCellResult, styles.rejectedText]}>✗ NO APROBADO</Text>
+              <Text style={styles.tableCellScenario}>Dispersión</Text>
+              <Text style={styles.tableCellVotes}>Votos repartidos</Text>
+              <Text style={styles.tableCellIcon}>✗</Text>
+              <Text style={[styles.tableCellResult, styles.rejectedText]}>NO APROBADO</Text>
             </View>
           </View>
         </View>
