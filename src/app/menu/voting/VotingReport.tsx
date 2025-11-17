@@ -33,9 +33,23 @@ type Cotizacion = {
   responsables?: string | null;
 };
 
+type Contribucion = {
+  id_contribucion: number;
+  id_casa: number;
+  responsable: string;
+  monto_esperado: number;
+  metadata_json?: {
+    controles?: number;
+    distribucion_personalizada?: boolean;
+    [key: string]: unknown;
+  } | null;
+  notas?: string | null;
+};
+
 type VotingReportProps = {
   projectInfo: ProjectInfo;
   cotizaciones: Cotizacion[];
+  contribuciones?: Contribucion[] | null;
   t: (key: string, params?: { [key: string]: string | number }) => string;
   locale: string;
   currency: string;
@@ -337,6 +351,79 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: '#6B7280',
   },
+  // Estilos para tabla de contribuciones
+  contribucionesSection: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 2,
+    borderTopColor: '#E5E7EB',
+  },
+  contribucionesTable: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginTop: 8,
+  },
+  contribTableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#D1D5DB',
+  },
+  contribTableRow: {
+    flexDirection: 'row',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  contribTableRowLast: {
+    borderBottomWidth: 0,
+  },
+  contribCellCasa: {
+    width: '10%',
+    fontSize: 7,
+    paddingRight: 4,
+  },
+  contribCellResponsable: {
+    width: '35%',
+    fontSize: 7,
+    paddingRight: 4,
+  },
+  contribCellMonto: {
+    width: '20%',
+    fontSize: 7,
+    paddingRight: 4,
+    textAlign: 'right',
+    fontWeight: 'bold',
+  },
+  contribCellNotas: {
+    width: '35%',
+    fontSize: 6,
+    color: '#6B7280',
+  },
+  contribTotalRow: {
+    flexDirection: 'row',
+    backgroundColor: '#F9FAFB',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderTopWidth: 2,
+    borderTopColor: '#D1D5DB',
+  },
+  contribDistType: {
+    fontSize: 7,
+    color: '#059669',
+    marginTop: 8,
+    fontStyle: 'italic',
+    backgroundColor: '#ECFDF5',
+    padding: 6,
+    borderRadius: 4,
+    borderLeftWidth: 3,
+    borderLeftColor: '#059669',
+  },
 });
 
 // Componente para renderizar una página con numeración
@@ -353,6 +440,7 @@ const VotingReportPage = ({ children, pageNumber }: { children: React.ReactNode;
 export const VotingReport = ({
   projectInfo,
   cotizaciones,
+  contribuciones,
   t,
   locale,
   currency,
@@ -508,6 +596,85 @@ export const VotingReport = ({
             </View>
           );
         })}
+
+        {/* Sección de Distribución de Contribuciones */}
+        {contribuciones && contribuciones.length > 0 && (
+          <View style={styles.contribucionesSection}>
+            <Text style={styles.sectionTitle}>Distribución de Contribuciones</Text>
+            
+            {/* Detectar tipo de distribución */}
+            {(() => {
+              const tieneDistribucionPersonalizada = contribuciones.some(
+                c => c.metadata_json?.distribucion_personalizada === true
+              );
+              const montosUnicos = new Set(contribuciones.map(c => c.monto_esperado)).size;
+              const esDistribucionVariable = montosUnicos > 1;
+              
+              return (
+                <Text style={styles.contribDistType}>
+                  {esDistribucionVariable || tieneDistribucionPersonalizada
+                    ? '📊 Distribución Personalizada: Montos variables según criterios del proyecto'
+                    : '⚖️ Distribución Equitativa: Monto igual para todas las casas'}
+                </Text>
+              );
+            })()}
+
+            <View style={styles.contribucionesTable}>
+              {/* Header */}
+              <View style={styles.contribTableHeader}>
+                <Text style={[styles.contribCellCasa, styles.tableHeaderText]}>Casa</Text>
+                <Text style={[styles.contribCellResponsable, styles.tableHeaderText]}>Responsable</Text>
+                <Text style={[styles.contribCellMonto, styles.tableHeaderText]}>Monto</Text>
+                <Text style={[styles.contribCellNotas, styles.tableHeaderText]}>Detalles</Text>
+              </View>
+
+              {/* Filas de contribuciones */}
+              {contribuciones.map((contrib, index) => (
+                <View 
+                  key={contrib.id_contribucion} 
+                  style={[
+                    styles.contribTableRow, 
+                    index === contribuciones.length - 1 ? styles.contribTableRowLast : {}
+                  ]}
+                >
+                  <Text style={styles.contribCellCasa}>{contrib.id_casa}</Text>
+                  <Text style={styles.contribCellResponsable}>{contrib.responsable}</Text>
+                  <Text style={styles.contribCellMonto}>
+                    {formatCurrency(contrib.monto_esperado, locale, currency)}
+                  </Text>
+                  <Text style={styles.contribCellNotas}>
+                    {(() => {
+                      const detalles = [];
+                      if (contrib.metadata_json?.controles) {
+                        detalles.push(`${contrib.metadata_json.controles} controles`);
+                      }
+                      if (contrib.notas) {
+                        detalles.push(contrib.notas.substring(0, 40));
+                      }
+                      return detalles.join(' • ') || '-';
+                    })()}
+                  </Text>
+                </View>
+              ))}
+
+              {/* Fila de Total */}
+              <View style={styles.contribTotalRow}>
+                <Text style={[styles.contribCellCasa, { fontWeight: 'bold' }]}>TOTAL</Text>
+                <Text style={[styles.contribCellResponsable, { fontWeight: 'bold' }]}>
+                  {contribuciones.length} {contribuciones.length === 1 ? 'casa' : 'casas'}
+                </Text>
+                <Text style={[styles.contribCellMonto, { color: '#059669' }]}>
+                  {formatCurrency(
+                    contribuciones.reduce((sum, c) => sum + c.monto_esperado, 0),
+                    locale,
+                    currency
+                  )}
+                </Text>
+                <Text style={styles.contribCellNotas}></Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* Tabla de Criterios de Aprobación */}
         <View style={styles.criteriaSection}>

@@ -280,9 +280,23 @@ export default function VotingPage() {
 
       const fileName = `Reporte_Votacion_${selectedProject.descripcion_tarea.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
 
+      // Obtener contribuciones si el proyecto está aprobado
+      let contribuciones = null;
+      if (selectedProject.estado === 'aprobado') {
+        const { data: contribData, error: contribError } = await supabase.rpc('gestionar_contribuciones_proyecto', {
+          p_action: 'SELECT',
+          p_id_proyecto: Number(selectedProjectId),
+        });
+        
+        if (!contribError && contribData) {
+          contribuciones = contribData;
+        }
+      }
+
       const reportData = {
         projectInfo,
         cotizaciones: cotizacionesConVotos,
+        contribuciones,
         fileName,
       };
 
@@ -703,33 +717,58 @@ export default function VotingPage() {
                                 )}
                               </div>
                               
-                              <div className="space-y-2">
+                              <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
+                                {/* Opción 1: Distribución Igual */}
                                 <button
                                   onClick={handleApproveProject}
                                   disabled={!valorValido}
-                                  className={`w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md transition-colors ${
+                                  className={`flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all ${
                                     valorValido
-                                      ? 'bg-green-600 text-white hover:bg-green-700'
-                                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                      ? 'border-green-600 bg-green-50 hover:bg-green-100 hover:shadow-md'
+                                      : 'border-gray-300 bg-gray-50 cursor-not-allowed'
                                   }`}
-                                  title={valorValido ? t('voting.approveTooltip') : t('voting.invalidAmountTooltip')}
+                                  title={valorValido ? 'Divide el monto total equitativamente entre todas las casas' : t('voting.invalidAmountTooltip')}
                                 >
-                                  <CheckCircle size={20} />
-                                  {t('voting.approveAndGenerate')}
+                                  <CheckCircle size={24} className={valorValido ? 'text-green-600' : 'text-gray-400'} />
+                                  <div className="text-center">
+                                    <p className={`font-semibold text-sm ${valorValido ? 'text-green-700' : 'text-gray-400'}`}>
+                                      Distribución Igual
+                                    </p>
+                                    <p className={`text-xs mt-1 ${valorValido ? 'text-green-600' : 'text-gray-400'}`}>
+                                      Monto igual para todas las casas
+                                    </p>
+                                  </div>
                                 </button>
-                                
+
+                                {/* Divisor "O" */}
+                                <div className="flex flex-col items-center gap-2 px-2">
+                                  <div className="h-full w-px bg-gray-300"></div>
+                                  <span className="text-gray-500 font-bold text-sm bg-white px-2 py-1 rounded-full border border-gray-300">
+                                    O
+                                  </span>
+                                  <div className="h-full w-px bg-gray-300"></div>
+                                </div>
+
+                                {/* Opción 2: Distribución Personalizada */}
                                 <button
                                   onClick={() => setShowCustomDistribution(true)}
                                   disabled={!valorValido}
-                                  className={`w-full flex items-center justify-center gap-2 px-6 py-2 font-medium rounded-lg border-2 transition-colors ${
+                                  className={`flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all ${
                                     valorValido
-                                      ? 'border-green-600 text-green-700 hover:bg-green-50'
-                                      : 'border-gray-300 text-gray-400 cursor-not-allowed'
+                                      ? 'border-green-600 bg-green-50 hover:bg-green-100 hover:shadow-md'
+                                      : 'border-gray-300 bg-gray-50 cursor-not-allowed'
                                   }`}
-                                  title="Subir CSV con distribución personalizada de montos"
+                                  title="Sube un CSV con montos personalizados por casa"
                                 >
-                                  <FileText size={18} />
-                                  Distribución Personalizada (CSV)
+                                  <FileText size={24} className={valorValido ? 'text-green-600' : 'text-gray-400'} />
+                                  <div className="text-center">
+                                    <p className={`font-semibold text-sm ${valorValido ? 'text-green-700' : 'text-gray-400'}`}>
+                                      Distribución Personalizada
+                                    </p>
+                                    <p className={`text-xs mt-1 ${valorValido ? 'text-green-600' : 'text-gray-400'}`}>
+                                      Subir CSV con montos variables
+                                    </p>
+                                  </div>
                                 </button>
                               </div>
                             </>
