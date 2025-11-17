@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { Home, CheckCircle2, FileText, Download, CheckCircle, XCircle, Ban } from 'lucide-react';
 import type { Usuario } from '@/types/database'; 
 import { formatCurrency } from '@/utils/format';
+import CustomDistributionModal from './components/CustomDistributionModal';
 
 type EvidenciaVotacion = {
   id_evidencia: number;
@@ -19,6 +20,7 @@ type Casa = {
   id: number; // Es el id de usuario (numero de casa en este esquema)
   // Mantener id_casa opcional por compatibilidad si alguna fuente la retorna
   id_casa?: number;
+  responsable?: string;
 };
 
 type Vote = {
@@ -59,6 +61,7 @@ export default function VotingPage() {
   const [votableProjects, setVotableProjects] = useState<Proyecto[]>([]);
   const [selectedCasa, setSelectedCasa] = useState<Casa | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [showCustomDistribution, setShowCustomDistribution] = useState(false);
 
   // Obtener los proyectos y seleccionar el primero en votación
   useEffect(() => {
@@ -110,7 +113,7 @@ export default function VotingPage() {
       try {
         const { data: casasData, error: casasError } = await supabase
           .from('usuarios')
-          .select('id')
+          .select('id, responsable')
           .in('tipo_usuario', ['PRE', 'ADM', 'OPE'])
           .order('id');
         if (casasError) throw casasError;
@@ -334,6 +337,37 @@ export default function VotingPage() {
       {
         loading: 'Aprobando proyecto y generando contribuciones...',
         success: `¡Proyecto aprobado! Contribuciones generadas: ${formatCurrency(cotizacionGanadora.valor_de_referencia / totalCasas, locale, currency)} por casa`,
+        error: (err) => `Error: ${err?.message || String(err)}`,
+      }
+    );
+  };
+
+  const handleCustomDistribution = async (csvData: Array<{id_casa: number; monto: number; notas?: string; controles?: number}>) => {
+    if (!selectedProjectId) return;
+
+    await toast.promise(
+      (async () => {
+        // Llamar a la función que aprueba con distribución personalizada
+        const { error } = await supabase.rpc('aprobar_proyecto_con_distribucion_personalizada', {
+          p_id_proyecto: Number(selectedProjectId),
+          p_datos_contribuciones: csvData,
+        });
+        if (error) throw error;
+
+        // Recargar proyectos para actualizar el estado
+        const { data: projectsData, error: projectsError } = await supabase.rpc('gestionar_proyectos', { p_action: 'SELECT_ALL' });
+        if (!projectsError) {
+          const projectsInVoting = (projectsData || []).filter((p: Proyecto) => 
+            ['en_votacion', 'aprobado', 'rechazado', 'cancelado'].includes(p.estado)
+          );
+          setVotableProjects(projectsInVoting);
+        }
+        
+        setShowCustomDistribution(false);
+      })(),
+      {
+        loading: 'Aprobando proyecto con distribución personalizada...',
+        success: `¡Proyecto aprobado! Se generaron ${csvData.length} contribuciones personalizadas`,
         error: (err) => `Error: ${err?.message || String(err)}`,
       }
     );
@@ -669,19 +703,35 @@ export default function VotingPage() {
                                 )}
                               </div>
                               
-                              <button
-                                onClick={handleApproveProject}
-                                disabled={!valorValido}
-                                className={`w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md transition-colors ${
-                                  valorValido
-                                    ? 'bg-green-600 text-white hover:bg-green-700'
-                                    : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                                }`}
-                                title={valorValido ? t('voting.approveTooltip') : t('voting.invalidAmountTooltip')}
-                              >
-                                <CheckCircle size={20} />
-                                {t('voting.approveAndGenerate')}
-                              </button>
+                              <div className="space-y-2">
+                                <button
+                                  onClick={handleApproveProject}
+                                  disabled={!valorValido}
+                                  className={`w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md transition-colors ${
+                                    valorValido
+                                      ? 'bg-green-600 text-white hover:bg-green-700'
+                                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                  }`}
+                                  title={valorValido ? t('voting.approveTooltip') : t('voting.invalidAmountTooltip')}
+                                >
+                                  <CheckCircle size={20} />
+                                  {t('voting.approveAndGenerate')}
+                                </button>
+                                
+                                <button
+                                  onClick={() => setShowCustomDistribution(true)}
+                                  disabled={!valorValido}
+                                  className={`w-full flex items-center justify-center gap-2 px-6 py-2 font-medium rounded-lg border-2 transition-colors ${
+                                    valorValido
+                                      ? 'border-green-600 text-green-700 hover:bg-green-50'
+                                      : 'border-gray-300 text-gray-400 cursor-not-allowed'
+                                  }`}
+                                  title="Subir CSV con distribución personalizada de montos"
+                                >
+                                  <FileText size={18} />
+                                  Distribución Personalizada (CSV)
+                                </button>
+                              </div>
                             </>
                           ) : (
                             <>
@@ -730,6 +780,27 @@ export default function VotingPage() {
         </div>
         </div>
       </div>
+      
+      {/* Modal de Distribución Personalizada */}
+      {selectedProjectId && (() => {
+        const selectedProject = votableProjects.find(p => String(p.id_proyecto) === selectedProjectId);
+        const cotizacionGanadora = cotizaciones.find(cot => {
+          const totalCasas = casas.length;
+          const votosCot = votes.filter(v => Number(v.id_evidencia) === Number(cot.id_evidencia));
+          return votosCot.length === totalCasas;
+        });
+        
+        return selectedProject && cotizacionGanadora?.valor_de_referencia ? (
+          <CustomDistributionModal
+            isOpen={showCustomDistribution}
+            onClose={() => setShowCustomDistribution(false)}
+            onConfirm={handleCustomDistribution}
+            projectName={selectedProject.descripcion_tarea}
+            totalAmount={cotizacionGanadora.valor_de_referencia}
+            casas={casas.map(c => ({ id: c.id, responsable: c.responsable || `Casa ${c.id}` }))}
+          />
+        ) : null;
+      })()}
     </div>
   );
 }
