@@ -216,7 +216,9 @@
     "cancelButton": "Cancelar",
     "passwordMismatch": "Las contraseñas no coinciden.",
     "changeAvatar": "Cambiar",
-    "avatarAlt": "Avatar de usuario"
+    "avatarAlt": "Avatar de usuario",
+    "invalidImageType": "Por favor seleccione un archivo de imagen válido (JPG, PNG, etc.)",
+    "imageTooLarge": "La imagen es demasiado grande. El tamaño máximo es 2MB"
   },
   "common": {
     "confirmButton": "Confirmar"

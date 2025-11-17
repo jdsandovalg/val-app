@@ -56,6 +56,63 @@ Este directorio contiene respaldos de funciones SQL críticas antes de realizar 
 
 ---
 
+## 📅 16 de Noviembre de 2025 - Perfeccionamiento de Funciones de Perfil
+
+**Cambio solicitado:** Mejorar funciones de actualización de perfil de usuario con validaciones y manejo de avatar.
+
+**Problema reportado:**
+Usuario experimentó error al actualizar su perfil desde móvil:
+```
+Error al guardar el usuario: new row violates row-level security policy
+```
+
+**Causa raíz:**
+Las funciones `update_user_profile` y `update_user_avatar` existían y funcionaban básicamente, pero:
+1. No tenían validaciones robustas de entrada (TRIM, NULLIF)
+2. No normalizaban datos (emails minúsculas, espacios)
+3. Faltaba `updated_at` automático
+4. Mensaje de error confuso (sugería "new row" cuando era UPDATE)
+
+**Estrategia implementada:**
+
+**Mejoras en `update_user_profile`:**
+- ✅ Validación explícita de existencia de usuario con mensaje claro
+- ✅ TRIM en todos los campos de texto para evitar espacios fantasma
+- ✅ Email normalizado a minúsculas (LOWER + TRIM)
+- ✅ Clave solo actualiza si se proporciona valor no vacío
+- ✅ `updated_at` se actualiza automáticamente
+- ✅ NO toca el campo avatar (separación de responsabilidades)
+
+**Mejoras en `update_user_avatar`:**
+- ✅ Validación de existencia de usuario
+- ✅ Validación de URL no vacía
+- ✅ TRIM en URL del avatar
+- ✅ Obtiene avatar anterior (preparado para limpieza futura en storage)
+- ✅ `updated_at` se actualiza automáticamente
+
+**Funciones modificadas:**
+1. `update_user_profile` - Mejorada con validaciones y normalización
+2. `update_user_avatar` - Mejorada con validaciones
+
+**Archivos:**
+- `update_user_profile_ORIGINAL_2025-11-16.sql` - Backup de versiones funcionales
+- `update_user_profile_CORREGIDO_2025-11-16.sql` - Versión mejorada
+
+**Lecciones aprendidas:**
+1. **TRIM y validación son críticos** - Espacios en blanco causan errores silenciosos
+2. **Normalizar emails** - Siempre a minúsculas para evitar duplicados
+3. **Separación de responsabilidades** - Perfil y avatar en funciones distintas
+4. **Mensajes de error claros** - Especificar qué falló y por qué
+5. **SECURITY DEFINER necesario** - Para que PRE/OPE puedan actualizar su perfil
+
+**Impacto:**
+- ✅ Usuarios PRE/OPE pueden actualizar su perfil sin errores RLS
+- ✅ Datos se validan y normalizan automáticamente
+- ✅ Mensajes de error específicos y útiles
+- ✅ Preparado para limpieza automática de avatars antiguos (feature futuro)
+
+---
+
 ## Cómo usar estos backups
 
 1. **Antes de modificar una función SQL:**

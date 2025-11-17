@@ -7,14 +7,15 @@ Cuando abras VS Code y quieras continuar trabajando en val-app, **copia y pega e
 ```
 Hola, continuamos con val-app.
 Lee CONTEXTO_COPILOT.md, ESTILO_DE_TRABAJO.md, 
-PLAN_DE_TRABAJO_PROFESIONAL.md y TAREAS_PENDIENTES.md
+PLAN_DE_TRABAJO_PROFESIONAL.md, TAREAS_PENDIENTES.md
+y MEJORES_PRACTICAS_SQL.md
 ```
 
 ---
 
 ## 🎯 ¿Qué hace esto?
 
-GitHub Copilot leerá automáticamente estos 4 archivos que contienen:
+GitHub Copilot leerá automáticamente estos 5 archivos que contienen:
 
 1. **CONTEXTO_COPILOT.md**
    - Historial completo de todas las sesiones
@@ -38,6 +39,13 @@ GitHub Copilot leerá automáticamente estos 4 archivos que contienen:
    - Estado actual de tareas
    - TODOs pendientes
    - Progreso reciente
+
+5. **MEJORES_PRACTICAS_SQL.md** ⚠️ **IMPORTANTE**
+   - Protocolo de modificación de funciones SQL
+   - Errores comunes y soluciones
+   - Sistema de backups en `/sql-backups/`
+   - Checklist de validación antes de commits
+   - **Leer ANTES de modificar cualquier función SQL**
 
 ---
 
@@ -79,5 +87,6 @@ Si responde con algo genérico, vuelve a copiar la instrucción.
 ---
 
 **Creado:** 14 de Noviembre de 2025  
+**Última actualización:** 15 de Noviembre de 2025  
 **Proyecto:** val-app (Sistema Villas de Alcalá)  
 **Versión actual:** v1.0.0

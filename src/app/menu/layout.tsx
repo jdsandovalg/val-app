@@ -125,45 +125,50 @@ function MenuLayoutContent({ children }: { children: ReactNode }) {
     if (!usuario) return;
 
     try {
-      // Paso 1: Guardar los datos del perfil con la nueva función específica.
+      let newAvatarUrl = usuario.avatar_url;
+
+      // Paso 1: Si hay un nuevo avatar, subirlo primero
+      if (userData.avatarFile) {
+        const avatarFile = userData.avatarFile as File;
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${usuario.id}-${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, avatarFile, { 
+            upsert: true,
+            contentType: avatarFile.type
+          });
+        
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        newAvatarUrl = urlData.publicUrl;
+
+        // Actualizar avatar_url en la base de datos
+        const { error: avatarError } = await supabase.rpc('update_user_avatar', {
+          p_id: Number(usuario.id),
+          p_avatar_url: newAvatarUrl,
+        });
+        if (avatarError) throw avatarError;
+      }
+
+      // Paso 2: Guardar los datos del perfil
       const { error: mainError } = await supabase.rpc('update_user_profile', {
         p_id: Number(usuario.id),
         p_responsable: userData.responsable,
         p_email: userData.email,
-        p_clave: userData.clave || null, // Enviar null si está vacío para no cambiarla
+        p_clave: userData.clave || null,
       });
 
       if (mainError) throw mainError;
 
-      // Actualizar el estado local y localStorage para reflejar el cambio inmediatamente
-      const updatedUser = { ...usuario, ...userData };
+      // Actualizar el estado local y localStorage para reflejar todos los cambios inmediatamente
+      const updatedUser = { ...usuario, ...userData, avatar_url: newAvatarUrl };
+      delete (updatedUser as Partial<UserFormData>).avatarFile; // Eliminar avatarFile del objeto
       setUsuario(updatedUser as Usuario);
       localStorage.setItem('usuario', JSON.stringify(updatedUser));
-
-      // Paso 2: Si hay un nuevo avatar, subirlo y actualizar la URL con la función específica
-      // if (userData.avatarFile) {
-      //   const avatarFile = userData.avatarFile as File;
-      //   const fileExt = avatarFile.name.split('.').pop();
-      //   const fileName = `${usuario.id}-${Date.now()}.${fileExt}`;
-      //   const filePath = `${fileName}`;
-
-      //   const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true });
-      //   if (uploadError) throw uploadError;
-
-      //   const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      //   const newAvatarUrl = urlData.publicUrl;
-
-      //   const { error: avatarError } = await supabase.rpc('update_user_avatar', {
-      //     p_id: usuario.id,
-      //     p_avatar_url: newAvatarUrl,
-      //   });
-      //   if (avatarError) throw avatarError;
-
-      //   // Actualizar el estado local y localStorage para reflejar el cambio de avatar inmediatamente
-      //   const updatedUser = { ...usuario, ...userData, avatar_url: newAvatarUrl };
-      //   setUsuario(updatedUser);
-      //   localStorage.setItem('usuario', JSON.stringify(updatedUser));
-      // }
 
       setIsProfileModalOpen(false);
       toast.success(t('manageUsers.alerts.saveSuccess'));

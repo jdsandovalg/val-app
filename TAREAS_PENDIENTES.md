@@ -311,6 +311,27 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ### NUEVAS TAREAS (Plan de Trabajo Actual)
 
+### 0. Implementar Carga de Avatar de Usuario
+*   **Prioridad:** Media.
+*   **Objetivo:** Permitir que los usuarios suban y actualicen su foto de perfil (avatar).
+*   **Estado Actual:**
+    *   ✅ Campo `avatar_url` existe en tabla `usuarios`
+    *   ✅ Bucket de Supabase Storage disponible
+    *   ❌ UI para subir/editar avatar no implementada
+*   **Plan de Acción:**
+    1.  **Frontend - Adaptar UserModal.tsx:**
+        *   Añadir componente de carga de imagen (similar a EvidenceUploader)
+        *   Preview de avatar actual (si existe)
+        *   Botón para cambiar/subir nueva imagen
+    2.  **Frontend - Integrar en ProfileModal:**
+        *   Permitir que usuarios editen su propio avatar desde "Mi Perfil"
+    3.  **Backend - Gestión de Storage:**
+        *   Usar bucket existente o crear uno específico para avatares
+        *   Implementar lógica de subida con URLs firmadas
+        *   Actualizar `avatar_url` en tabla `usuarios` vía RPC `manage_user_data`
+
+---
+
 ### 1. Mejoras de Acceso y Perfil de Usuario
 *   **Prioridad:** Crítica.
 *   **Objetivo:** Permitir que los usuarios inicien sesión con su ID de casa o su correo electrónico y que puedan editar su propia información de perfil.

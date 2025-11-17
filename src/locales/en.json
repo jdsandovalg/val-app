@@ -216,7 +216,9 @@
     "cancelButton": "Cancel",
     "passwordMismatch": "Passwords do not match.",
     "changeAvatar": "Change",
-    "avatarAlt": "User avatar"
+    "avatarAlt": "User avatar",
+    "invalidImageType": "Please select a valid image file (JPG, PNG, etc.)",
+    "imageTooLarge": "The image is too large. Maximum size is 2MB"
   },
   "common": {
     "confirmButton": "Confirm"

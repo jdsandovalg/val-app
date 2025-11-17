@@ -41,7 +41,7 @@ export default function Home() {
       }
 
       const userData = data[0];
-      // Guardamos los datos del usuario en localStorage para usarlos en otras partes de la app.
+      // Guardamos los datos del usuario en localStorage (incluye avatar_url)
       localStorage.setItem('usuario', JSON.stringify(userData));
 
       // Redirigir al menú principal.
