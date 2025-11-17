@@ -93,23 +93,23 @@ const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
-    paddingTop: 80,
-    paddingBottom: 50,
+    paddingTop: 60,
+    paddingBottom: 40,
     paddingHorizontal: 30,
     color: '#333',
   },
   header: {
     position: 'absolute',
-    top: 20,
+    top: 15,
     left: 30,
     right: 30,
-    height: 60,
+    height: 50,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
-    paddingBottom: 10,
+    paddingBottom: 8,
   },
   logo: {
     width: 50,
@@ -136,13 +136,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 4,
-    padding: 12,
-    marginBottom: 20,
+    padding: 8,
+    marginBottom: 12,
   },
   projectInfoGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   projectInfoItem: {
     width: '48%',
@@ -158,25 +158,25 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
     color: '#1F2937',
-    marginTop: 16,
-    marginBottom: 10,
-    paddingBottom: 6,
+    marginTop: 10,
+    marginBottom: 8,
+    paddingBottom: 4,
     borderBottomWidth: 2,
     borderBottomColor: '#2563EB',
   },
   cotizacionCard: {
-    marginBottom: 12,
+    marginBottom: 8,
     borderRadius: 4,
     overflow: 'hidden',
   },
   cotizacionCardInner: {
-    paddingLeft: 12,
-    paddingRight: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
     borderLeftWidth: 4,
   },
   cotizacionHeader: {
@@ -218,22 +218,22 @@ const styles = StyleSheet.create({
   responsablesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: 6,
+    paddingTop: 6,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.1)',
   },
   responsableColumn: {
     width: '33%',
-    fontSize: 7,
+    fontSize: 8,
     paddingVertical: 2,
   },
   approvalBadge: {
     backgroundColor: '#10B981',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 4,
-    marginBottom: 16,
+    marginBottom: 10,
     alignItems: 'center',
   },
   approvalText: {
@@ -269,16 +269,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
   },
   criteriaSection: {
-    marginTop: 20,
-    paddingTop: 16,
+    marginTop: 10,
+    paddingTop: 10,
     borderTopWidth: 2,
     borderTopColor: '#E5E7EB',
   },
   criteriaTitle: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   criteriaTable: {
     borderWidth: 1,
@@ -306,22 +306,22 @@ const styles = StyleSheet.create({
   },
   tableCellScenario: {
     width: '35%',
-    fontSize: 7,
+    fontSize: 8,
     paddingRight: 4,
   },
   tableCellVotes: {
     width: '40%',
-    fontSize: 7,
+    fontSize: 8,
     paddingRight: 4,
   },
   tableCellResult: {
     width: '25%',
-    fontSize: 7,
+    fontSize: 8,
     fontWeight: 'bold',
   },
   tableHeaderText: {
     fontWeight: 'bold',
-    fontSize: 7,
+    fontSize: 8,
     color: '#374151',
   },
   approvedText: {
@@ -353,8 +353,8 @@ const styles = StyleSheet.create({
   },
   // Estilos para tabla de contribuciones
   contribucionesSection: {
-    marginTop: 20,
-    paddingTop: 16,
+    marginTop: 10,
+    paddingTop: 10,
     borderTopWidth: 2,
     borderTopColor: '#E5E7EB',
   },
@@ -368,14 +368,14 @@ const styles = StyleSheet.create({
   contribTableHeader: {
     flexDirection: 'row',
     backgroundColor: '#F3F4F6',
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#D1D5DB',
   },
   contribTableRow: {
     flexDirection: 'row',
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -385,41 +385,41 @@ const styles = StyleSheet.create({
   },
   contribCellCasa: {
     width: '10%',
-    fontSize: 7,
+    fontSize: 8,
     paddingRight: 4,
   },
   contribCellResponsable: {
     width: '35%',
-    fontSize: 7,
+    fontSize: 8,
     paddingRight: 4,
   },
   contribCellMonto: {
     width: '20%',
-    fontSize: 7,
+    fontSize: 8,
     paddingRight: 4,
     textAlign: 'right',
     fontWeight: 'bold',
   },
   contribCellNotas: {
     width: '35%',
-    fontSize: 6,
+    fontSize: 7,
     color: '#6B7280',
   },
   contribTotalRow: {
     flexDirection: 'row',
     backgroundColor: '#F9FAFB',
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 8,
     borderTopWidth: 2,
     borderTopColor: '#D1D5DB',
   },
   contribDistType: {
-    fontSize: 7,
+    fontSize: 8,
     color: '#059669',
-    marginTop: 8,
+    marginTop: 6,
     fontStyle: 'italic',
     backgroundColor: '#ECFDF5',
-    padding: 6,
+    padding: 4,
     borderRadius: 4,
     borderLeftWidth: 3,
     borderLeftColor: '#059669',
@@ -715,10 +715,6 @@ export const VotingReport = ({
               <Text style={[styles.tableCellResult, styles.rejectedText]}>✗ NO APROBADO</Text>
             </View>
           </View>
-          
-          <Text style={{ fontSize: 7, color: '#6B7280', marginTop: 8, fontStyle: 'italic' }}>
-            * El proyecto solo se ejecuta si el 100% de las casas votan por la misma cotización, permitiendo distribuir el costo equitativamente.
-          </Text>
         </View>
       </VotingReportPage>
     </Document>

@@ -27,9 +27,23 @@ type Cotizacion = {
   responsables?: string | null;
 };
 
+type Contribucion = {
+  id_contribucion: number;
+  id_casa: number;
+  responsable: string;
+  monto_esperado: number;
+  metadata_json?: {
+    controles?: number;
+    distribucion_personalizada?: boolean;
+    [key: string]: unknown;
+  } | null;
+  notas?: string | null;
+};
+
 type ReportData = {
   projectInfo: ProjectInfo;
   cotizaciones: Cotizacion[];
+  contribuciones?: Contribucion[] | null;
   fileName: string;
 };
 
@@ -68,6 +82,7 @@ export default function VotingReportViewerPage() {
       <VotingReport
         projectInfo={reportData.projectInfo}
         cotizaciones={reportData.cotizaciones}
+        contribuciones={reportData.contribuciones}
         t={t}
         locale={locale}
         currency={currency}
