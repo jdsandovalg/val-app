@@ -14,6 +14,7 @@ type EvidenciaVotacion = {
   descripcion_evidencia: string;
   url_publica: string;
   valor_de_referencia: number | null;
+  tipo_evidencia: string; // 'COTIZACION_PARA_VOTACION', 'COTIZACION', etc.
 };
 
 type Casa = {
@@ -128,10 +129,19 @@ export default function VotingPage() {
           setSelectedCasa(userCasa || null);
         }
 
-        // Cargar las cotizaciones para el proyecto seleccionado
-        const { data: cotizacionesData, error: cotizacionesError } = await supabase.rpc('fn_gestionar_proyecto_evidencias', { p_accion: 'SELECT', p_id_proyecto: Number(selectedProjectId), p_tipo_evidencia: 'COTIZACION_PARA_VOTACION' });
-        if (cotizacionesError) throw cotizacionesError;
-        setCotizaciones((cotizacionesData as EvidenciaVotacion[]).sort((a, b) => (a.valor_de_referencia || Infinity) - (b.valor_de_referencia || Infinity)));
+        // Cargar TODAS las evidencias del proyecto y filtrar en frontend
+        const { data: evidenciasData, error: evidenciasError } = await supabase.rpc('fn_gestionar_proyecto_evidencias', { 
+          p_accion: 'SELECT', 
+          p_id_proyecto: Number(selectedProjectId) 
+        });
+        if (evidenciasError) throw evidenciasError;
+        
+        // ✅ Filtrar solo cotizaciones para votación en el frontend
+        const cotizacionesParaVotar = (evidenciasData as EvidenciaVotacion[])
+          .filter(e => e.tipo_evidencia === 'COTIZACION_PARA_VOTACION')
+          .sort((a, b) => (a.valor_de_referencia || Infinity) - (b.valor_de_referencia || Infinity));
+        
+        setCotizaciones(cotizacionesParaVotar);
 
         // Cargar votos existentes para este proyecto
         const { data: votesData, error: votesError } = await supabase.rpc('fn_gestionar_votos', { p_accion: 'SELECT', p_id_proyecto: Number(selectedProjectId) });

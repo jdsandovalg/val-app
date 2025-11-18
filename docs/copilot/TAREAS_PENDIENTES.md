@@ -309,48 +309,46 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
-### NUEVAS TAREAS (Plan de Trabajo Actual)
+### TAREAS COMPLETADAS RECIENTEMENTE
 
-### 0. Implementar Carga de Avatar de Usuario
-*   **Prioridad:** Media.
-*   **Objetivo:** Permitir que los usuarios suban y actualicen su foto de perfil (avatar).
-*   **Estado Actual:**
+### ✅ 0. Implementar Carga de Avatar de Usuario - COMPLETADO
+*   **Estado:** ✅ Implementado completamente
+*   **Implementación realizada:**
     *   ✅ Campo `avatar_url` existe en tabla `usuarios`
     *   ✅ Bucket de Supabase Storage disponible
-    *   ❌ UI para subir/editar avatar no implementada
-*   **Plan de Acción:**
-    1.  **Frontend - Adaptar UserModal.tsx:**
-        *   Añadir componente de carga de imagen (similar a EvidenceUploader)
-        *   Preview de avatar actual (si existe)
-        *   Botón para cambiar/subir nueva imagen
-    2.  **Frontend - Integrar en ProfileModal:**
-        *   Permitir que usuarios editen su propio avatar desde "Mi Perfil"
-    3.  **Backend - Gestión de Storage:**
-        *   Usar bucket existente o crear uno específico para avatares
-        *   Implementar lógica de subida con URLs firmadas
-        *   Actualizar `avatar_url` en tabla `usuarios` vía RPC `manage_user_data`
+    *   ✅ UI para subir/editar avatar implementada en `ProfileModal.tsx`
+    *   ✅ Preview de avatar actual con imagen circular
+    *   ✅ Validación de tipo de archivo (solo imágenes)
+    *   ✅ Validación de tamaño (máximo 2MB)
+    *   ✅ Preview en tiempo real antes de guardar
+    *   ✅ Integrado en navegación con botón de perfil
+    *   ✅ Visualización en `UserCard.tsx`
+
+### ✅ 1. Mejoras de Acceso y Perfil de Usuario - COMPLETADO
+*   **Estado:** ✅ Implementado completamente
+*   **Implementación realizada:**
+    1.  ✅ **Backend - Autenticación Flexible:**
+        *   Función `login_user` acepta `p_identifier` (texto)
+        *   Busca coincidencias en `id` (número de casa) o `email`
+    2.  ✅ **Frontend - Página de Login:**
+        *   Input tipo `text` con placeholder flexible
+        *   Función `handleLogin` implementada correctamente
+    3.  ✅ **Frontend - Botón "Mi Perfil":**
+        *   Botón implementado en `layout.tsx` en navegación inferior
+        *   Abre `ProfileModal` al hacer clic
+    4.  ✅ **Frontend - Modal de Perfil:**
+        *   `ProfileModal.tsx` completamente funcional
+        *   Campos editables: responsable, email, teléfono, ubicación, contraseña, avatar
+        *   Campos bloqueados: id, tipo_usuario (según requerimiento)
+        *   Validación de contraseña con confirmación
+    5.  ✅ **Frontend - Integración:**
+        *   Modal integrado en layout principal
+        *   Función `handleSaveProfile` implementada
+        *   RPC `update_user_profile` funcionando
 
 ---
 
-### 1. Mejoras de Acceso y Perfil de Usuario
-*   **Prioridad:** Crítica.
-*   **Objetivo:** Permitir que los usuarios inicien sesión con su ID de casa o su correo electrónico y que puedan editar su propia información de perfil.
-*   **Plan de Acción por Pasos:**
-    1.  **Backend - Autenticación Flexible (login_user):**
-        *   **Tarea:** Actualizar la función `login_user` en la base de datos.
-        *   **Implementación:** Modificar la función para que acepte un identificador de tipo `text`. La lógica buscará una coincidencia en el campo `id` o `email` y validará la contraseña de forma segura con `crypt()`.
-    2.  **Frontend - Adaptar Página de Login:**
-        *   **Tarea:** Modificar la página de inicio de sesión (`/src/app/page.tsx`).
-        *   **Implementación:** Cambiar el `placeholder` a "Casa # o Correo Electrónico", ajustar el `input` a tipo `text` y modificar la función `handleLogin` para que llame a la versión actualizada de `login_user`.
-    3.  **Frontend - Añadir Botón "Mi Perfil":**
-        *   **Tarea:** Agregar un nuevo botón en la barra de navegación inferior (`/src/app/menu/layout.tsx`).
-        *   **Implementación:** Este botón abrirá un nuevo modal para la edición del perfil de usuario.
-    4.  **Frontend - Reutilizar Modal de Usuario:**
-        *   **Tarea:** Adaptar el componente `UserModal.tsx` para que sea reutilizable.
-        *   **Implementación:** Añadir un `prop` `mode` ('admin' o 'profile'). En modo 'profile', los campos no editables (ID, Tipo de Usuario, Ubicación) se mostrarán como deshabilitados.
-    5.  **Frontend - Integrar Modal de Perfil:**
-        *   **Tarea:** Integrar el `UserModal` en el layout principal (`/src/app/menu/layout.tsx`).
-        *   **Implementación:** Controlar su visibilidad con un estado y crear una función `handleSaveProfile` que llame a `manage_user_data` para guardar los cambios del perfil del usuario actual.
+### NUEVAS TAREAS (Plan de Trabajo Actual)
 
 ---
 
