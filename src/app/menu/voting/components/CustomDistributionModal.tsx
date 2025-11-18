@@ -40,7 +40,7 @@ export default function CustomDistributionModal({
   totalAmount,
   casas,
 }: CustomDistributionModalProps) {
-  const { t, currency, locale } = useI18n();
+  const { currency, locale } = useI18n();
   const [csvData, setCSVData] = useState<CSVRow[]>([]);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
