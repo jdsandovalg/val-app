@@ -380,6 +380,22 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
+Una ## V. Roadmap de Nuevas Funcionalidades
+
+### 1. Flujo de Recuperación de Contraseña
+
+**Prioridad:** Media
+**Objetivo:** Implementar un flujo completo para que los usuarios puedan restablecer su contraseña de forma autónoma.
+**Dependencia Crítica:** **Configuración de un servidor SMTP personalizado en Supabase.** El uso de proveedores como Gmail no es viable para producción. Se requiere un servicio de correo transaccional (ej. SendGrid, Mailgun) y un dominio propio.
+
+**Plan de Acción:**
+1.  **Fase 1 (Frontend - Sin Dependencia de Correo):**
+    *   [ ] Añadir enlace "¿Olvidaste tu clave?" en la página de login (`/app/page.tsx`).
+    *   [ ] Crear la página de solicitud de restablecimiento (`/app/forgot-password/page.tsx`) donde el usuario introduce su email.
+    *   [ ] Crear la página para establecer la nueva clave (`/app/reset-password/page.tsx`) que recibirá el token de Supabase desde la URL.
+2.  **Fase 2 (Backend - Con Dependencia):**
+    *   [ ] Activar la llamada a la función de Supabase para enviar el correo una vez que el proveedor SMTP esté configurado.
+
 ## IV. Estándares de UI Implementados
 
 Esta sección documenta las decisiones de diseño y componentes estándar que deben ser aplicados en toda la aplicación para mantener la consistencia.
@@ -392,6 +408,14 @@ Esta sección documenta las decisiones de diseño y componentes estándar que de
   - **Clase estándar a utilizar:** `<div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />`
 - **Animación de Entrada:** Se recomienda una animación de deslizamiento desde la parte superior junto con un desvanecimiento para una aparición suave.
   - **Clases de ejemplo:** `enter="ease-out duration-500"`, `enterFrom="opacity-0 -translate-y-10"`, `enterTo="opacity-100 translate-y-0"`
+
+
+### 2. Iconografía Estándar
+
+- **Librería Principal:** `react-icons`. Se debe preferir esta librería sobre SVGs en línea para mantener la consistencia y facilitar el mantenimiento.
+  - **Instalación:** `npm install react-icons`
+- **Set de Iconos Preferido:** Material Design (`md`). Es un set limpio y universalmente reconocido.
+  - **Ejemplo de importación:** `import { MdFilterList } from "react-icons/md";`
 
 
 ---

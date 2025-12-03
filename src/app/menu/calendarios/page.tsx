@@ -23,6 +23,7 @@ import ContributionCalendarCard from './components/ContributionCalendarCard';
 import ConfirmationModal from '@/components/modals/ConfirmationModal'; // 1. Importar el nuevo modal
 import ContributionFilterModal from '@/components/modals/ContributionFilterModal';
 import SortMenu from '@/components/common/SortMenu';
+import { MdFilterList } from 'react-icons/md'; // Importar el nuevo icono
 
 
 type Contribucion = {
@@ -358,28 +359,28 @@ export default function CalendariosPage() {
               </svg>
             </button>
           </div>
-          <div className="w-full flex justify-between items-center mb-4">
-              <button
-                type="button"
-                onClick={() => setIsFilterModalOpen(true)}
-                className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                aria-label={t('manageContributions.ariaLabels.openFilters')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.757 0 5.25 1.119 7.071 2.929s2.929 4.314 2.929 7.071c0 2.757-1.119 5.25-2.929 7.071s-4.314 2.929-7.071 2.929c-2.757 0-5.25-1.119-7.071-2.929s-2.929-4.314-2.929-7.071c0-2.757 1.119-5.25 2.929-7.071s4.314-2.929 7.071-2.929zM12 12v6m0-6l-3-3m3 3l3-3" />
-                </svg>
-              </button>
-              <SortMenu
-                options={[
-                  { label: t('manageContributions.sortMenu.byDate'), value: 'fecha_cargo' },
-                  { label: t('manageContributions.sortMenu.byHouse'), value: 'id_casa' },
-                  { label: t('manageContributions.sortMenu.byContribution'), value: 'contribucion_nombre' },
-                  { label: t('manageContributions.sortMenu.byStatus'), value: 'estado' },
-                ]}
-                currentSort={sort}
-                onSortChange={setSort}
-              />
-          </div>
+          {usuario.tipo_usuario === 'ADM' && (
+            <div className="w-full flex justify-between items-center mb-4">
+                <button
+                  type="button"
+                  onClick={() => setIsFilterModalOpen(true)}
+                  className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  aria-label={t('manageContributions.ariaLabels.openFilters')}
+                >
+                  <MdFilterList className="w-6 h-6 text-gray-700" />
+                </button>
+                <SortMenu
+                  options={[
+                    { label: t('manageContributions.sortMenu.byDate'), value: 'fecha_cargo' },
+                    { label: t('manageContributions.sortMenu.byHouse'), value: 'id_casa' },
+                    { label: t('manageContributions.sortMenu.byContribution'), value: 'contribucion_nombre' },
+                    { label: t('manageContributions.sortMenu.byStatus'), value: 'estado' },
+                  ]}
+                  currentSort={sort}
+                  onSortChange={setSort}
+                />
+            </div>
+          )}
         </>
       )}
         {/* Vista de Tarjetas (Mobile-Only) */}
