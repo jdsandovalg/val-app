@@ -348,17 +348,50 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
-## III. Plan de Migración a Headless UI
+## III. Plan de Migración de Componentes a Headless UI
 
-**Prioridad:** Alta (Inmediata)
-**Objetivo:** Refactorizar todos los modales existentes para que utilicen el componente `Dialog` de Headless UI, estandarizando la lógica, mejorando la accesibilidad y las animaciones.
+**Prioridad:** Alta
+**Objetivo:** Refactorizar componentes clave de la interfaz para utilizar la librería Headless UI. Esto estandarizará la lógica, mejorará drásticamente la accesibilidad (navegación por teclado, gestión de foco, ARIA roles) y permitirá un diseño consistente y animado.
 
-### Modales a Migrar (en orden de prioridad):
+### Fase 1: Modales (Componente `Dialog`)
 
-1.  [ ] **`ConfirmationModal.tsx`**: Modal simple de confirmación. Ideal para empezar y establecer el patrón.
-2.  [ ] **`PaymentModal.tsx`**: Modal con formulario para reportar pagos.
-3.  [ ] **`ImageViewerModal.tsx`**: Modal para visualizar imágenes de comprobantes.
-4.  [ ] **`UserModal.tsx`**: Modal para la creación y edición de usuarios (contiene formulario).
+1.  **`ContributionFilterModal.tsx`**
+    *   [x] **Contenedor Principal**: Migrado a `Dialog` y `Transition` con fondo de desenfoque estándar.
+    *   [x] **Selectores (`<select>`)**: Migrar los 3 selectores a `Listbox` con iconos para una UI más rica.
+
+2.  **`ConfirmationModal.tsx`**
+    *   [x] **Contenedor Principal**: Migrado a `Dialog` y `Transition` con fondo de desenfoque estándar.
+
+3.  **`PaymentModal.tsx`**
+    *   [ ] **Contenedor Principal**: Migrar a `Dialog` y `Transition`.
+
+4.  **`ImageViewerModal.tsx`**
+    *   [ ] **Contenedor Principal**: Migrar a `Dialog` y `Transition`.
+
+5.  **`UserModal.tsx`**
+    *   [ ] **Contenedor Principal**: Migrar a `Dialog` y `Transition`.
+    *   [ ] **Selector "Tipo de Usuario"**: Migrar el `<select>` a `Listbox` para mantener consistencia con otros formularios.
+
+### Fase 2: Otros Componentes de UI
+
+1.  **`SortMenu.tsx`**
+    *   [ ] **Menú Desplegable**: Refactorizar el componente para usar el componente `Menu` de Headless UI. Esto mejorará la accesibilidad y el manejo del estado abierto/cerrado.
+
+
+---
+
+## IV. Estándares de UI Implementados
+
+Esta sección documenta las decisiones de diseño y componentes estándar que deben ser aplicados en toda la aplicación para mantener la consistencia.
+
+### 1. Modales Estándar (Headless UI)
+
+- **Librería:** `@headlessui/react`
+- **Componentes:** `Dialog` para la estructura y `Transition` para las animaciones.
+- **Fondo (Backdrop):** Todos los modales deben usar un fondo semitransparente con efecto de desenfoque para un aspecto moderno y para centrar la atención del usuario.
+  - **Clase estándar a utilizar:** `<div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />`
+- **Animación de Entrada:** Se recomienda una animación de deslizamiento desde la parte superior junto con un desvanecimiento para una aparición suave.
+  - **Clases de ejemplo:** `enter="ease-out duration-500"`, `enterFrom="opacity-0 -translate-y-10"`, `enterTo="opacity-100 translate-y-0"`
 
 
 ---
