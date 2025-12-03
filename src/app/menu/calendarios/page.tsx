@@ -21,6 +21,8 @@ import PaymentModal, { type PayableContribution } from '@/components/modals/Paym
 import ImageViewerModal from '@/components/modals/ImageViewerModal';
 import ContributionCalendarCard from './components/ContributionCalendarCard';
 import ConfirmationModal from '@/components/modals/ConfirmationModal'; // 1. Importar el nuevo modal
+import ContributionFilterModal from '@/components/modals/ContributionFilterModal';
+import SortMenu from '@/components/common/SortMenu';
 
 
 type Contribucion = {
@@ -36,24 +38,59 @@ type Contribucion = {
   contribucion_color: string | null; // Corresponde a 'color_del_borde'
 };
 
+type House = {
+  id: number;
+  responsable: string;
+};
+
+type Casa = {
+  id: number;
+  responsable: string;
+  tipo_usuario: 'ADM' | 'PRE' | 'OPE'; // Actualizado según la aclaración del usuario
+};
+
+type FilterOptions = {
+  houseId: number | null;
+  contributionTypeId: number | null;
+  status: 'ALL' | 'PAGADO' | 'PENDIENTE' | 'VENCIDO';
+  dateFrom: string | null; // Añadido para consistencia con ContributionFilterModal
+  dateTo: string | null;   // Añadido para consistencia con ContributionFilterModal
+};
+
+type SortOptions = {
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+};
+
 export default function CalendariosPage() {
   const router = useRouter();
   const { t } = useI18n();
   const supabase = createClient();
   const [contribuciones, setContribuciones] = useState<Contribucion[]>([]);  
-  const [usuario, setUsuario] = useState<{ id: number; responsable: string } | null>(null);  
+  const [usuario, setUsuario] = useState<Casa | null>(null); // Simplificado, ya no se necesita el estado de las casas
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedContribution, setSelectedContribution] = useState<Contribucion | null>(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false); // 2. Estado para el modal de confirmación
   const [contributionToAnnul, setContributionToAnnul] = useState<Contribucion | null>(null); // 3. Estado para guardar la contribución a anular
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({
+    houseId: null,
+    contributionTypeId: null,
+    status: 'ALL',
+    dateFrom: null, // Inicializado
+    dateTo: null,   // Inicializado
+  });
+  const [sort, setSort] = useState<SortOptions>({ // Tipo explícito para sort
+    sortBy: 'fecha_cargo',
+    sortOrder: 'asc',
+  });
 
-  // Ordenamiento por defecto. Ya no se necesita configuración de ordenamiento o filtros.
-  const filteredAndSortedContribuciones = useMemo(() => {
-    return [...contribuciones]
-      .sort((a, b) => new Date(a.fecha_cargo).getTime() - new Date(b.fecha_cargo).getTime());
-  }, [contribuciones]);
+  const handleApplyFilters = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
 
   const fetchContribuciones = useCallback(async () => {
     const stored = localStorage.getItem('usuario');
@@ -61,27 +98,29 @@ export default function CalendariosPage() {
       router.push('/');
       return;
     }
-    
+    const user = JSON.parse(stored) as Casa;
+    setUsuario(user);
+
+    const rpcArgs: { p_accion: string; p_id_casa?: number } = { p_accion: 'SELECT' };
+
+    if (user.tipo_usuario !== 'ADM') {
+      rpcArgs.p_id_casa = user.id;
+    }
+
     try {
-      const user = JSON.parse(stored);
-      setUsuario(user);
-      const { data, error } = await supabase.rpc('gestionar_contribuciones_casa', {
-        p_accion: 'SELECT',
-        p_id_casa: user.id
-      });
+      const { data, error } = await supabase.rpc('gestionar_contribuciones_casa', rpcArgs);
 
       if (error) throw error;
       setContribuciones((data as Contribucion[]) || []);
     } catch (e) {
       toast.error(`${t('calendar.fetchError')} ${e instanceof Error ? e.message : ''}`);
-      router.push('/menu'); // En caso de error, volver al menú principal
-    } 
-  }, [supabase, router, t]);
+    }
+  }, [supabase, router, t]); // Dependencias ajustadas
 
   useEffect(() => {
     fetchContribuciones();
   }, [fetchContribuciones]);
-
+  
   const handleOpenPaymentModal = (contribution: Contribucion) => {
     setSelectedContribution(contribution);
     setIsPaymentModalOpen(true);
@@ -108,7 +147,7 @@ export default function CalendariosPage() {
   };
 
   const handleSavePayment = async (amount: number, date: string, file: File | null) => {
-    if (!selectedContribution || !usuario) return;
+    if (!selectedContribution) return;
 
     const toastId = toast.loading(t('manageContributions.uploading'));
 
@@ -118,7 +157,7 @@ export default function CalendariosPage() {
       // 1. Subir la imagen a Supabase Storage, SOLO SI EXISTE.
       if (file) {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${usuario.id}-${selectedContribution.id_contribucion}-${selectedContribution.fecha_cargo}-${Date.now()}.${fileExt}`;
+        const fileName = `${selectedContribution.id_casa}-${selectedContribution.id_contribucion}-${selectedContribution.fecha_cargo}-${Date.now()}.${fileExt}`;
         filePath = fileName; // La ruta que se guardará en la BD es solo el nombre del archivo.
 
         const { error: uploadError } = await supabase.storage.from('imagenespagos').upload(filePath, file);
@@ -130,7 +169,7 @@ export default function CalendariosPage() {
 
       // 2. Llamar a la nueva función RPC para actualizar el registro
       const { data: updatedRecord, error: rpcError } = await supabase.rpc('gestionar_pago_contribucion_casa', {
-        p_id_casa: usuario.id,
+        p_id_casa: selectedContribution.id_casa, // Usar el id_casa de la contribución seleccionada
         p_id_contribucion: selectedContribution.id_contribucion,
         p_fecha_cargo: selectedContribution.fecha_cargo,
         p_monto_pagado: amount,
@@ -173,14 +212,14 @@ export default function CalendariosPage() {
   };
 
   const confirmAnnulPayment = async () => {
-    if (!contributionToAnnul || !usuario) return;
+    if (!contributionToAnnul) return;
 
     closeAnnulConfirmation(); // Cerrar el modal antes de empezar
     const toastId = toast.loading("Anulando pago...");
 
     try {
       const { data: annulledRecord, error } = await supabase.rpc('anular_pago_contribucion_casa', { // La llamada a la BD se mantiene igual
-        p_id_casa: usuario.id,
+        p_id_casa: contributionToAnnul.id_casa,
         p_id_contribucion: contributionToAnnul.id_contribucion,
         p_fecha_cargo: contributionToAnnul.fecha_cargo
       });
@@ -217,9 +256,72 @@ export default function CalendariosPage() {
     return { texto: t('calendar.status.pending'), key: 'pending', color: 'text-gray-700', icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
   }, [t]);
 
+  const filteredAndSortedContribuciones = useMemo(() => {
+    let currentContribuciones = [...contribuciones];
+
+    // Apply filters
+    if (filters.houseId) {
+      currentContribuciones = currentContribuciones.filter(c => c.id_casa === filters.houseId);
+    }
+    if (filters.contributionTypeId) {
+      currentContribuciones = currentContribuciones.filter(c => c.id_contribucion === filters.contributionTypeId);
+    }
+    if (filters.status !== 'ALL') {
+      currentContribuciones = currentContribuciones.filter(c => {
+        const statusKey = getEstado(c).key;
+        if (filters.status === 'PENDIENTE' && statusKey === 'pending') return true;
+        if (filters.status === 'PAGADO' && statusKey === 'paid') return true;
+        if (filters.status === 'VENCIDO' && statusKey === 'overdue') return true;
+        return false;
+      });
+    }
+
+    // Apply sorting
+    currentContribuciones.sort((a, b) => {
+      let compare = 0;
+      const aStatus = getEstado(a).key;
+      const bStatus = getEstado(b).key;
+
+      switch (sort.sortBy) {
+        case 'fecha_cargo':
+          compare = new Date(a.fecha_cargo).getTime() - new Date(b.fecha_cargo).getTime();
+          break;
+        case 'id_casa':
+          compare = a.id_casa - b.id_casa;
+          break;
+        case 'contribucion_nombre':
+          compare = a.contribucion_nombre.localeCompare(b.contribucion_nombre);
+          break;
+        case 'estado':
+          compare = aStatus.localeCompare(bStatus);
+          break;
+        default:
+          break;
+      }
+
+      return sort.sortOrder === 'asc' ? compare : -compare;
+    });
+
+    return currentContribuciones;
+  }, [contribuciones, filters, sort, getEstado]);
+
+  const uniqueHouses = useMemo(() => {
+    if (usuario?.tipo_usuario !== 'ADM') return [];
+    const housesMap = new Map<number, House>();
+    contribuciones.forEach(c => {
+      if (!housesMap.has(c.id_casa)) {
+        housesMap.set(c.id_casa, { id: c.id_casa, responsable: c.responsable });
+      }
+    });
+    return Array.from(housesMap.values()).sort((a, b) => a.id - b.id);
+  }, [contribuciones, usuario]);
+
+
+
   return (
     <>
       <div className="w-full max-w-md sm:max-w-3xl mx-auto flex flex-col items-center flex-grow">
+
       {usuario && (
         <>
           <div className="w-full flex justify-between items-center mb-4">
@@ -256,13 +358,37 @@ export default function CalendariosPage() {
               </svg>
             </button>
           </div>
+          <div className="w-full flex justify-between items-center mb-4">
+              <button
+                type="button"
+                onClick={() => setIsFilterModalOpen(true)}
+                className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                aria-label={t('manageContributions.ariaLabels.openFilters')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.757 0 5.25 1.119 7.071 2.929s2.929 4.314 2.929 7.071c0 2.757-1.119 5.25-2.929 7.071s-4.314 2.929-7.071 2.929c-2.757 0-5.25-1.119-7.071-2.929s-2.929-4.314-2.929-7.071c0-2.757 1.119-5.25 2.929-7.071s4.314-2.929 7.071-2.929zM12 12v6m0-6l-3-3m3 3l3-3" />
+                </svg>
+              </button>
+              <SortMenu
+                options={[
+                  { label: t('manageContributions.sortMenu.byDate'), value: 'fecha_cargo' },
+                  { label: t('manageContributions.sortMenu.byHouse'), value: 'id_casa' },
+                  { label: t('manageContributions.sortMenu.byContribution'), value: 'contribucion_nombre' },
+                  { label: t('manageContributions.sortMenu.byStatus'), value: 'estado' },
+                ]}
+                currentSort={sort}
+                onSortChange={setSort}
+              />
+          </div>
         </>
       )}
         {/* Vista de Tarjetas (Mobile-Only) */}
         <div className="w-full">
           {filteredAndSortedContribuciones.map((row) => (
             <ContributionCalendarCard
-              key={`${row.id_contribucion}-${row.fecha_cargo}`}
+              casaId={row.id_casa} // Añadido para mostrar la casa
+              responsable={row.responsable} // Añadido para mostrar el responsable
+              key={`${row.id_casa}-${row.id_contribucion}-${row.fecha_cargo}`}
               descripcion={row.contribucion_nombre}
               fecha={row.fecha_cargo}
               estado={getEstado(row)}
@@ -298,6 +424,13 @@ export default function CalendariosPage() {
           message="¿Estás seguro de que quieres anular este pago? Esta acción revertirá el estado a 'PENDIENTE' y no se puede deshacer."
         />
       )}
+      <ContributionFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={filters}
+        houses={uniqueHouses} // Pasar la lista de casas al modal
+      />
     </>
   );
 }
