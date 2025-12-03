@@ -348,6 +348,21 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
 
 ---
 
+## III. Plan de Migración a Headless UI
+
+**Prioridad:** Alta (Inmediata)
+**Objetivo:** Refactorizar todos los modales existentes para que utilicen el componente `Dialog` de Headless UI, estandarizando la lógica, mejorando la accesibilidad y las animaciones.
+
+### Modales a Migrar (en orden de prioridad):
+
+1.  [ ] **`ConfirmationModal.tsx`**: Modal simple de confirmación. Ideal para empezar y establecer el patrón.
+2.  [ ] **`PaymentModal.tsx`**: Modal con formulario para reportar pagos.
+3.  [ ] **`ImageViewerModal.tsx`**: Modal para visualizar imágenes de comprobantes.
+4.  [ ] **`UserModal.tsx`**: Modal para la creación y edición de usuarios (contiene formulario).
+
+
+---
+
 ### NUEVAS TAREAS (Plan de Trabajo Actual)
 
 ---
