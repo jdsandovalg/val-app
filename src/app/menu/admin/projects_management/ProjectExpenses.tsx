@@ -207,7 +207,8 @@ export default function ProjectExpenses({ projectId }: ProjectExpensesProps) {
       )}
       {isImageViewerOpen && (
         <ImageViewerModal
-          src={viewingImageUrl}
+          isOpen={isImageViewerOpen}
+          imageUrl={viewingImageUrl!}
           onClose={handleCloseImageViewer}
         />
       )}

@@ -95,7 +95,7 @@ export default function ManageUsersPage() {
       if (storedUser) {
         const user: Usuario = JSON.parse(storedUser);
         console.log('DEBUG: Rol del usuario desde localStorage:', user.tipo_usuario);
-        setCurrentUserRole(user.tipo_usuario);
+        setCurrentUserRole(user.tipo_usuario ?? undefined);
       } else {
         console.log('DEBUG: No se pudo obtener el usuario desde localStorage.');
       }

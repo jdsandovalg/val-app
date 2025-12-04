@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { X } from 'lucide-react';
+import Image from 'next/image';
 
 interface ImageViewerModalProps {
   isOpen: boolean;
@@ -42,8 +43,9 @@ const ImageViewerModal: React.FC<ImageViewerModalProps> = ({ isOpen, onClose, im
                 <button type="button" className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl p-1 rounded-full hover:bg-gray-100" onClick={onClose}>
                   <X size={24} />
                 </button>
-                <div className="mt-8 overflow-y-auto">
-                  <img src={imageUrl} alt={imageAlt || 'Imagen'} className="w-full h-auto object-contain max-h-[calc(90vh-4rem)]" />
+                {/* Contenedor relativo para que la imagen lo llene */}
+                <div className="relative mt-8 w-full h-[80vh]">
+                  <Image src={imageUrl} alt={imageAlt || 'Imagen'} layout="fill" objectFit="contain" />
                 </div>
               </Dialog.Panel>
             </Transition.Child>
