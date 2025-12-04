@@ -412,7 +412,8 @@ export default function CalendariosPage() {
       />
       {isImageViewerOpen && (
         <ImageViewerModal
-          src={viewingImageUrl}
+          isOpen={isImageViewerOpen}
+          imageUrl={viewingImageUrl || ''} // Asegurarse de pasar un string, aunque viewingImageUrl ya se verifica antes de abrir
           onClose={handleCloseImageViewer}
         />
       )}

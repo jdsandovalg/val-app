@@ -363,10 +363,10 @@ Estas son las reglas de nuestra relación profesional. Este documento es la úni
     *   [x] **Contenedor Principal**: Migrado a `Dialog` y `Transition` con fondo de desenfoque estándar.
 
 3.  **`PaymentModal.tsx`**
-    *   [ ] **Contenedor Principal**: Migrar a `Dialog` y `Transition`.
+    *   [x] **Contenedor Principal**: Migrado a `Dialog` y `Transition` aplicando el fondo de desenfoque estándar.
 
 4.  **`ImageViewerModal.tsx`**
-    *   [ ] **Contenedor Principal**: Migrar a `Dialog` y `Transition`.
+    *   [x] **Contenedor Principal**: Migrar a `Dialog` y `Transition`.
 
 5.  **`UserModal.tsx`**
     *   [ ] **Contenedor Principal**: Migrar a `Dialog` y `Transition`.

@@ -174,6 +174,9 @@
     "filterModal": {
       "title": "Filter Users",
       "housePlaceholder": "Filter by House #...",
+      "houseLabel": "Filter by House",
+      "responsibleLabel": "Filter by Responsible",
+      "userTypeLabel": "Filter by User Type",
       "responsiblePlaceholder": "Filter by responsible...",
       "allTypes": "All types",
       "admin": "Administrator",

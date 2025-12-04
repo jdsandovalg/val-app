@@ -38,12 +38,12 @@ const ImageViewerModal: React.FC<ImageViewerModalProps> = ({ isOpen, onClose, im
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 -translate-y-10"
             >
-              <Dialog.Panel className="relative w-full max-w-4xl transform rounded-2xl bg-white p-4 text-left align-middle shadow-xl transition-all max-h-[90vh] flex flex-col">
+              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all max-h-[90vh]">
                 <button type="button" className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl p-1 rounded-full hover:bg-gray-100" onClick={onClose}>
                   <X size={24} />
                 </button>
-                <div className="mt-8 overflow-y-auto">
-                  <img src={imageUrl} alt={imageAlt || 'Imagen'} className="w-full h-auto object-contain max-h-[calc(90vh-4rem)]" />
+                <div className="mt-4">
+                  <img src={imageUrl} alt={imageAlt || 'Imagen'} className="max-w-full h-auto mx-auto" />
                 </div>
               </Dialog.Panel>
             </Transition.Child>
