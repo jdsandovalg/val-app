@@ -1,3 +1,11 @@
+## 🎯 TAREAS PENDIENTES (Próxima Sesión)
+
+1.  **Refactorizar `CatalogModal.tsx`**:
+    *   **Objetivo:** Migrar el modal genérico de catálogos a `Dialog` de Headless UI para estandarizarlo con el resto de la aplicación.
+    *   **Ubicación:** `/src/app/menu/admin/projects_catalogs/CatalogModal.tsx`.
+
+---
+
 ## 🎯 RESUMEN EJECUTIVO - Sesión del 14 de Noviembre de 2025
 
 ### ✅ SISTEMA DE REPORTES PDF DE VOTACIÓN: COMPLETADO Y FUNCIONAL

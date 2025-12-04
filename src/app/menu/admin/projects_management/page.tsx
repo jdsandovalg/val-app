@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Fragment } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'react-hot-toast';
@@ -15,6 +15,7 @@ import ProposalDetail from './components/ProposalDetail';
 import FinancialDetail from './FinancialDetail';
 import EvidenceManagement from './components/EvidenceManagement'; // Importar el nuevo componente
 import FinancialReport from './FinancialReport';
+import { Tab } from '@headlessui/react';
 
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 
@@ -42,7 +43,6 @@ type RubroCatalogo = {
 
 export default function ProjectClassificationManagementPage() {
   const { t } = useI18n();
-  const [activeView, setActiveView] = useState('projects'); // Cambiado a 'projects' como vista por defecto
   const supabase = createClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,6 +50,16 @@ export default function ProjectClassificationManagementPage() {
   const [selectedProject, setSelectedProject] = useState<Proyecto | null>(null);
   const [editingProject, setEditingProject] = useState<Proyecto | null>(null);
   const [rubrosCatalogo, setRubrosCatalogo] = useState<RubroCatalogo[]>([]);
+  
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const handleTabChange = (index: number) => {
+    // Si se deselecciona un proyecto, siempre volver a la primera pestaña.
+    if (!selectedProject) {
+      setSelectedIndex(0);
+    }
+    setSelectedIndex(index);
+  };
 
   const fetchRubrosCatalogo = useCallback(async () => {
     try {
@@ -92,25 +102,14 @@ export default function ProjectClassificationManagementPage() {
 
   const handleProjectSelect = useCallback((project: Proyecto | null) => {
     setSelectedProject(prevProject => {
-      if (!project) {
-        setActiveView('projects');
-        return null;
-      }
-
-      const projectId = project.id_proyecto;
-      const prevId = prevProject?.id_proyecto;
-
-      // Si se hace clic en el mismo proyecto, se deselecciona.
-      if (prevId === projectId) {
-        // Si ya estamos en una vista de detalle, no cambiamos la vista, solo deseleccionamos.
-        if (activeView !== 'contributions' && activeView !== 'expenses') {
-          setActiveView('projects');
-        }
+      // Si se hace clic en el mismo proyecto o se pasa null, se deselecciona y se vuelve a la primera pestaña.
+      if (!project || prevProject?.id_proyecto === project.id_proyecto) {
+        setSelectedIndex(0);
         return null;
       }
       return project;
     });
-  }, [activeView, setActiveView]);
+  }, []);
 
   const handleSendToVote = useCallback(async (projectId: number) => {
     // Usamos una promesa con toast para una mejor UX
@@ -189,6 +188,23 @@ export default function ProjectClassificationManagementPage() {
   const isSummaryDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado'].includes(selectedProject.estado);
 
   const selectedProjectId = selectedProject?.id_proyecto ?? null;
+  
+  const tabs = [
+    { name: t('projects.activeProjectsTitle'), view: 'projects', disabled: false },
+    { 
+      name: selectedProject?.estado === 'abierto' ? t('projects.evidenceAppendix.title') : t('projects.contributions.title'),
+      view: selectedProject?.estado === 'abierto' ? 'evidence_management' : 'contributions',
+      disabled: isContributionsDisabled 
+    },
+    { 
+      name: selectedProject?.estado === 'abierto' ? t('projects.proposalDetail.title') : t('projects.expenses.title'),
+      view: selectedProject?.estado === 'abierto' ? 'proposal_detail' : 'expenses',
+      disabled: isExpensesDisabled
+    },
+    { name: t('projects.summary.title'), view: 'summary', disabled: isSummaryDisabled },
+    { name: 'PDF', view: 'pdf_report', disabled: isSummaryDisabled, isComponent: true },
+    { name: t('catalog.toggle_overview'), view: 'overview', disabled: false },
+  ];
 
   return (
     <div>
@@ -196,86 +212,47 @@ export default function ProjectClassificationManagementPage() {
         <div className="flex flex-col space-y-1.5 p-6">
           <h3 className="font-semibold leading-none tracking-tight">{t('projects.title')}</h3>
         </div>
-        <div className="p-6 pt-0">
-          <div className="flex justify-center mb-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              <button
-                onClick={() => setActiveView('projects')}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
-                  activeView === 'projects' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('projects.activeProjectsTitle')}
-              </button>
-              <button
-                onClick={() => {
-                  if (selectedProject?.estado === 'abierto') {
-                    setActiveView('evidence_management');
-                  } else {
-                    setActiveView('contributions');
-                  }
-                }}
-                disabled={isContributionsDisabled}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
-                  activeView === 'contributions' || activeView === 'evidence_management' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {selectedProject?.estado === 'abierto' // Cambiar el texto del botón dinámicamente
-                  ? t('projects.evidenceAppendix.title')
-                  : t('projects.contributions.title')}
-              </button>
-              <button
-                onClick={() => {
-                  if (selectedProject?.estado === 'abierto') {
-                    setActiveView('proposal_detail');
-                  } else {
-                    setActiveView('expenses');
-                  }
-                }}
-                disabled={isExpensesDisabled}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
-                  activeView === 'expenses' || activeView === 'proposal_detail' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {selectedProject?.estado === 'abierto'
-                  ? t('projects.proposalDetail.title')
-                  : t('projects.expenses.title')}
-              </button>
-              <button
-                onClick={() => setActiveView('summary')}
-                disabled={isSummaryDisabled}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
-                  activeView === 'summary' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {t('projects.summary.title')}
-              </button>
-              <FinancialReport projectId={isSummaryDisabled ? null : selectedProjectId} />
-              <button
-                onClick={() => setActiveView('overview')}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
-                  activeView === 'overview' ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('catalog.toggle_overview')}
-              </button>
-            </div>
-          </div>
-          {activeView === 'projects' && (
-            <ProjectList
-              onProjectSelect={handleProjectSelect}
-              selectedProject={selectedProject}
-              onEditProject={handleOpenEditModal}
-              onSendToVote={handleSendToVote}
-            />
-          )}
-          {activeView === 'overview' && <RelationshipView onTypeClick={handleOpenModal} />}
-          {activeView === 'contributions' && <ProjectContributions projectId={selectedProjectId} />}
-          {activeView === 'expenses' && <ProjectExpenses projectId={selectedProjectId} />}
-          {activeView === 'summary' && <FinancialDetail projectId={selectedProjectId} />}
-          {activeView === 'evidence_management' && <EvidenceManagement projectId={selectedProjectId} />} {/* Renderizar el nuevo componente */}
-          {activeView === 'proposal_detail' && selectedProject && <ProposalDetail project={selectedProject} rubrosCatalogo={rubrosCatalogo} />}
-        </div>
+        <Tab.Group selectedIndex={selectedIndex} onChange={handleTabChange}>
+          <Tab.List className="flex justify-center flex-wrap gap-2 p-6 pt-0">
+            {tabs.map((tab, index) => (
+              tab.isComponent ? (
+                <FinancialReport key={index} projectId={tab.disabled ? null : selectedProjectId} />
+              ) : (
+                <Tab as={Fragment} key={index} disabled={tab.disabled}>
+                  {({ selected }) => (
+                    <button
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 ${
+                        selected ? 'bg-gray-900 text-white shadow' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {tab.name}
+                    </button>
+                  )}
+                </Tab>
+              )
+            ))}
+          </Tab.List>
+          <Tab.Panels className="p-6 pt-0">
+            <Tab.Panel>
+              <ProjectList onProjectSelect={handleProjectSelect} selectedProject={selectedProject} onEditProject={handleOpenEditModal} onSendToVote={handleSendToVote} />
+            </Tab.Panel>
+            <Tab.Panel>
+              {selectedProject?.estado === 'abierto' ? <EvidenceManagement projectId={selectedProjectId} /> : <ProjectContributions projectId={selectedProjectId} />}
+            </Tab.Panel>
+            <Tab.Panel>
+              {selectedProject?.estado === 'abierto' ? (selectedProject && <ProposalDetail project={selectedProject} rubrosCatalogo={rubrosCatalogo} />) : <ProjectExpenses projectId={selectedProjectId} />}
+            </Tab.Panel>
+            <Tab.Panel>
+              <FinancialDetail projectId={selectedProjectId} />
+            </Tab.Panel>
+            <Tab.Panel>
+              {/* Panel vacío para el componente de reporte */}
+            </Tab.Panel>
+            <Tab.Panel>
+              <RelationshipView onTypeClick={handleOpenModal} />
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
       </div>
 
       {isModalOpen && (

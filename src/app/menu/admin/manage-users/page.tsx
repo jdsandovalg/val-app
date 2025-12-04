@@ -13,6 +13,7 @@
 import { Fragment, useMemo, useState, useEffect, useCallback } from 'react';
 import type { Usuario } from '@/types/database';
 import UserModal, { type UserFormData } from './components/UserModal';
+import UserCardSkeleton from './components/UserCardSkeleton';
 import UserCard from './components/UserCard';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
@@ -356,7 +357,13 @@ export default function ManageUsersPage() {
         </div>
       </div>
 
-      {loading && <p className="text-center">{t('manageUsers.loading')}</p>}
+      {loading && (
+        <div>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <UserCardSkeleton key={index} />
+          ))}
+        </div>
+      )}
       {fetchError && <p className="text-center text-red-500 bg-red-100 p-3 rounded">{t('manageUsers.loadError')} {fetchError}</p>}
       {uiError && <p className="text-center text-red-500 bg-red-100 p-3 rounded">{t('manageUsers.operationError')} {uiError}</p>}
 

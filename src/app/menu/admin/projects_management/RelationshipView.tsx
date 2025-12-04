@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'react-hot-toast';
+import { Menu, Transition, Disclosure } from '@headlessui/react';
 
 type TipoProyecto = {
   id_tipo: number;
@@ -46,21 +47,17 @@ export default function RelationshipView({ onTypeClick }: RelationshipViewProps)
   const supabase = createClient();
   const [relationshipData, setRelationshipData] = useState<GrupoMantenimiento[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openGroupId, setOpenGroupId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  type SortableKeys = 'nombre_grupo' | 'orden';
-  type SortConfig = {
+  type SortableKeys = 'nombre_grupo' | 'orden';   type SortConfig = {
     key: SortableKeys;
     direction: 'ascending' | 'descending';
   };
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'orden', direction: 'ascending' });
-  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
 
   const handleSort = (key: SortableKeys) => {
     setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'ascending' ? 'descending' : 'ascending' }));
-    setIsSortMenuOpen(false);
   };
 
   const fetchData = useCallback(async () => {
@@ -80,10 +77,6 @@ export default function RelationshipView({ onTypeClick }: RelationshipViewProps)
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const toggleGroup = (groupId: number) => {
-    setOpenGroupId(prevId => (prevId === groupId ? null : groupId));
-  };
 
   const filteredAndSortedData = useMemo(() => {
     let sortedData = [...relationshipData];
@@ -115,21 +108,32 @@ export default function RelationshipView({ onTypeClick }: RelationshipViewProps)
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
-        <div className="relative">
-          <button
-            onClick={() => setIsSortMenuOpen(prev => !prev)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
+        <Menu as="div" className="relative">
+          <Menu.Button className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" /></svg>
             {t('manageUsers.ariaLabels.openSortMenu')}
-          </button>
-          {isSortMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-              <button onClick={() => handleSort('nombre_grupo')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t('catalog.sortMenu.byName')}</button>
-              <button onClick={() => handleSort('orden')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t('catalog.sortMenu.byOrder')}</button>
-            </div>
-          )}
-        </div>
+          </Menu.Button>
+          <Transition
+            as={Fragment}
+            enter="transition ease-out duration-100"
+            enterFrom="transform opacity-0 scale-95"
+            enterTo="transform opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="transform opacity-100 scale-100"
+            leaveTo="transform opacity-0 scale-95"
+          >
+            <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+              <div className="py-1">
+                <Menu.Item>
+                  {({ active }) => <button onClick={() => handleSort('nombre_grupo')} className={`${active ? 'bg-gray-100' : ''} block w-full text-left px-4 py-2 text-sm text-gray-700`}>{t('catalog.sortMenu.byName')}</button>}
+                </Menu.Item>
+                <Menu.Item>
+                  {({ active }) => <button onClick={() => handleSort('orden')} className={`${active ? 'bg-gray-100' : ''} block w-full text-left px-4 py-2 text-sm text-gray-700`}>{t('catalog.sortMenu.byOrder')}</button>}
+                </Menu.Item>
+              </div>
+            </Menu.Items>
+          </Transition>
+        </Menu>
       </div>
 
       <div className="space-y-4">
@@ -139,30 +143,38 @@ export default function RelationshipView({ onTypeClick }: RelationshipViewProps)
           <p className="text-center text-gray-500">{t('manageUsers.noResults')}</p>
         ) : (
           filteredAndSortedData.map((group, index) => (
-            <div key={group.id_grupo}>
-              <div onClick={() => toggleGroup(group.id_grupo)} className={`cursor-pointer rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex justify-between items-center border-l-4 ${groupColors[index % groupColors.length]}`}>
-                <h4 className="text-lg font-semibold">{group.nombre_grupo}</h4>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 transition-transform ${openGroupId === group.id_grupo ? 'rotate-180' : ''}`}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-              </div>
-              {openGroupId === group.id_grupo && (
-                <div className="pl-4 sm:pl-8 pt-2 space-y-2">
-                  {group.tipos.map((type, typeIndex) => (
-                    <div
-                      key={type.id_tipo}
-                      className={`rounded-lg border bg-white p-3 border-l-4 ${typeColors[typeIndex % typeColors.length]} cursor-pointer hover:bg-gray-50 transition-colors`}
-                      onClick={() => onTypeClick(type.id_tipo, type.nombre_tipo)}
-                    >
-                      <p className="font-medium">{type.nombre_tipo}</p>
-                    </div>
-                  ))}
-                  {group.tipos.length === 0 && (
-                    <p className="text-sm text-gray-500 pl-4">{t('catalog.emptyState.noTypes')}</p>
-                  )}
-                </div>
+            <Disclosure key={group.id_grupo} as="div">
+              {({ open }) => (
+                <>
+                  <Disclosure.Button className={`w-full cursor-pointer rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex justify-between items-center border-l-4 ${groupColors[index % groupColors.length]}`}>
+                    <h4 className="text-lg font-semibold">{group.nombre_grupo}</h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 transition-transform ${open ? 'rotate-180' : ''}`}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </Disclosure.Button>
+                  <Transition
+                    enter="transition duration-100 ease-out"
+                    enterFrom="transform scale-95 opacity-0"
+                    enterTo="transform scale-100 opacity-100"
+                    leave="transition duration-75 ease-out"
+                    leaveFrom="transform scale-100 opacity-100"
+                    leaveTo="transform scale-95 opacity-0"
+                  >
+                    <Disclosure.Panel className="pl-4 sm:pl-8 pt-2 space-y-2">
+                      {group.tipos.length > 0 ? group.tipos.map((type, typeIndex) => (
+                        <div
+                          key={type.id_tipo}
+                          className={`rounded-lg border bg-white p-3 border-l-4 ${typeColors[typeIndex % typeColors.length]} cursor-pointer hover:bg-gray-50 transition-colors`}
+                          onClick={() => onTypeClick(type.id_tipo, type.nombre_tipo)}
+                        >
+                          <p className="font-medium">{type.nombre_tipo}</p>
+                        </div>
+                      )) : <p className="text-sm text-gray-500 pl-4">{t('catalog.emptyState.noTypes')}</p>}
+                    </Disclosure.Panel>
+                  </Transition>
+                </>
               )}
-            </div>
+            </Disclosure>
           ))
         )}
       </div>

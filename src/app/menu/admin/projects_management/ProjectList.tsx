@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 import { FilePenLine, Gavel } from 'lucide-react';
+import { Disclosure, Transition } from '@headlessui/react';
 
 type ProjectStatus = 'abierto' | 'en_votacion' | 'aprobado' | 'rechazado' | 'en_progreso' | 'terminado' | 'cancelado';
 
@@ -36,7 +37,6 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
   const { t } = useI18n();
   const [projects, setProjects] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showArchived, setShowArchived] = useState(false);
   const [userProfile, setUserProfile] = useState<string | null>(null);
 
   const fetchProjects = useCallback(async () => {
@@ -165,65 +165,74 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
       )}
 
       {archivedProjects.length > 0 && (
-        <div className="mt-8">
-          <button
-            onClick={() => setShowArchived(!showArchived)}
-            className="w-full text-left text-lg font-semibold mb-4 text-gray-600 flex justify-between items-center p-2 rounded-md hover:bg-gray-100"
-          >
-            Proyectos Archivados ({archivedProjects.length})
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 transition-transform ${showArchived ? 'rotate-180' : ''}`}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          </button>
-          {showArchived && (
-            <div className="space-y-3">
-              {archivedProjects.map(project => {
-                const isSelected = selectedProject?.id_proyecto === project.id_proyecto;
-                return (
-                  <div
-                    key={project.id_proyecto}
-                    onClick={() => handleSelect(project)}
-                    className={`p-4 rounded-lg border-l-4 shadow-sm cursor-pointer transition-all opacity-80 ${
-                      isSelected
-                        ? `bg-blue-50 ${statusStyles[project.estado]?.border || 'border-gray-400'} ring-2 ring-blue-300`
-                        : `bg-white ${statusStyles[project.estado]?.border || 'border-gray-400'} hover:bg-gray-50`
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
-                      <div className="flex items-center gap-2">
-                        {project.es_propuesta ? (
-                          <span className="text-xs font-semibold text-blue-800 bg-blue-100 border-l-4 border-blue-500 px-2 py-1 rounded-r-md hidden sm:inline">
-                            {t('projects.modals.tabs.newProject')}
-                          </span>
-                        ) : (
-                          <span className="text-xs font-semibold text-yellow-800 bg-yellow-100 border-l-4 border-yellow-500 px-2 py-1 rounded-r-md hidden sm:inline">
-                            {t('projects.modals.tabs.projectWithCosts')}
-                          </span>
-                        )}
-                        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
-                          {t(`projectStatus.${project.estado}`)}
-                        </span>
-                        {userProfile === 'ADM' && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEditProject(project);
-                            }}
-                            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
-                            title={t('manageUsers.card.edit')}
-                          >
-                            <FilePenLine size={16} className="text-gray-600" />
-                          </button>
-                        )}
+        <Disclosure as="div" className="mt-8">
+          {({ open }) => (
+            <>
+              <Disclosure.Button className="w-full text-left text-lg font-semibold mb-4 text-gray-600 flex justify-between items-center p-2 rounded-md hover:bg-gray-100">
+                Proyectos Archivados ({archivedProjects.length})
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 transition-transform ${open ? 'rotate-180' : ''}`}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              </Disclosure.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 -translate-y-1"
+                enterTo="opacity-100 translate-y-0"
+                leave="transition ease-in duration-150"
+                leaveFrom="opacity-100 translate-y-0"
+                leaveTo="opacity-0 -translate-y-1"
+              >
+                <Disclosure.Panel className="space-y-3">
+                  {archivedProjects.map(project => {
+                    const isSelected = selectedProject?.id_proyecto === project.id_proyecto;
+                    return (
+                      <div
+                        key={project.id_proyecto}
+                        onClick={() => handleSelect(project)}
+                        className={`p-4 rounded-lg border-l-4 shadow-sm cursor-pointer transition-all opacity-80 ${
+                          isSelected
+                            ? `bg-blue-50 ${statusStyles[project.estado]?.border || 'border-gray-400'} ring-2 ring-blue-300`
+                            : `bg-white ${statusStyles[project.estado]?.border || 'border-gray-400'} hover:bg-gray-50`
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
+                          <div className="flex items-center gap-2">
+                            {project.es_propuesta ? (
+                              <span className="text-xs font-semibold text-blue-800 bg-blue-100 border-l-4 border-blue-500 px-2 py-1 rounded-r-md hidden sm:inline">
+                                {t('projects.modals.tabs.newProject')}
+                              </span>
+                            ) : (
+                              <span className="text-xs font-semibold text-yellow-800 bg-yellow-100 border-l-4 border-yellow-500 px-2 py-1 rounded-r-md hidden sm:inline">
+                                {t('projects.modals.tabs.projectWithCosts')}
+                              </span>
+                            )}
+                            <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusStyles[project.estado]?.badge || 'bg-gray-200 text-gray-800'}`}>
+                              {t(`projectStatus.${project.estado}`)}
+                            </span>
+                            {userProfile === 'ADM' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEditProject(project);
+                                }}
+                                className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                                title={t('manageUsers.card.edit')}
+                              >
+                                <FilePenLine size={16} className="text-gray-600" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  })}
+                </Disclosure.Panel>
+              </Transition>
+            </>
           )}
-        </div>
+        </Disclosure>
       )}
     </div>
   );
