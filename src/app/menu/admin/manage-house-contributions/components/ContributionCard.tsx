@@ -2,6 +2,7 @@ import React from 'react';
 import type { ContribucionPorCasaExt } from '@/types';
 import { useI18n } from '@/app/i18n-provider';
 import { formatDate, formatCurrency } from '@/utils/format'; // La importación sigue igual
+import { MdLocationOn } from 'react-icons/md'; // Importar el icono de ubicación
 
 interface ContributionCardProps {
   record: ContribucionPorCasaExt;
@@ -22,14 +23,20 @@ const ContributionCard: React.FC<ContributionCardProps> = ({ record, onDelete, o
   const isPaid = record.realizado === 'PAGADO';
   const borderColorClass = isPaid ? 'border-green-500' : 'border-red-500';
   const dividerColorClass = isPaid ? 'border-green-200' : 'border-red-200';
-
+///{? record.ubicacion ?? 'N/A'}
   return (
     // Se usa la nueva columna `color_del_borde` para determinar el color.
     <div className={`bg-white shadow-md rounded-lg p-4 mb-4 border-l-4 ${borderColorClass}`}>
       <div className="flex justify-between items-start">
         <div>
-          <p className="font-bold text-gray-800">{record.contribuciones?.descripcion ?? 'N/A'}</p>
-          <p className="text-sm text-gray-500">{casaInfo}</p>
+          <p className="font-bold text-gray-800">{record.contribuciones?.descripcion ?? 'N/A'}</p> 
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-gray-500">{casaInfo}</p>
+            <div className="flex items-center text-sm text-cyan-700 font-medium">
+              <MdLocationOn className="h-4 w-4" />
+              <span>{record.ubicacion ?? 'N/A'}</span>
+            </div>
+          </div>
         </div>
         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${record.realizado === 'PAGADO' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {record.realizado === 'PAGADO' ? t('manageContributions.card.statusDone') : t('manageContributions.card.statusPending')}

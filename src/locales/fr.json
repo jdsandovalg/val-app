@@ -301,6 +301,7 @@
     "headerDate": "Date",
     "headerAmount": "Montant Payé",
     "headerStatus": "Réalisé",
+    "headerLocation": "Emplacement",
     "fileName": "Rapport_Contributions.pdf"
   },
   "catalog": {

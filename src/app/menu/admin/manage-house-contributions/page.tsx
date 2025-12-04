@@ -261,6 +261,10 @@ export default function ManageHouseContributionsPage() {
             aValue = a.contribuciones?.descripcion?.toLowerCase() ?? '';
             bValue = b.contribuciones?.descripcion?.toLowerCase() ?? '';
             break;
+          case 'ubicacion':
+            aValue = a.ubicacion?.toLowerCase() ?? '';
+            bValue = b.ubicacion?.toLowerCase() ?? '';
+            break;
           case 'pagado':
             aValue = a.pagado ?? -Infinity; // Treat null as the smallest value
             bValue = b.pagado ?? -Infinity;
@@ -473,6 +477,7 @@ export default function ManageHouseContributionsPage() {
                     <button onClick={() => { handleSort('usuarios'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byHouse')}</button>
                     <button onClick={() => { handleSort('contribuciones'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-1 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byContribution')}</button>
                     <button onClick={() => { handleSort('realizado'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byStatus')}</button>
+                    <button onClick={() => { handleSort('ubicacion'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('contributionReport.headerLocation')}</button>
                   </div>
                 </div>
               )}

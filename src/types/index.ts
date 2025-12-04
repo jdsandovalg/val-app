@@ -22,4 +22,4 @@ export type ContribucionPorCasaExt = ContribucionPorCasa & {
     color_del_borde: string | null;
   } | null;
 };
-export type SortableKeys = keyof Pick<ContribucionPorCasaExt, 'usuarios' | 'contribuciones' | 'fecha' | 'pagado' | 'realizado'>;
+export type SortableKeys = 'usuarios' | 'contribuciones' | 'fecha' | 'pagado' | 'realizado' | 'ubicacion';
