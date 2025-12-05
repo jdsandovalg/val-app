@@ -14,7 +14,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     // El proveedor de contexto necesita ser un componente de cliente,
     // por lo que no podemos establecer `lang` aquí directamente. El proveedor se encargará.
-    <html>
+    <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="theme-color" content="#FFFFFF" />
+      </head>
       <body className={inter.className}>
         <I18nProvider>{children}</I18nProvider>
       </body>

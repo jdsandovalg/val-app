@@ -952,3 +952,49 @@ Estos archivos garantizan que no se pierda contexto entre sesiones.
 ---
 
 **Última actualización:** 14 de Noviembre de 2025, 23:50 hrs
+
+
+feat(catalogs): Full catalog overhaul with Headless UI, deep search, and UX fixes
+
+This comprehensive commit refactors the entire catalog management system, standardizing UI components using Headless UI, introducing powerful search capabilities, and fixing numerous bugs for a more robust and consistent user experience.
+
+### 1. Complete Refactor to Headless UI
+
+- **Catalog Modals (`GroupModal`, `TypeModal`, `RubroModal`, `RubroCategoryModal`, `SupplierModal`):**
+  - All modals in the `projects_catalogs` section have been migrated from custom implementations to Headless UI's `Dialog` and `Transition` components.
+  - Selectors (`<select>`) within modals (`TypeModal`, `RubroModal`) were upgraded to modern and accessible `Listbox` components.
+
+- **Relationship Views (`projects_catalogs` & `projects_management`):**
+  - Both `RelationshipView.tsx` files were fully refactored to use Headless UI.
+  - The accordion logic was migrated from manual `useState` to the `Disclosure` component.
+  - The sort menu was migrated to the `Menu` component for improved accessibility and state management.
+
+### 2. Deep Search & UX Enhancements
+
+- **Deep Search Implemented:**
+  - A search input was added to all catalog management views via the generic `CatalogManagement` component.
+  - The search logic is now "deep":
+    - **Relationship Views:** Search filters by group name OR by the name of any project type within the group.
+    - **Type Management:** Search filters by type name OR its parent group's name.
+    - **Rubro Management:** Search filters by item name, description, OR its category's name.
+
+- **Auto-Expanding Search Results:**
+  - In both `RelationshipView` components, when a search term matches an item inside a collapsed group, the group now automatically expands to reveal the result, significantly improving usability.
+
+- **UI Layout Consistency:**
+  - The layout in `CatalogManagement` was updated to place the search filter and "Add New" button side-by-side, creating a cleaner and more consistent header.
+
+### 3. Critical Bug Fixes & Code Quality
+
+- **Data Fetching:** Fixed a critical bug where `GroupManagement` and `TypeManagement` failed to load data due to incomplete RPC parameters. The configuration now correctly passes the full parameter object.
+- **Runtime Errors:**
+  - Fixed `ReferenceError: useMemo is not defined` in `CatalogManagement.tsx`.
+  - Fixed `ReferenceError: Fragment is not defined` in multiple modal components.
+- **TypeScript & ESLint:**
+  - Corrected a `TypeError` in `RubroManagement.tsx`'s `searchFunction` to ensure it always returns a boolean value.
+  - Removed unused variable warnings (e.g., `t` in `SupplierManagement.tsx`).
+- **Modal UX Fix:** Removed `overflow-hidden` from `Dialog.Panel` in all refactored modals to prevent `Listbox` options from being visually cut off.
+
+### 4. i18n Updates
+
+- Added Spanish, English, and French translations for the new evidence types "Actividad" and "Calendario".
