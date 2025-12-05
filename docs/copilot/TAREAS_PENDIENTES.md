@@ -1,10 +1,32 @@
 ## 🎯 TAREAS PENDIENTES (Próxima Sesión)
 
-1.  **Refactorizar `CatalogModal.tsx`**:
-    *   **Objetivo:** Migrar el modal genérico de catálogos a `Dialog` de Headless UI para estandarizarlo con el resto de la aplicación.
-    *   **Ubicación:** `/src/app/menu/admin/projects_catalogs/CatalogModal.tsx`.
+1.  **Finalizar Refactorización de Gestión de Aportaciones (Admin)**
+    *   **Prioridad:** Crítica.
+    *   **Objetivo:** Corregir y alinear las pantallas de administración de aportaciones con la nueva arquitectura de la base de datos.
+    *   **Plan de Acción:**
+        1.  **Crear Pantalla de Catálogo de Contribuciones:** Implementar CRUD en `/menu/admin/contributions-catalog/page.tsx` usando `CatalogManagement`.
+        2.  **Refactorizar Gestión de Aportes por Casa:** Corregir la página `/menu/admin/manage-house-contributions/page.tsx` para que use la función RPC `gestionar_contribuciones_casa`.
+
+2.  **Completar Migración a Headless UI**
+    *   **Objetivo:** Finalizar la estandarización de componentes de UI para mejorar la accesibilidad y consistencia.
+    *   **Plan de Acción:**
+        1.  **`UserModal.tsx`**: Migrar el modal de gestión de usuarios a `Dialog` y `Listbox`.
+        2.  **`SortMenu.tsx`**: Si existe como componente separado, migrarlo a `Menu`. (Actualmente integrado en las vistas).
 
 ---
+
+## ✅ TAREAS COMPLETADAS (Resumen de la Sesión)
+
+### 1. Refactorización Completa de la Gestión de Catálogos
+*   **Migración a Headless UI:** Todos los modales (`Group`, `Type`, `Rubro`, `RubroCategory`, `Supplier`) y las vistas de relación (`RelationshipView`) fueron refactorizados a `Dialog`, `Listbox`, `Menu` y `Disclosure`.
+*   **Búsqueda Profunda y UX:** Se implementó una búsqueda inteligente en todas las vistas de catálogo, incluyendo la auto-expansión de resultados en las vistas jerárquicas. Se mejoró el layout para una UI más limpia.
+
+### 2. Corrección de Bugs Críticos y Calidad de Código
+*   Se solucionaron errores de carga de datos, `TypeError` en funciones de búsqueda y `ReferenceError` por falta de importaciones.
+*   Se eliminaron advertencias de ESLint por variables no utilizadas.
+
+### 3. Actualizaciones de i18n
+*   Se añadieron las traducciones para los nuevos tipos de evidencia "Actividad" y "Calendario".
 
 ## 🎯 RESUMEN EJECUTIVO - Sesión del 14 de Noviembre de 2025
 

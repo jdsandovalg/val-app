@@ -18,7 +18,15 @@ export default function GroupManagement() {
       entityNameKey="catalog.toggle_groups"
       idKey="id_grupo"
       colorPalette={['border-blue-400', 'border-green-400', 'border-purple-400', 'border-pink-400', 'border-yellow-500', 'border-indigo-400', 'border-teal-400']}
-      fetchRpc={{ name: 'gestionar_grupo_mantenimiento' }}
+      fetchRpc={{ 
+        name: 'gestionar_grupo_mantenimiento',
+        params: {
+          p_action: 'SELECT',
+          p_id_grupo: null,
+          p_nombre_grupo: null,
+          p_orden: null,
+        }
+      }}
       saveRpcName="gestionar_grupo_mantenimiento"
       deleteRpcName="gestionar_grupo_mantenimiento"
       i18nKeys={{ add: 'catalog.buttons.addGroup', emptyState: 'catalog.emptyState.noGroups' }}

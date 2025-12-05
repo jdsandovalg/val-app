@@ -43,7 +43,6 @@ type RelationshipViewProps = {
 };
 
 export default function RelationshipView({ onTypeClick }: RelationshipViewProps) {
-  console.log('DEBUG: Rendering RelationshipView component');
   const { t } = useI18n();
   const supabase = createClient();
   const [relationshipData, setRelationshipData] = useState<GrupoMantenimiento[]>([]);
@@ -86,7 +85,8 @@ export default function RelationshipView({ onTypeClick }: RelationshipViewProps)
     // Filtrado
     if (searchTerm) {
       sortedData = sortedData.filter(group =>
-        group.nombre_grupo.toLowerCase().includes(searchTerm.toLowerCase())
+        group.nombre_grupo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        group.tipos.some(type => type.nombre_tipo.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -144,8 +144,15 @@ export default function RelationshipView({ onTypeClick }: RelationshipViewProps)
         ) : filteredAndSortedData.length === 0 ? (
           <p className="text-center text-gray-500">{t('manageUsers.noResults')}</p>
         ) : (
-          filteredAndSortedData.map((group, index) => (
-            <Disclosure key={group.id_grupo} as="div">
+          filteredAndSortedData.map((group, index) => {
+            // Determina si el grupo debe estar abierto por defecto.
+            // Esto sucede si el término de búsqueda no está vacío y coincide con uno de los hijos.
+            const shouldOpen = searchTerm.length > 0 && group.tipos.some(type => 
+              type.nombre_tipo.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            return (
+            <Disclosure key={`${group.id_grupo}-${searchTerm}`} as="div" defaultOpen={shouldOpen}>
               {({ open }) => (
                 <>
                   <Disclosure.Button className={`w-full cursor-pointer rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex justify-between items-center border-l-4 ${groupColors[index % groupColors.length]}`}>
@@ -177,7 +184,8 @@ export default function RelationshipView({ onTypeClick }: RelationshipViewProps)
                 </>
               )}
             </Disclosure>
-          ))
+            );
+          })
         )}
       </div>
     </div>

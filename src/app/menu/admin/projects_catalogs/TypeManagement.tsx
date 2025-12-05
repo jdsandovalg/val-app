@@ -49,12 +49,25 @@ export default function TypeManagement() {
       entityNameKey="catalog.toggle_types"
       idKey="id_tipo"
       colorPalette={['border-sky-400', 'border-emerald-400', 'border-violet-400', 'border-fuchsia-400', 'border-amber-500', 'border-cyan-400']}
-      fetchRpc={{ name: 'gestionar_tipo_proyecto_catalogo' }}
+      fetchRpc={{ 
+        name: 'gestionar_tipo_proyecto_catalogo',
+        params: {
+          p_action: 'SELECT',
+          p_id_tipo: null,
+        }
+      }}
       saveRpcName="gestionar_tipo_proyecto_catalogo"
       deleteRpcName="gestionar_tipo_proyecto_catalogo"
       i18nKeys={{ add: 'catalog.buttons.addType', emptyState: 'catalog.emptyState.noTypes' }}
       ModalComponent={TypeModal}
       additionalModalProps={{ groups }}
+      searchFunction={(item, term) => {
+        const groupName = groups.find(g => g.id_grupo === item.id_grupo)?.nombre_grupo || '';
+        return (
+          item.nombre_tipo.toLowerCase().includes(term) ||
+          groupName.toLowerCase().includes(term)
+        );
+      }}
       renderCardContent={(item) => (
         <>
           <h4 className="text-lg font-semibold">{item.nombre_tipo}</h4>

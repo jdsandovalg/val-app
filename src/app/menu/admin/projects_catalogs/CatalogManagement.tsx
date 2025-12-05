@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import CatalogCard from './CatalogCard';
@@ -41,6 +41,8 @@ type CatalogManagementProps<T, TModalProps = object> = {
   getDeleteParams?: (item: T) => object;
   // Handler opcional para el clic en la tarjeta
   onCardClick?: (item: T) => void;
+  // Función de búsqueda personalizada (opcional)
+  searchFunction?: (item: T, searchTerm: string) => boolean;
   // Prop para ocultar el botón de añadir por defecto
   hideAddButton?: boolean;
 };
@@ -59,6 +61,7 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
   getSaveParams,
   getDeleteParams,
   onCardClick,
+  searchFunction,
   hideAddButton = false,
 }: CatalogManagementProps<T, TModalProps>) {
   const { t } = useI18n();
@@ -69,6 +72,7 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
   const [editingItem, setEditingItem] = useState<Partial<T> | null>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<T | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -149,18 +153,36 @@ export default function CatalogManagement<T extends BaseItem, TModalProps>({
     }
   };
 
+  const filteredItems = useMemo(() => {
+    if (!searchTerm) {
+      return items;
+    }
+    const lowercasedTerm = searchTerm.toLowerCase();
+    return items.filter(item => {
+      if (searchFunction) {
+        return searchFunction(item, lowercasedTerm);
+      }
+      // Búsqueda por defecto: busca en todos los valores de string del objeto
+      return Object.values(item).some(value =>
+        typeof value === 'string' && value.toLowerCase().includes(lowercasedTerm)
+      );
+    });
+  }, [items, searchTerm, searchFunction]);
+
   return (
-    <div>
-      {!hideAddButton && (
-        <div className="mb-4 flex justify-end">
+    <div className="space-y-4"> {/* Usamos space-y-4 para el espaciado general */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center"> {/* Contenedor para la búsqueda y el botón de añadir */}
+        <input type="text" placeholder={t('calendar.table.filterPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+        {!hideAddButton && ( // El botón de añadir siempre debe ser visible si no está oculto
+          // Se eliminó la condición !searchTerm de aquí
           <button onClick={() => handleOpenModal(null)} className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md hover:bg-gray-900">
             {t(i18nKeys.add)}
           </button>
-        </div>
-      )}
-      {loading ? <p className="text-center text-gray-500">{t('loading')}</p> : items.length === 0 ? <p className="text-center text-gray-500">{t(i18nKeys.emptyState)}</p> : (
+        )}
+      </div>
+      {loading ? <p className="text-center text-gray-500">{t('loading')}</p> : filteredItems.length === 0 ? <p className="text-center text-gray-500">{searchTerm ? t('manageUsers.noResults') : t(i18nKeys.emptyState)}</p> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {items.map((item, index) => (
+          {filteredItems.map((item, index) => (
             <CatalogCard
               key={item[idKey] as React.Key}
               colorClass={colorPalette[index % colorPalette.length]}

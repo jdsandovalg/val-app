@@ -58,7 +58,6 @@ export default function ProjectClassificationManagementPage() {
     if (!selectedProject) {
       setSelectedIndex(0);
     }
-    console.log(`DEBUG: Tab changed to index: ${index}`);
     setSelectedIndex(index);
   };
 

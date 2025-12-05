@@ -58,6 +58,14 @@ export default function RubroManagement({ categoryFilter, onClearFilter, categor
         i18nKeys={{ add: 'catalog.buttons.addRubro', emptyState: 'catalog.emptyState.noRubros' }}
         ModalComponent={RubroModal}
         additionalModalProps={{ categorias }}
+        searchFunction={(item, term) => {
+          const searchTerm = term.toLowerCase();
+          return (
+            item.nombre.toLowerCase().includes(searchTerm) || // Esto ya es booleano
+            !!(item.descripcion && item.descripcion.toLowerCase().includes(searchTerm)) || // Aseguramos que sea booleano
+            !!(item.categoria_nombre && item.categoria_nombre.toLowerCase().includes(searchTerm)) // Aseguramos que sea booleano
+          );
+        }}
         renderCardContent={(item) => (
           <>
             <h4 className="text-lg font-semibold">{item.nombre}</h4>

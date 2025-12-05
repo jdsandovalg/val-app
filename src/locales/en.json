@@ -553,6 +553,8 @@
     "FOTOGRAFIA_01": "Photograph 01",
     "FOTOGRAFIA_02": "Photograph 02",
     "FOTOGRAFIA_03": "Photograph 03",
+        "ACTIVIDAD": "Activity",
+        "CALENDARIO": "Calendar",
     "COTIZACION_PARA_VOTACION": "Quotation for Voting",
     "default": "Document",
     "CONTRATO": "Contract"
