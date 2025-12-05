@@ -58,6 +58,7 @@ export default function ProjectClassificationManagementPage() {
     if (!selectedProject) {
       setSelectedIndex(0);
     }
+    console.log(`DEBUG: Tab changed to index: ${index}`);
     setSelectedIndex(index);
   };
 
@@ -246,10 +247,10 @@ export default function ProjectClassificationManagementPage() {
               <FinancialDetail projectId={selectedProjectId} />
             </Tab.Panel>
             <Tab.Panel>
-              {/* Panel vacío para el componente de reporte */}
+              <RelationshipView onTypeClick={handleOpenModal} />
             </Tab.Panel>
             <Tab.Panel>
-              <RelationshipView onTypeClick={handleOpenModal} />
+              {/* Panel vacío para el componente de reporte PDF, que no renderiza contenido aquí. */}
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>

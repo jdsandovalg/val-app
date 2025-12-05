@@ -43,13 +43,15 @@ type RelationshipViewProps = {
 };
 
 export default function RelationshipView({ onTypeClick }: RelationshipViewProps) {
+  console.log('DEBUG: Rendering RelationshipView component');
   const { t } = useI18n();
   const supabase = createClient();
   const [relationshipData, setRelationshipData] = useState<GrupoMantenimiento[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  type SortableKeys = 'nombre_grupo' | 'orden';   type SortConfig = {
+  type SortableKeys = 'nombre_grupo' | 'orden';
+  type SortConfig = {
     key: SortableKeys;
     direction: 'ascending' | 'descending';
   };
