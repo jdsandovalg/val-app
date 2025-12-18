@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Fragment } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Usuario } from '@/types/database';
 import { useI18n } from '@/app/i18n-provider';
@@ -64,8 +64,19 @@ export default function ProjectList({ projects, loading, onProjectSelect, select
     cancelado: { badge: 'bg-red-100 text-red-800', border: 'border-red-400' },
   };
 
-  const activeProjects = projects.filter(p => !['terminado', 'cancelado'].includes(p.estado));
-  const archivedProjects = projects.filter(p => ['terminado', 'cancelado'].includes(p.estado));
+  const { activeProjects, archivedProjects } = useMemo(() => {
+    return projects.reduce<{ activeProjects: Proyecto[]; archivedProjects: Proyecto[] }>(
+      (acc, project) => {
+        if (['terminado', 'cancelado'].includes(project.estado)) {
+          acc.archivedProjects.push(project);
+        } else {
+          acc.activeProjects.push(project);
+        }
+        return acc;
+      },
+      { activeProjects: [], archivedProjects: [] }
+    );
+  }, [projects]);
 
   const handleSelect = (project: Proyecto) => {
     if (selectedProject?.id_proyecto === project.id_proyecto) {
@@ -79,7 +90,7 @@ export default function ProjectList({ projects, loading, onProjectSelect, select
     <div className="mb-8">
       <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('projects.activeProjectsTitle')}</h3>
       {activeProjects.length === 0 ? (
-        <p className="text-center text-gray-500 py-4 bg-gray-100 rounded-lg">{t('projects.emptyState.noActiveProjects')}</p>
+        <p className="text-center text-gray-500 py-4 bg-gray-100 rounded-lg">{t('projects.activeProjectsEmptyState.noActiveProjects')}</p>
       ) : (
         <div className="space-y-3">
           {activeProjects.map(project => {
@@ -146,8 +157,8 @@ export default function ProjectList({ projects, loading, onProjectSelect, select
         <Disclosure as="div" className="mt-8">
           {({ open }) => (
             <>
-              <Disclosure.Button className="w-full text-left text-lg font-semibold mb-4 text-gray-600 flex justify-between items-center p-2 rounded-md hover:bg-gray-100">
-                Proyectos Archivados ({archivedProjects.length})
+              <Disclosure.Button className="w-full text-left text-lg font-semibold text-gray-600 flex justify-between items-center p-2 rounded-md hover:bg-gray-100">
+                {t('projects.archivedProjectsTitle', { count: archivedProjects.length })}
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 transition-transform ${open ? 'rotate-180' : ''}`}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>

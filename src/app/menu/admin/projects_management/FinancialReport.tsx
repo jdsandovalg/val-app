@@ -383,7 +383,9 @@ const ReportFooter = ({ projectInfo, t }: Pick<ReportDocumentProps, 'projectInfo
 // --- FIN: Componentes Reutilizables ---
 
 export const ReportDocument = ({ summary, details, projectInfo, t, locale, currency, logoBase64, generalEvidence, proposalRubros }: ReportDocumentProps) => {
-  const aportes = details.filter((d: DetailRow) => d.tipo_registro === 'aporte');
+  const aportes = details
+    .filter((d: DetailRow) => d.tipo_registro === 'aporte')
+    .sort((a, b) => a.descripcion.localeCompare(b.descripcion)); // Ordenar alfabéticamente por nombre
   const gastos = details.filter((d: DetailRow) => d.tipo_registro === 'gasto');
   const gastosConEvidencia = gastos.filter(d => d.url_documento);
 
@@ -462,6 +464,8 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
                   <View key={i} style={styles.tableRow}>
                     <Text style={[styles.col, styles.descriptionCol]}>{item.descripcion}</Text>
                     <View style={[styles.col, styles.amountCol, { alignItems: 'flex-end' }]}>
+                      {/* Fecha en letras pequeñas antes del monto */}
+                      <Text style={styles.subText}>{formatDate(item.fecha, locale)}</Text>
                       <Text style={{ color: item.monto_pagado === 0 && item.tipo_registro === 'aporte' ? '#9B2C2C' : '#2C7A7B', fontWeight: 'bold', fontSize: 10 }}>{formatCurrency(item.monto, locale, currency)}</Text>
                       {item.monto_saldo && item.monto_saldo > 0 && item.monto_pagado != null && (
                         <>

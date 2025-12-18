@@ -409,7 +409,8 @@
       "sendToVoteError": "Erreur lors de l'envoi au vote : {message}"
     },
     "activeProjectsTitle": "Projets Actifs",
-    "emptyState": {
+    "archivedProjectsTitle": "Projets Archivés ({count})",
+    "activeProjectsEmptyState": {
       "noActiveProjects": "Il n'y a pas de projets actifs pour le moment."
     },
     "contributions": {

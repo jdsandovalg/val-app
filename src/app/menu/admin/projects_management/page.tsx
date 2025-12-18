@@ -15,6 +15,7 @@ import ProposalDetail from './components/ProposalDetail';
 import FinancialDetail from './FinancialDetail';
 import EvidenceManagement from './components/EvidenceManagement';
 import RubroModal from '../projects_catalogs/RubroModal';
+import GeneralReport from './GeneralReport';
 import FinancialReport from './FinancialReport';
 import { Tab } from '@headlessui/react';
 
@@ -76,7 +77,7 @@ export default function ProjectClassificationManagementPage() {
   const fetchProjects = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('gestionar_proyectos', {
-        p_action: 'SELECT',
+        p_action: 'SELECT_ALL',
         p_id_proyecto: null,
         p_id_tipo_proyecto: null,
         p_descripcion_tarea: null,
@@ -260,6 +261,9 @@ export default function ProjectClassificationManagementPage() {
   const isExpensesDisabled = !selectedProject || ['en_votacion', 'rechazado', 'terminado', 'cancelado'].includes(selectedProject.estado);
   // El resumen SÍ debe estar disponible para proyectos terminados o cancelados.
   const isSummaryDisabled = !selectedProject || ['abierto', 'en_votacion', 'rechazado'].includes(selectedProject.estado);
+  
+  // Permitimos generar PDF en estado 'abierto' (Propuesta) y en estados financieros
+  const isPdfDisabled = !selectedProject || ['en_votacion', 'rechazado'].includes(selectedProject.estado);
 
   const selectedProjectId = selectedProject?.id_proyecto ?? null;
   
@@ -276,7 +280,7 @@ export default function ProjectClassificationManagementPage() {
       disabled: isExpensesDisabled
     },
     { name: t('projects.summary.title'), view: 'summary', disabled: isSummaryDisabled },
-    { name: 'PDF', view: 'pdf_report', disabled: isSummaryDisabled, isComponent: true },
+    { name: 'PDF', view: 'pdf_report', disabled: isPdfDisabled, isComponent: true },
     { name: t('catalog.toggle_overview'), view: 'overview', disabled: false },
   ];
 
