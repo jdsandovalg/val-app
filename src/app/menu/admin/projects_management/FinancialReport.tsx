@@ -43,6 +43,16 @@ type DetailRow = {
   url_documento?: string | null;
 };
 
+// NUEVO: Tipo para los rubros de la propuesta
+type ProposalRubro = {
+  id_proyecto_rubro: number;
+  rubro_nombre: string;
+  rubro_categoria: string | null;
+  descripcion_adicional: string | null;
+  referencia1: string | null;
+  monto: number;
+};
+
 // NUEVO: Tipo para las evidencias generales
 type GeneralEvidence = {
   id_evidencia: number;
@@ -62,6 +72,7 @@ type ReportDocumentProps = {
   currency: string;
   logoBase64: string | null;
   generalEvidence: GeneralEvidence[]; // NUEVO
+  proposalRubros?: ProposalRubro[]; // NUEVO: Rubros para el reporte de propuesta
 };
 
 // Paleta de colores base para los tipos de evidencia conocidos.
@@ -345,13 +356,13 @@ const styles = StyleSheet.create({
 });
 
 // --- INICIO: Componentes Reutilizables para Header y Footer ---
-const ReportHeader = ({ logoBase64, t, locale }: Pick<ReportDocumentProps, 'logoBase64' | 't' | 'locale'>) => (
+const ReportHeader = ({ logoBase64, reportTitle, locale }: { logoBase64: string | null; reportTitle: string; locale: string; }) => (
   <View style={{ position: 'absolute', top: 20, left: 30, right: 30 }} fixed>
     <View style={styles.header}>
       {/* eslint-disable-next-line jsx-a11y/alt-text -- La prop 'alt' no es aplicable en react-pdf */}
       {logoBase64 && <Image style={styles.logo} src={logoBase64} />}
       <View style={styles.titleContainer}>
-        <Text style={styles.mainTitle}>{t('projects.summary.reportTitle')}</Text>
+        <Text style={styles.mainTitle}>{reportTitle}</Text>
         <Text>{new Date().toLocaleDateString(locale)}</Text>
       </View>
     </View>
@@ -371,7 +382,7 @@ const ReportFooter = ({ projectInfo, t }: Pick<ReportDocumentProps, 'projectInfo
 );
 // --- FIN: Componentes Reutilizables ---
 
-export const ReportDocument = ({ summary, details, projectInfo, t, locale, currency, logoBase64, generalEvidence }: ReportDocumentProps) => {
+export const ReportDocument = ({ summary, details, projectInfo, t, locale, currency, logoBase64, generalEvidence, proposalRubros }: ReportDocumentProps) => {
   const aportes = details.filter((d: DetailRow) => d.tipo_registro === 'aporte');
   const gastos = details.filter((d: DetailRow) => d.tipo_registro === 'gasto');
   const gastosConEvidencia = gastos.filter(d => d.url_documento);
@@ -384,8 +395,8 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
   <Document title={`${t('projects.summary.reportTitle')} - ${projectInfo.descripcion_tarea}`}>
-    <Page size="LETTER" style={styles.page} wrap={false}>
-      <ReportHeader logoBase64={logoBase64} t={t} locale={locale} />
+    <Page size="LETTER" style={styles.page} wrap>
+      <ReportHeader logoBase64={logoBase64} reportTitle={t('projects.summary.reportTitle')} locale={locale} />
       
       <View style={styles.projectInfo}>
         <View style={styles.projectInfoDetails}>
@@ -406,113 +417,90 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
         </View>
       </View>
 
-      <View style={styles.summaryContainer}>
-        <View style={[styles.summaryCard, { backgroundColor: '#E6FFFA', borderLeft: '3px solid #38B2AC' }]}>
-          <Text style={[styles.summaryTitle, { color: '#2C7A7B' }]}>{t('projects.summary.totalContributions')}</Text>
-          <Text style={[styles.summaryAmount, { color: '#2C7A7B' }]}>{formatCurrency(summary.total_aportes, locale, currency)}</Text>
-        </View>
-        <View style={[styles.summaryCard, { backgroundColor: '#FFF5F5', borderLeft: '3px solid #E53E3E' }]}>
-          <Text style={[styles.summaryTitle, { color: '#9B2C2C' }]}>{t('projects.summary.totalExpenses')}</Text>
-          <Text style={[styles.summaryAmount, { color: '#9B2C2C' }]}>{formatCurrency(summary.total_gastos, locale, currency)}</Text>
-        </View>
-        <View style={[
-          styles.summaryCard,
-          summary.balance && summary.balance >= 0
-            ? { backgroundColor: '#EBF8FF', borderLeft: '3px solid #4299E1' } // Estilo para saldo positivo (azul)
-            : { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FBBF24' } // Estilo para saldo negativo (ámbar/naranja)
-        ]}>
-          <Text style={[
-            styles.summaryTitle,
-            summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#B45309' }
-          ]}>{t('projects.summary.balance')}</Text>
-          <Text style={[
-            styles.summaryAmount,
-            summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#B45309' }
-          ]}>{formatCurrency(summary.balance || 0, locale, currency)}</Text>
-        </View>
-      </View>
-
-      {/* --- INICIO: Tarjeta de Sobrante --- */}
-      {summary.balance && summary.balance !== 0 && (
-        <View style={styles.surplusContainer}>
-          {summary.balance && summary.balance > 0 ? (
-            <View style={styles.surplusCard}>
-              <Text style={[styles.surplusTitle, { color: '#2C7A7B' }]}>{t('projects.summary.surplusPerHouse')}</Text>
-              <Text style={[styles.surplusAmount, { color: '#2C7A7B' }]}>
-                {formatCurrency(summary.surplusPerHouse || 0, locale, currency)}
-              </Text>
-              <Text style={[styles.surplusSubText, { color: '#2C7A7B' }]}>({summary.participatingHouses} {t('projects.summary.participatingHouses')})</Text>
+      {/* --- VISTA PARA REPORTE FINANCIERO (LÓGICA EXISTENTE) --- */}
+      <>
+          <View style={styles.summaryContainer}>
+            <View style={[styles.summaryCard, { backgroundColor: '#E6FFFA', borderLeft: '3px solid #38B2AC' }]}>
+              <Text style={[styles.summaryTitle, { color: '#2C7A7B' }]}>{t('projects.summary.totalContributions')}</Text>
+              <Text style={[styles.summaryAmount, { color: '#2C7A7B' }]}>{formatCurrency(summary.total_aportes, locale, currency)}</Text>
             </View>
-          ) : (
-            <View style={[styles.deficitCard]}>
-              <Text style={[styles.surplusTitle]}>{t('projects.summary.pendingCollection')}</Text>
-              <Text style={[styles.surplusAmount, { color: '#9B2C2C' }]}>
-                {/* CORREGIDO: Usar summary.total_pendiente */}
-                {formatCurrency(summary.total_pendiente ?? 0, locale, currency)}
-              </Text>
+            <View style={[styles.summaryCard, { backgroundColor: '#FFF5F5', borderLeft: '3px solid #E53E3E' }]}>
+              <Text style={[styles.summaryTitle, { color: '#9B2C2C' }]}>{t('projects.summary.totalExpenses')}</Text>
+              <Text style={[styles.summaryAmount, { color: '#9B2C2C' }]}>{formatCurrency(summary.total_gastos, locale, currency)}</Text>
+            </View>
+            <View style={[styles.summaryCard, summary.balance && summary.balance >= 0 ? { backgroundColor: '#EBF8FF', borderLeft: '3px solid #4299E1' } : { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FBBF24' }]}>
+              <Text style={[styles.summaryTitle, summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#B45309' }]}>{t('projects.summary.balance')}</Text>
+              <Text style={[styles.summaryAmount, summary.balance && summary.balance >= 0 ? { color: '#2B6CB0' } : { color: '#B45309' }]}>{formatCurrency(summary.balance || 0, locale, currency)}</Text>
+            </View>
+          </View>
+
+          {summary.balance && summary.balance !== 0 && (
+            <View style={styles.surplusContainer}>
+              {summary.balance > 0 ? (
+                <View style={styles.surplusCard}>
+                  <Text style={[styles.surplusTitle, { color: '#2C7A7B' }]}>{t('projects.summary.surplusPerHouse')}</Text>
+                  <Text style={[styles.surplusAmount, { color: '#2C7A7B' }]}>{formatCurrency(summary.surplusPerHouse || 0, locale, currency)}</Text>
+                  <Text style={[styles.surplusSubText, { color: '#2C7A7B' }]}>({summary.participatingHouses} {t('projects.summary.participatingHouses')})</Text>
+                </View>
+              ) : (
+                <View style={styles.deficitCard}>
+                  <Text style={styles.surplusTitle}>{t('projects.summary.pendingCollection')}</Text>
+                  <Text style={[styles.surplusAmount, { color: '#9B2C2C' }]}>{formatCurrency(summary.total_pendiente ?? 0, locale, currency)}</Text>
+                </View>
+              )}
             </View>
           )}
-        </View>
-      )}
-      {/* --- FIN: Tarjeta de Sobrante --- */}
 
-      <View style={styles.tablesContainer}>
-        <View style={styles.tableContainer}>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}> 
-              <Text style={[styles.colHeader, styles.descriptionCol]}>{t('projects.contributions.listTitle')}</Text>
-              <Text style={[styles.colHeader, styles.amountCol]}>{t('projects.fields.amount')}</Text>
-            </View>
-            {aportes.map((item: DetailRow, i: number) => (
-              <View key={i} style={styles.tableRow}>
-                <Text style={[styles.col, styles.descriptionCol]}>{item.descripcion}</Text>
-                <View style={[styles.col, styles.amountCol, { alignItems: 'flex-end' }]}>
-                  <Text style={{
-                    // CORREGIDO: Si no se ha pagado nada, se muestra en rojo. Si no, en verde.
-                    color: item.monto_pagado === 0 && item.tipo_registro === 'aporte' ? '#9B2C2C' : '#2C7A7B',
-                    fontWeight: 'bold',
-                    fontSize: 10
-                  }}>
-                    {formatCurrency(item.monto, locale, currency)}</Text>
-                  {item.monto_saldo && item.monto_saldo > 0 && item.monto_pagado != null && (
-                    <>
-                      {item.monto_pagado > 0 && (
-                        <Text style={styles.subText}>{t('projects.summary.downPaymentLabel')}: {formatCurrency(item.monto_pagado, locale, currency)}</Text>
+          <View style={styles.tablesContainer}>
+            <View style={styles.tableContainer}>
+              <View style={styles.table}>
+                <View style={styles.tableHeader}>
+                  <Text style={[styles.colHeader, styles.descriptionCol]}>{t('projects.contributions.listTitle')}</Text>
+                  <Text style={[styles.colHeader, styles.amountCol]}>{t('projects.fields.amount')}</Text>
+                </View>
+                {aportes.map((item: DetailRow, i: number) => (
+                  <View key={i} style={styles.tableRow}>
+                    <Text style={[styles.col, styles.descriptionCol]}>{item.descripcion}</Text>
+                    <View style={[styles.col, styles.amountCol, { alignItems: 'flex-end' }]}>
+                      <Text style={{ color: item.monto_pagado === 0 && item.tipo_registro === 'aporte' ? '#9B2C2C' : '#2C7A7B', fontWeight: 'bold', fontSize: 10 }}>{formatCurrency(item.monto, locale, currency)}</Text>
+                      {item.monto_saldo && item.monto_saldo > 0 && item.monto_pagado != null && (
+                        <>
+                          {item.monto_pagado > 0 && <Text style={styles.subText}>{t('projects.summary.downPaymentLabel')}: {formatCurrency(item.monto_pagado, locale, currency)}</Text>}
+                          <Text style={styles.subText}>{t('projects.summary.balanceUsedLabel')}: {formatCurrency(item.monto_saldo, locale, currency)}</Text>
+                        </>
                       )}
-                      <Text style={styles.subText}>{t('projects.summary.balanceUsedLabel')}: {formatCurrency(item.monto_saldo, locale, currency)}</Text>
-                    </>
-                  )}
-                </View>
+                    </View>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.tableContainer}>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.colHeader, {width: '45%'}]}>{t('projects.expenses.listTitle')}</Text>
-              <Text style={[styles.colHeader, {width: '25%'}]}>{t('projects.expenses.fields.docDate')}</Text>
-              <Text style={[styles.colHeader, styles.amountCol]}>{t('projects.fields.amount')}</Text>
             </View>
-            {gastos.map((item: DetailRow, i: number) => (
-              <View key={i} style={styles.tableRow}>
-                <View style={[styles.col, {width: '45%'}]}>
-                  <Text>{item.descripcion_gasto || 'N/A'}</Text>
-                  {item.nombre_proveedor && <Text style={styles.subText}>{item.nombre_proveedor}</Text>}
+
+            <View style={styles.tableContainer}>
+              <View style={styles.table}>
+                <View style={styles.tableHeader}>
+                  <Text style={[styles.colHeader, { width: '45%' }]}>{t('projects.expenses.listTitle')}</Text>
+                  <Text style={[styles.colHeader, { width: '25%' }]}>{t('projects.expenses.fields.docDate')}</Text>
+                  <Text style={[styles.colHeader, styles.amountCol]}>{t('projects.fields.amount')}</Text>
                 </View>
-                <Text style={[styles.col, {width: '25%'}]}>{formatDate(item.fecha, locale)}</Text>
-                <Text style={[styles.col, styles.amountCol, { color: '#9B2C2C' }]}>-{formatCurrency(item.monto, locale, currency)}</Text>
+                {gastos.map((item: DetailRow, i: number) => (
+                  <View key={i} style={styles.tableRow}>
+                    <View style={[styles.col, { width: '45%' }]}>
+                      <Text>{item.descripcion_gasto || 'N/A'}</Text>
+                      {item.nombre_proveedor && <Text style={styles.subText}>{item.nombre_proveedor}</Text>}
+                    </View>
+                    <Text style={[styles.col, { width: '25%' }]}>{formatDate(item.fecha, locale)}</Text>
+                    <Text style={[styles.col, styles.amountCol, { color: '#9B2C2C' }]}>-{formatCurrency(item.monto, locale, currency)}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
           </View>
-        </View>
-      </View>
+      </>
       <ReportFooter projectInfo={projectInfo} t={t} />
     </Page>
     {gastosConEvidencia.length > 0 && (
       <Page size="LETTER" style={styles.page} wrap={false}>
-        <ReportHeader logoBase64={logoBase64} t={t} locale={locale} />
+        <ReportHeader logoBase64={logoBase64} reportTitle={t('projects.summary.reportTitle')} locale={locale} />
         {/* Este View es el contenedor principal del contenido de la página */}
         <View> 
           <Text style={styles.sectionTitle}>{t('projects.evidenceAppendix.title')}</Text>
@@ -540,7 +528,7 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
     {/* --- INICIO: NUEVO ANEXO DE DOCUMENTACIÓN GENERAL --- */}
     {generalEvidence.length > 0 && (
       <Page size="LETTER" style={styles.page} wrap={false}>
-        <ReportHeader logoBase64={logoBase64} t={t} locale={locale} />
+        <ReportHeader logoBase64={logoBase64} reportTitle={t('projects.summary.reportTitle')} locale={locale} />
         {/* Este View es el contenedor principal del contenido de la página */}
         <View> 
           <Text style={styles.sectionTitle}>{t('projects.generalEvidenceAppendix.title')}</Text>
@@ -594,64 +582,62 @@ export default function FinancialReport({ projectId }: FinancialReportProps) {
   const { t } = useI18n();
   const supabase = createClient();
   const [isGenerating, setIsGenerating] = useState(false);
-  const { summary, details, loading: dataLoading, refetch } = useFinancialData(projectId);
+  const { summary, details, loading: dataLoading, refetch } = useFinancialData(projectId); // Lo mantenemos para el resumen en vivo, pero no para el PDF.
 
   const generateReport = useCallback(async () => {
     if (!projectId) return;
     setIsGenerating(true);
     try {
-      // 1. Ejecutar todas las llamadas a la BD en paralelo para mayor eficiencia
-      const [
-        /* _ */, // Resultado de refetch no es necesario aquí
-        projectInfoResponse,
-        generalEvidenceResponse
-      ] = await Promise.all([
-        refetch(),
-        supabase.rpc('get_project_info_with_status', { p_id_proyecto: projectId }),
-        supabase.rpc('fn_get_proyecto_evidencias_generales', { p_id_proyecto: projectId }) // NUEVA LLAMADA
-      ]);
-
-      const { data: projectInfoResult, error: projectInfoError } = projectInfoResponse;
-      const { data: generalEvidence, error: generalEvidenceError } = generalEvidenceResponse;
-
-      if (projectInfoError || generalEvidenceError) throw projectInfoError || generalEvidenceError;
-      
-      const projectInfoData = projectInfoResult?.[0];
-      if (!projectInfoData || !summary || !details) {
+      // Primero, obtenemos la información básica del proyecto para decidir el flujo
+      const { data: projectInfoResult, error: projectInfoError } = await supabase.rpc('get_project_info_with_status', { p_id_proyecto: projectId });
+      if (projectInfoError) throw projectInfoError;
+      const projectInfoData = projectInfoResult?.[0]
+      // --- INICIO: Depuración para verificar el estado del proyecto ---
+      console.log("Información del proyecto recibida de la BD:", projectInfoData);
+      // --- FIN: Depuración ---
+      if (!projectInfoData) {
         toast.error(t('projects.summary.alerts.fetchError', { message: 'Incomplete data' }));
         setIsGenerating(false);
         return;
       }
 
-      // --- INICIO: Lógica para calcular el sobrante ---
-      const balance = summary.total_aportes - summary.total_gastos;
-      const aportes = details.filter(d => d.tipo_registro === 'aporte');
+      let reportPayload;
+
+      // --- FLUJO PARA REPORTE FINANCIERO (EXISTENTE) ---
+      if (!summary || !details) {
+        toast.error(t('projects.summary.alerts.fetchError', { message: 'Financial data not loaded' }));
+        setIsGenerating(false);
+        return;
+      }
+
+      const { data: generalEvidence, error: generalEvidenceError } = await supabase.rpc('fn_get_proyecto_evidencias_generales', { p_id_proyecto: projectId });
+      if (generalEvidenceError) throw generalEvidenceError;
+
+      const balance = (summary.total_aportes || 0) - (summary.total_gastos || 0);
+      const aportes = details.filter(d => d.tipo_registro === 'aporte') || [];
       const participatingHouses = aportes.length;
 
       const summaryWithSurplus: SummaryData = {
-        ...summary,
         balance,
-        total_pendiente: summary.total_pendiente ?? 0, // Convertimos null a 0
+        total_aportes: summary.total_aportes || 0,
+        total_gastos: summary.total_gastos || 0,
+        total_pendiente: summary.total_pendiente ?? 0,
         participatingHouses,
         surplusPerHouse: participatingHouses > 0 ? balance / participatingHouses : 0,
       };
-      // --- FIN: Lógica para calcular el sobrante ---
 
-      // --- INICIO: Lógica para el nombre del archivo ---
-      const safeProjectName = projectInfoData.descripcion_tarea.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const dateStamp = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-      const fileName = `${t('projects.summary.fileName', { projectName: safeProjectName })}-${dateStamp}.pdf`;
-      // --- FIN: Lógica para el nombre del archivo ---
+        const safeProjectName = projectInfoData.descripcion_tarea.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const dateStamp = new Date().toISOString().split('T')[0];
+        const fileName = `${t('projects.summary.fileName', { projectName: safeProjectName })}-${dateStamp}.pdf`;
 
-      const reportPayload = {
-        summary: summaryWithSurplus,
-        details,
-        // CORREGIDO: Asegurarse de que projectInfoData (que tiene notas_clave) se pase correctamente.
-        projectInfo: projectInfoData,
-        generalEvidence: generalEvidence || [], // NUEVO: Añadir evidencias generales al payload
-        // Añadimos el nombre del archivo al payload
-        fileName: fileName,
-      };
+        reportPayload = {
+          summary: summaryWithSurplus,
+          details: details,
+          projectInfo: projectInfoData,
+          generalEvidence: generalEvidence || [],
+          proposalRubros: [], // No se necesitan en el reporte financiero
+          fileName: fileName,
+        };
 
       localStorage.setItem('financialReportData', JSON.stringify(reportPayload));
       window.open('/menu/admin/projects_management/report', '_blank', 'noopener,noreferrer');

@@ -88,11 +88,15 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
       toast.error(t('catalog.alerts.allFieldsRequired')); // Reutilizamos una clave existente
       return;
     }
-    const payload: Partial<Proyecto> = {
+    // Creamos el payload base
+    const basePayload: Partial<Proyecto> = {
       ...formData,
       id_tipo_proyecto,
       id_proyecto: isEditing ? projectToEdit?.id_proyecto : undefined,
     };
+
+    // Eliminamos la bandera 'es_propuesta' que solo se usa en el frontend
+    const { es_propuesta, ...payload } = basePayload;
     onSave(payload);
   };
 
@@ -120,7 +124,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-              <Dialog.Panel className={`w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all border-l-4 ${formData.es_propuesta ? 'border-l-blue-500' : 'border-l-yellow-500'}`}>
+              <Dialog.Panel className={`w-full max-w-lg transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all border-l-4 ${formData.es_propuesta ? 'border-l-blue-500' : 'border-l-yellow-500'}`}>
                 <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
                   {isEditing ? t('userModal.titleEdit') + ' Proyecto' : t('projects.modals.addProject')}
                 </Dialog.Title>
@@ -168,10 +172,13 @@ export default function ProjectModal({ isOpen, onClose, onSave, id_tipo_proyecto
                             </select>
                           </div>
                         )}
-                        <div className="text-sm">
-                          <label htmlFor="valor_estimado" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.estimatedValue')}</label>
-                          <input id="valor_estimado" name="valor_estimado" type="number" value={formData.valor_estimado || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-                        </div>
+                        {/* Ocultar el campo de valor estimado si es una propuesta y no se está editando */}
+                        {formData.es_propuesta === false && (
+                          <div className="text-sm">
+                            <label htmlFor="valor_estimado" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.estimatedValue')}</label>
+                            <input id="valor_estimado" name="valor_estimado" type="number" value={formData.valor_estimado || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                          </div>
+                        )}
                         <div className="text-sm">
                           <label htmlFor="frecuencia_sugerida" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.suggestedFrequency')}</label>
                           <input id="frecuencia_sugerida" name="frecuencia_sugerida" value={formData.frecuencia_sugerida || ''} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />

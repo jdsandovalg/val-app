@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Trash2, Save } from 'lucide-react';
+import { Trash2, Save, PlusCircleIcon } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useI18n } from '@/app/i18n-provider';
 
@@ -46,12 +46,13 @@ type ProyectoRubro = {
 type ProposalDetailProps = {
   project: Proyecto;
   rubrosCatalogo: RubroCatalogo[]; // Añadimos la prop para el catálogo de rubros
+  onAddNewRubro: () => void; // <-- NUEVA PROP
 };
 
 import { createClient } from '@/utils/supabase/client';
 
-export default function ProposalDetail({ project, rubrosCatalogo }: ProposalDetailProps) {
-  const { t } = useI18n();
+export default function ProposalDetail({ project, rubrosCatalogo, onAddNewRubro }: ProposalDetailProps) {
+  const { t, locale, currency } = useI18n();
   const supabase = createClient();
 
   // Estado para la lista de rubros del proyecto
@@ -130,11 +131,9 @@ export default function ProposalDetail({ project, rubrosCatalogo }: ProposalDeta
       toast.error(t('catalog.alerts.saveError', { message: error.message }));
     } else {
       toast.success(t('projects.proposalDetail.alerts.addSuccess'));
-      // Actualización optimista: añadir el nuevo rubro al estado local
-      if (newRubro && newRubro.length > 0) {
-        setProyectoRubros(prev => [...prev, newRubro[0]]);
-      }
-      // Resetear formulario de adición
+      // En lugar de una actualización optimista, volvemos a cargar los datos
+      // para asegurarnos de que tenemos toda la información (nombres, categorías, etc.).
+      fetchProyectoRubros();
       setRubroInput('');
       setSelectedRubroId('');
       setNewMonto('');
@@ -223,48 +222,62 @@ export default function ProposalDetail({ project, rubrosCatalogo }: ProposalDeta
             {/* Formulario para añadir rubro */}
             <form onSubmit={handleAddRubro} className="mb-6 p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded-lg shadow-sm">
               <h4 className="font-semibold text-gray-600 mb-2">{t('projects.proposalDetail.addRubroTitle')}</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
-                <div className="sm:col-span-2 relative">
-                  <input
-                    value={rubroInput}
-                    onChange={handleRubroInputChange}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)} // Delay to allow click on results
-                    placeholder={t('projects.proposalDetail.searchRubro')}
-                    className="p-2 border border-gray-300 rounded-md text-sm w-full"
-                    disabled={isAdding}
-                    autoComplete="off"
-                  />
-                  {isSearchFocused && rubroInput && (
-                    <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-48 overflow-y-auto shadow-lg">
-                      {masterRubros
-                        .filter(r => r.nombre.toLowerCase().includes(rubroInput.toLowerCase()))
-                        .map(rubro => (
-                          <div
-                            key={rubro.id_rubro}
-                            onMouseDown={() => handleRubroSelect(rubro)}
-                            className="p-2 text-sm hover:bg-blue-50 cursor-pointer"
-                          >
-                            {rubro.nombre}
-                          </div>
-                        ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('catalog.rubros_catalog')}</label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-full">
+                      <input
+                        value={rubroInput}
+                        onChange={handleRubroInputChange}
+                        onFocus={() => setIsSearchFocused(true)}
+                        onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)} // Delay to allow click on results
+                        placeholder={t('projects.proposalDetail.searchRubro')}
+                        className="p-2 border border-gray-300 rounded-md text-sm w-full"
+                        disabled={isAdding}
+                        autoComplete="off"
+                      />
+                      {isSearchFocused && rubroInput && (
+                        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-48 overflow-y-auto shadow-lg">
+                          {masterRubros
+                            .filter(r => r.nombre.toLowerCase().includes(rubroInput.toLowerCase()))
+                            .map(rubro => (
+                              <div
+                                key={rubro.id_rubro}
+                                onMouseDown={() => handleRubroSelect(rubro)}
+                                className="p-2 text-sm hover:bg-blue-50 cursor-pointer"
+                              >
+                                {rubro.nombre}
+                              </div>
+                            ))}
+                        </div>
+                      )}
                     </div>
-                  )}
+                    <button type="button" onClick={onAddNewRubro} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors" title={t('catalog.buttons.addRubro')}>
+                      <PlusCircleIcon className="h-6 w-6 text-gray-600" />
+                    </button>
+                  </div>
                 </div>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder={t('projects.proposalDetail.amountPlaceholder')}
-                  value={newMonto}
-                  onChange={(e) => setNewMonto(e.target.value)}
-                  className="p-2 border border-gray-300 rounded-md text-sm w-full text-right"
-                  disabled={isAdding}
-                />
-                <div className="sm:col-span-3 flex justify-end">
+                {/* --- INICIO: Contenedor para Monto y Botón --- */}
+                <div className="flex items-end gap-2">
+                  <div className="flex-grow">
+                    <label htmlFor="newMonto" className="block text-sm font-medium text-gray-700 mb-1">{t('projects.fields.amount')}</label>
+                    <input
+                      id="newMonto"
+                      type="number"
+                      step="0.01"
+                      placeholder={t('projects.proposalDetail.amountPlaceholder')}
+                      value={newMonto}
+                      onChange={(e) => setNewMonto(e.target.value)}
+                      className="p-2 border border-gray-300 rounded-md text-sm w-full text-right"
+                      disabled={isAdding}
+                    />
+                  </div>
                   <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400" disabled={isAdding}>
                     {t('projects.proposalDetail.addButton')}
                   </button>
                 </div>
+                {/* --- FIN: Contenedor para Monto y Botón --- */}
               </div>
             </form>
 

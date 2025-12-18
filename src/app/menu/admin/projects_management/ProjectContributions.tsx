@@ -49,22 +49,49 @@ export default function ProjectContributions({ projectId }: ProjectContributions
     fetchContributions();
   }, [fetchContributions]);
 
-  const handleCancelPayment = async (contributionId: number) => {
+  const updateContributionStatus = async (contributionId: number, action: 'UPDATE_PAGO' | 'UPDATE_ANULAR') => {
+    const alertKeys = {
+      UPDATE_PAGO: { success: 'paymentSuccess', error: 'paymentError' },
+      UPDATE_ANULAR: { success: 'updateSuccess', error: 'updateError' }
+    };
+    const currentAlerts = alertKeys[action];
+
+    // 1. Buscamos la contribución para obtener el monto esperado
+    const contribution = contributions.find(c => c.id_contribucion === contributionId);
+    if (!contribution) return;
+
     try {
-      const { data, error } = await supabase.rpc('gestionar_contribuciones_proyecto', {
-        p_action: 'UPDATE_ANULAR',
+      // 2. Preparamos los parámetros dinámicos según lo que pide tu función SQL
+      const rpcParams: any = {
         p_id_contribucion: contributionId,
-      });
+      };
+
+      if (action === 'UPDATE_PAGO') {
+        rpcParams.p_action = 'UPDATE_PAGADO'; // Corregimos el nombre para coincidir con la BD
+        rpcParams.p_monto_pagado = contribution.monto_esperado; // Enviamos el monto obligatorio
+        rpcParams.p_fecha_pago = new Date().toISOString().split('T')[0]; // Enviamos la fecha obligatoria
+      } else {
+        rpcParams.p_action = action; // 'UPDATE_ANULAR'
+      }
+
+      const { data, error } = await supabase.rpc('gestionar_contribuciones_proyecto', rpcParams);
 
       if (error) throw error;
 
-      setContributions(prev =>
-        prev.map(c => (c.id_contribucion === contributionId ? data[0] : c))
-      );
-      toast.success(t('projects.contributions.alerts.updateSuccess'));
+      if (data && data.length > 0) {
+        // Actualización optimista de la UI con el dato retornado
+        setContributions(prevContributions =>
+          prevContributions.map(c => (c.id_contribucion === contributionId ? data[0] : c))
+        );
+        toast.success(t(`projects.contributions.alerts.${currentAlerts.success}`));
+      } else {
+        // Si la función no retorna datos (comportamiento inesperado),
+        // se recarga toda la lista como fallback para asegurar consistencia.
+        fetchContributions();
+      }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      toast.error(t('projects.contributions.alerts.updateError', { message }));
+      toast.error(t(`projects.contributions.alerts.${currentAlerts.error}`, { message }));
     }
   };
 
@@ -99,7 +126,11 @@ export default function ProjectContributions({ projectId }: ProjectContributions
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end gap-2">
-                <button onClick={() => handleCancelPayment(contrib.id_contribucion)} className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">{t('projects.contributions.buttons.cancelPayment')}</button>
+                {contrib.estado === 'PENDIENTE' ? (
+                  <button onClick={() => updateContributionStatus(contrib.id_contribucion, 'UPDATE_PAGO')} className="px-3 py-1 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">{t('projects.contributions.buttons.markAsPaid')}</button>
+                ) : (
+                  <button onClick={() => updateContributionStatus(contrib.id_contribucion, 'UPDATE_ANULAR')} className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">{t('projects.contributions.buttons.cancelPayment')}</button>
+                )}
               </div>
             </div>
           ))}

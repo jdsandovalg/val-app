@@ -13,6 +13,21 @@
         1.  **`UserModal.tsx`**: Migrar el modal de gestión de usuarios a `Dialog` y `Listbox`.
         2.  **`SortMenu.tsx`**: Si existe como componente separado, migrarlo a `Menu`. (Actualmente integrado en las vistas).
 
+3.  **Implementar Notificaciones Push Web (PWA)**
+    *   **Prioridad:** Media.
+    *   **Objetivo:** Notificar a los usuarios sobre eventos importantes (ej. nuevas votaciones, avisos de pago) para aumentar la interacción con la aplicación.
+    *   **Plan de Acción por Fases:**
+        1.  **Fase 1: Configuración de Infraestructura:**
+            *   Generar y configurar VAPID Keys en Supabase para identificar la aplicación.
+            *   Crear un Service Worker (`service-worker.js`) en la carpeta `/public` para gestionar la recepción y visualización de notificaciones en segundo plano.
+        2.  **Fase 2: Lógica de Suscripción del Usuario:**
+            *   Añadir un botón/interruptor en la UI (ej. Perfil de Usuario) para "Activar notificaciones".
+            *   Implementar la lógica para solicitar el permiso del navegador.
+            *   Crear una tabla `push_subscriptions` en la base de datos para almacenar los tokens de suscripción de cada usuario.
+        3.  **Fase 3: Envío de Notificaciones (Backend):**
+            *   Desarrollar una Supabase Edge Function que se active por eventos de la base de datos (ej. cambio de estado de un proyecto).
+            *   La función buscará a los usuarios suscritos y les enviará el mensaje correspondiente.
+
 ---
 
 ## ✅ TAREAS COMPLETADAS (Resumen de la Sesión)

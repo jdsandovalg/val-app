@@ -427,6 +427,8 @@
       },
       "alerts": {
         "fetchError": "Erreur lors du chargement des apports : {message}",
+        "paymentSuccess": "Paiement enregistré avec succès.",
+        "paymentError": "Erreur lors de l'enregistrement du paiement : {message}",
         "updateSuccess": "Statut mis à jour correctement.",
         "updateError": "Erreur lors de la mise à jour du statut : {message}"
       }
@@ -517,6 +519,8 @@
     },
     "proposalDetail": {
       "title": "Postes de Coût",
+      "reportTitle": "Rapport de Proposition de Projet",
+      "fileName": "Proposition_{projectName}",
       "noRubros": "Aucun poste de coût n'a encore été ajouté à ce projet.",
       "addRubroTitle": "Ajouter un Poste de Coût",
       "selectRubro": "Sélectionnez un poste...",

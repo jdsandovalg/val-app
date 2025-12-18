@@ -428,6 +428,8 @@
       },
       "alerts": {
         "fetchError": "Error al cargar los aportes: {message}",
+        "paymentSuccess": "Pago registrado exitosamente.",
+        "paymentError": "Error al registrar el pago: {message}",
         "updateSuccess": "Estado actualizado correctamente.",
         "updateError": "Error al actualizar el estado: {message}"
       }
@@ -518,6 +520,8 @@
     },
     "proposalDetail": {
       "title": "Rubros",
+      "reportTitle": "Reporte de Propuesta de Proyecto",
+      "fileName": "Propuesta_{projectName}",
       "noRubros": "Aún no se han añadido rubros a este proyecto.",
       "addRubroTitle": "Añadir Rubro",
       "selectRubro": "Seleccione un rubro...",

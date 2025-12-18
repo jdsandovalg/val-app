@@ -423,6 +423,8 @@
       },
       "alerts": {
         "fetchError": "Error loading contributions: {message}",
+        "paymentSuccess": "Payment registered successfully.",
+        "paymentError": "Error registering payment: {message}",
         "updateSuccess": "Status updated successfully.",
         "updateError": "Error updating status: {message}"
       }

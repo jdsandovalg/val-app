@@ -427,6 +427,8 @@
       },
       "alerts": {
         "fetchError": "Error loading contributions: {message}",
+        "paymentSuccess": "Payment registered successfully.",
+        "paymentError": "Error registering payment: {message}",
         "updateSuccess": "Status updated successfully.",
         "updateError": "Error updating status: {message}"
       }
@@ -517,6 +519,8 @@
     },
     "proposalDetail": {
       "title": "Line Items",
+      "reportTitle": "Project Proposal Report",
+      "fileName": "Proposal_{projectName}",
       "noRubros": "No line items have been added to this project yet.",
       "addRubroTitle": "Add Line Item",
       "selectRubro": "Select a line item...",

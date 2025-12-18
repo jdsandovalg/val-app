@@ -13,7 +13,8 @@ import ProjectContributions from './ProjectContributions';
 import ProjectExpenses from './ProjectExpenses';
 import ProposalDetail from './components/ProposalDetail';
 import FinancialDetail from './FinancialDetail';
-import EvidenceManagement from './components/EvidenceManagement'; // Importar el nuevo componente
+import EvidenceManagement from './components/EvidenceManagement';
+import RubroModal from '../projects_catalogs/RubroModal';
 import FinancialReport from './FinancialReport';
 import { Tab } from '@headlessui/react';
 
@@ -41,6 +42,12 @@ type RubroCatalogo = {
   id_categoria: number | null;
 };
 
+type CategoriaRubro = {
+  id_categoria: number;
+  nombre: string; // Corregido de 'nombre_categoria' a 'nombre'
+  descripcion: string | null;
+};
+
 export default function ProjectClassificationManagementPage() {
   const { t } = useI18n();
   const supabase = createClient();
@@ -50,6 +57,11 @@ export default function ProjectClassificationManagementPage() {
   const [selectedProject, setSelectedProject] = useState<Proyecto | null>(null);
   const [editingProject, setEditingProject] = useState<Proyecto | null>(null);
   const [rubrosCatalogo, setRubrosCatalogo] = useState<RubroCatalogo[]>([]);
+  const [projects, setProjects] = useState<Proyecto[]>([]);
+  const [rubroCategorias, setRubroCategorias] = useState<CategoriaRubro[]>([]);
+  // --- INICIO: Estados para el modal de Rubros ---
+  const [isRubroModalOpen, setIsRubroModalOpen] = useState(false);
+  // --- FIN: Estados para el modal de Rubros ---
   
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -60,6 +72,29 @@ export default function ProjectClassificationManagementPage() {
     }
     setSelectedIndex(index);
   };
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.rpc('gestionar_proyectos', {
+        p_action: 'SELECT',
+        p_id_proyecto: null,
+        p_id_tipo_proyecto: null,
+        p_descripcion_tarea: null,
+        p_detalle_tarea: null,
+        p_frecuencia_sugerida: null,
+        p_notas_clave: null,
+        p_valor_estimado: null,
+        p_estado: null,
+        p_fecha_inicial_proyecto: null,
+        p_fecha_final_proyecto: null,
+      });
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (error) {
+      toast.error(t('projects.alerts.fetchError', { message: (error as Error).message }));
+      setProjects([]);
+    }
+  }, [supabase, t]);
 
   const fetchRubrosCatalogo = useCallback(async () => {
     try {
@@ -78,10 +113,23 @@ export default function ProjectClassificationManagementPage() {
     }
   }, [supabase, t]);
 
+  const fetchRubroCategorias = useCallback(async () => {
+    try {
+      // CORRECCIÓN FINAL: Usar la función correcta que sí existe en la BD.
+      const { data, error } = await supabase.rpc('fn_get_rubro_categorias');
+      if (error) throw error;
+      setRubroCategorias(data || []);
+    } catch (error) {
+      toast.error(t('catalog.alerts.fetchError', { entity: t('catalog.rubro_categories'), message: (error as Error).message }));
+    }
+  }, [supabase, t]);
+
   useEffect(() => {
     // Cargar el catálogo de rubros una sola vez al montar la página
+    fetchProjects();
     fetchRubrosCatalogo();
-  }, [fetchRubrosCatalogo]);
+    fetchRubroCategorias();
+  }, [fetchProjects, fetchRubrosCatalogo, fetchRubroCategorias]);
 
   const handleOpenModal = useCallback((typeId: number) => {
     setSelectedTypeId(typeId);
@@ -99,6 +147,33 @@ export default function ProjectClassificationManagementPage() {
     setSelectedTypeId(null);
     setEditingProject(null); // Limpiamos el proyecto en edición al cerrar
   }, []);
+
+  // --- INICIO: Lógica para el modal de Rubros ---
+  const handleOpenRubroModal = useCallback(() => {
+    setIsRubroModalOpen(true);
+  }, []);
+
+  const handleCloseRubroModal = useCallback(() => {
+    setIsRubroModalOpen(false);
+  }, []);
+
+  const handleSaveRubro = useCallback(async (rubroData: Partial<RubroCatalogo>) => {
+    try {
+      const { error } = await supabase.rpc('fn_gestionar_rubros_catalogo', {
+        p_accion: 'INSERT',
+        p_nombre: rubroData.nombre,
+        p_descripcion: rubroData.descripcion,
+        p_id_categoria: rubroData.id_categoria,
+      });
+      if (error) throw error;
+      toast.success(t('catalog.alerts.saveSuccess', { entity: t('catalog.rubros_catalog') }));
+      fetchRubrosCatalogo(); // Recargar el catálogo
+      handleCloseRubroModal();
+    } catch (error) {
+      toast.error(t('catalog.alerts.saveError', { entity: t('catalog.rubros_catalog'), message: (error as Error).message }));
+    }
+  }, [supabase, t, fetchRubrosCatalogo, handleCloseRubroModal]);
+  // --- FIN: Lógica para el modal de Rubros ---
 
   const handleProjectSelect = useCallback((project: Proyecto | null) => {
     setSelectedProject(prevProject => {
@@ -171,15 +246,14 @@ export default function ProjectClassificationManagementPage() {
 
       toast.success(t(successMessageKey));
       handleCloseModal();
-      // Forzamos un refresh para que ProjectList se actualice.
-      // TODO: Reemplazar con actualización de estado local para una mejor UX.
-      window.location.reload(); 
+      // Refrescamos la lista de proyectos para mostrar los cambios
+      fetchProjects();
 
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error); // Mantener esto por ahora
       toast.error(t('projects.alerts.saveError', { message }));
     }
-  }, [supabase, t, handleCloseModal]);
+  }, [supabase, t, handleCloseModal, fetchProjects]);
 
   // Lógica para deshabilitar botones según el estado del proyecto
   const isContributionsDisabled = !selectedProject || ['en_votacion', 'rechazado', 'terminado', 'cancelado'].includes(selectedProject.estado);
@@ -234,13 +308,13 @@ export default function ProjectClassificationManagementPage() {
           </Tab.List>
           <Tab.Panels className="p-6 pt-0">
             <Tab.Panel>
-              <ProjectList onProjectSelect={handleProjectSelect} selectedProject={selectedProject} onEditProject={handleOpenEditModal} onSendToVote={handleSendToVote} />
+              <ProjectList projects={projects} loading={false} onProjectSelect={handleProjectSelect} selectedProject={selectedProject} onEditProject={handleOpenEditModal} onSendToVote={handleSendToVote} />
             </Tab.Panel>
             <Tab.Panel>
               {selectedProject?.estado === 'abierto' ? <EvidenceManagement projectId={selectedProjectId} /> : <ProjectContributions projectId={selectedProjectId} />}
             </Tab.Panel>
             <Tab.Panel>
-              {selectedProject?.estado === 'abierto' ? (selectedProject && <ProposalDetail project={selectedProject} rubrosCatalogo={rubrosCatalogo} />) : <ProjectExpenses projectId={selectedProjectId} />}
+              {selectedProject?.estado === 'abierto' ? (selectedProject && <ProposalDetail project={selectedProject} rubrosCatalogo={rubrosCatalogo} onAddNewRubro={handleOpenRubroModal} />) : <ProjectExpenses projectId={selectedProjectId} />}
             </Tab.Panel>
             <Tab.Panel>
               <FinancialDetail projectId={selectedProjectId} />
@@ -262,6 +336,16 @@ export default function ProjectClassificationManagementPage() {
           onSave={handleSaveProject}
           id_tipo_proyecto={selectedTypeId}
           projectToEdit={editingProject}
+        />
+      )}
+
+      {isRubroModalOpen && (
+        <RubroModal
+          isOpen={isRubroModalOpen}
+          onClose={handleCloseRubroModal}
+          onSave={handleSaveRubro}
+          item={null} // Pasamos null porque es para crear, no para editar
+          categorias={rubroCategorias} // Pasamos el catálogo de categorías
         />
       )}
     </div>

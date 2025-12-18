@@ -26,39 +26,17 @@ type Proyecto = {
 };
 
 type ProjectListProps = {
+  projects: Proyecto[]; // NUEVO: Recibe los proyectos como prop
+  loading: boolean; // NUEVO: Recibe el estado de carga
   onProjectSelect: (project: Proyecto | null) => void;
   selectedProject: Proyecto | null;
   onEditProject: (project: Proyecto) => void;
   onSendToVote: (projectId: number) => void; // Nueva prop para la acción de votar
 };
 
-export default function ProjectList({ onProjectSelect, selectedProject, onEditProject, onSendToVote }: ProjectListProps) {
-  const supabase = createClient();
+export default function ProjectList({ projects, loading, onProjectSelect, selectedProject, onEditProject, onSendToVote }: ProjectListProps) {
   const { t } = useI18n();
-  const [projects, setProjects] = useState<Proyecto[]>([]);
-  const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<string | null>(null);
-
-  const fetchProjects = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.rpc('gestionar_proyectos', {
-        p_action: 'SELECT_ALL',
-      });
-
-      if (error) throw error;
-      setProjects(data || []);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      toast.error(t('projects.alerts.fetchError', { message }));
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, t]);
-
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('usuario');
@@ -119,7 +97,7 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
                 <div className="flex justify-between items-start">
                   <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
                   <div className="flex items-center gap-2">
-                    {project.es_propuesta ? (
+                    {(project.valor_estimado === null || project.valor_estimado === 0) ? (
                       <span className="text-xs font-semibold text-blue-800 bg-blue-100 border-l-4 border-blue-500 px-2 py-1 rounded-r-md hidden sm:inline">
                         {t('projects.modals.tabs.newProject')}
                       </span>
@@ -199,7 +177,7 @@ export default function ProjectList({ onProjectSelect, selectedProject, onEditPr
                         <div className="flex justify-between items-start">
                           <h4 className="font-semibold text-gray-900 flex-1 pr-4">{project.descripcion_tarea}</h4>
                           <div className="flex items-center gap-2">
-                            {project.es_propuesta ? (
+                            {(project.valor_estimado === null || project.valor_estimado === 0) ? (
                               <span className="text-xs font-semibold text-blue-800 bg-blue-100 border-l-4 border-blue-500 px-2 py-1 rounded-r-md hidden sm:inline">
                                 {t('projects.modals.tabs.newProject')}
                               </span>
