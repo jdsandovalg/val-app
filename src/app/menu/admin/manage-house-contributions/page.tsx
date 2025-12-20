@@ -126,6 +126,12 @@ export default function ManageHouseContributionsPage() {
     setEditingRecord(null);
   }, []);
 
+  // TODO: Refactorizar para usar la función de base de datos `gestionar_contribuciones_casa`.
+  // Actualmente, las operaciones de guardado y eliminación se hacen directamente contra la tabla.
+  // Sería ideal centralizar esta lógica en una función RPC para mayor seguridad y mantenibilidad.
+  // Ejemplo de llamada RPC:
+  // await supabase.rpc('gestionar_contribuciones_casa', { p_accion: 'UPDATE_PAGADO', ...params })
+
   const handleSave = useCallback(async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null); // Limpiar errores de UI
     try {
@@ -178,7 +184,7 @@ export default function ManageHouseContributionsPage() {
   }, [supabase, editingRecord, t, handleCloseModal, fetchData]);
 
   const handleDelete = useCallback(async (recordToDelete: ContribucionPorCasa) => {
-    if (window.confirm(t('manageContributions.alerts.deleteConfirm'))) {
+    if (window.confirm(t('manageContributions.alerts.resetConfirm'))) {
       // CORRECCIÓN: En lugar de eliminar (DELETE), actualizamos a 'PENDIENTE' según regla de negocio.
       const { error } = await supabase
         .from('contribucionesporcasa')
@@ -193,10 +199,11 @@ export default function ManageHouseContributionsPage() {
         .eq('fecha_cargo', recordToDelete.fecha);
 
       if (error) {
-        const errorMessage = t('manageContributions.alerts.deleteError', { message: error.message });
+        const errorMessage = t('manageContributions.alerts.resetError', { message: error.message });
         setError(errorMessage);
         toast.error(errorMessage);
       } else {
+        toast.success(t('manageContributions.alerts.resetSuccess'));
         fetchData(); // Recargar datos
       }
     }
@@ -602,7 +609,7 @@ export default function ManageHouseContributionsPage() {
 
       {/* Modal de Filtros para Móvil */}
       {isFilterModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex justify-center items-center p-4">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
             <h2 className="text-xl font-bold mb-4">{t('contributionFilterModal.title')}</h2>
             <div className="space-y-4">

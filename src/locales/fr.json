@@ -255,20 +255,21 @@
       "addContributionHint": "Vous pouvez ajouter une nouvelle contribution en utilisant le menu d'actions."
     },
     "card": {
-      "paidAmount": "Montant Payé",
+      "amountPaidLabel": "Montant Payé",
       "notPaid": "Non payé",
-      "statusDone": "Réalisé",
+      "statusPaid": "Payé",
       "statusPending": "En attente",
-      "date": "Date",
-      "edit": "Modifier",
-      "delete": "Supprimer",
+      "dateLabel": "Date",
+      "editAction": "Modifier",
+      "resetAction": "Réinitialiser",
       "maxPaymentDate": "Date Max. Paiement"
     },
     "alerts": {
       "saveSuccess": "Enregistrement sauvegardé avec succès !",
       "saveError": "Erreur lors de la sauvegarde de l'enregistrement : {message}.\n\nVeuillez vérifier que tous les champs obligatoires ont une valeur.",
-      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet enregistrement ?",
-      "deleteError": "Erreur lors de la suppression : {message}",
+      "resetConfirm": "Êtes-vous sûr de vouloir annuler ce paiement et réinitialiser l'enregistrement à EN ATTENTE ?",
+      "resetError": "Erreur lors de la réinitialisation : {message}",
+      "resetSuccess": "Enregistrement réinitialisé à 'en attente' avec succès !",
       "pdfNoData": "Aucune donnée pour générer le rapport. Essayez de changer les filtres."
     }
   },

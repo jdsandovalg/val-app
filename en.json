@@ -252,13 +252,13 @@
       "addContributionHint": "You can add a new contribution using the actions menu."
     },
     "card": {
-      "paidAmount": "Amount Paid",
+      "amountPaidLabel": "Amount Paid",
       "notPaid": "Not paid",
-      "statusDone": "Done",
+      "statusPaid": "Paid",
       "statusPending": "Pending",
-      "date": "Date",
-      "edit": "Edit",
-      "delete": "Delete",
+      "dateLabel": "Date",
+      "editAction": "Edit",
+      "resetAction": "Reset",
       "maxPaymentDate": "Max. Payment Date"
     },
     "alerts": {

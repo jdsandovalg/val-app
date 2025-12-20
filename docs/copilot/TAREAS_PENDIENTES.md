@@ -28,6 +28,14 @@
             *   Desarrollar una Supabase Edge Function que se active por eventos de la base de datos (ej. cambio de estado de un proyecto).
             *   La función buscará a los usuarios suscritos y les enviará el mensaje correspondiente.
 
+4.  **Refactorización Arquitectónica: Centralizar Lógica en RPCs**
+    *   **Prioridad:** Media.
+    *   **Objetivo:** Migrar las operaciones de base de datos que actualmente se realizan directamente sobre las tablas (ej. `supabase.from('tabla').update()`) para que utilicen las funciones RPC existentes (ej. `gestionar_contribuciones_casa`).
+    *   **Beneficios:**
+        *   **Seguridad:** Centraliza la lógica de negocio y permisos en el backend.
+        *   **Mantenibilidad:** Reduce la duplicación de código en el frontend.
+        *   **Consistencia:** Asegura que todas las modificaciones de datos pasen por las mismas validaciones.
+
 ---
 
 ## ✅ TAREAS COMPLETADAS (Resumen de la Sesión)

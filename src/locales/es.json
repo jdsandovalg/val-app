@@ -255,20 +255,21 @@
       "addContributionHint": "Puedes agregar una nueva aportación usando el menú de acciones."
     },
     "card": {
-      "paidAmount": "Monto Pagado",
+      "amountPaidLabel": "Monto Pagado",
       "notPaid": "No pagado",
-      "statusDone": "Realizado",
+      "statusPaid": "Pagado",
       "statusPending": "Pendiente",
-      "date": "Fecha",
-      "edit": "Editar",
-      "delete": "Eliminar",
+      "dateLabel": "Fecha",
+      "editAction": "Editar",
+      "resetAction": "Restablecer",
       "maxPaymentDate": "Fecha Máx. Pago"
     },
     "alerts": {
       "saveSuccess": "¡Registro guardado exitosamente!",
       "saveError": "Error al guardar el registro: {message}.\n\nVerifique que todos los campos obligatorios tienen un valor.",
-      "deleteConfirm": "¿Estás seguro de que quieres eliminar este registro?",
-      "deleteError": "Error al eliminar: {message}",
+      "resetConfirm": "¿Estás seguro de que quieres anular este pago y restablecer el registro a PENDIENTE?",
+      "resetError": "Error al restablecer: {message}",
+      "resetSuccess": "¡Registro restablecido a pendiente exitosamente!",
       "pdfNoData": "No hay datos para generar el reporte. Pruebe cambiando los filtros."
     }
   },

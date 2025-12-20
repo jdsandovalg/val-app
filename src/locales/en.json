@@ -255,20 +255,21 @@
       "addContributionHint": "You can add a new contribution using the actions menu."
     },
     "card": {
-      "paidAmount": "Amount Paid",
+      "amountPaidLabel": "Amount Paid",
       "notPaid": "Not paid",
-      "statusDone": "Done",
+      "statusPaid": "Paid",
       "statusPending": "Pending",
-      "date": "Date",
-      "edit": "Edit",
-      "delete": "Delete",
+      "dateLabel": "Date",
+      "editAction": "Edit",
+      "resetAction": "Reset",
       "maxPaymentDate": "Max. Payment Date"
     },
     "alerts": {
       "saveSuccess": "Record saved successfully!",
       "saveError": "Error saving record: {message}.\n\nPlease ensure all required fields have a value.",
-      "deleteConfirm": "Are you sure you want to delete this record?",
-      "deleteError": "Error deleting: {message}",
+      "resetConfirm": "Are you sure you want to cancel this payment and reset the record to PENDING?",
+      "resetError": "Error resetting: {message}",
+      "resetSuccess": "Record successfully reset to pending!",
       "pdfNoData": "No data to generate the report. Try changing the filters."
     }
   },
