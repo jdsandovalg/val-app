@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { PDFViewer, Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer';
 import { useI18n } from '@/app/i18n-provider';
 import type { ContribucionPorCasaExt } from '@/types';
-import PdfContributionCard from '../components/PdfContributionCard';
+import { formatDate, formatCurrency } from '@/utils/format';
 
 // Registrar fuentes (igual que en la página principal)
 Font.register({
@@ -60,6 +60,86 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
 });
+
+// Componente de Tarjeta para PDF (Definido localmente para asegurar traducciones)
+const PdfContributionCard = ({ record, t, locale, currency }: { record: ContribucionPorCasaExt, t: (key: string, params?: any) => string, locale: string, currency: string }) => {
+  const isPaid = record.realizado === 'PAGADO';
+  const borderColor = isPaid ? '#22c55e' : '#ef4444'; // green-500 : red-500
+  const statusBg = isPaid ? '#dcfce7' : '#fee2e2'; // green-100 : red-100
+  const statusText = isPaid ? '#166534' : '#991b1b'; // green-800 : red-800
+  // Color para la línea divisoria, un poco más oscuro para mejor visibilidad
+  const dividerColor = isPaid ? '#86efac' : '#fca5a5'; // green-300 : red-300
+
+  const casaInfo = record.usuarios
+    ? `${t('groups.house')} #${record.usuarios.id} - ${record.usuarios.responsable} (${record.ubicacion ?? 'N/A'})`
+    : `${t('groups.house')} ID: ${record.id_casa} (${record.ubicacion ?? 'N/A'})`;
+
+  const montoPagado = record.pagado != null
+    ? formatCurrency(record.pagado, locale, currency)
+    : t('manageContributions.card.notPaid');
+
+  return (
+    <View style={{
+      width: '48%', // 2 tarjetas por fila
+      marginBottom: 10,
+      padding: 10,
+      backgroundColor: 'white',
+      // Se definen los bordes explícitamente para asegurar el grosor izquierdo
+      borderTopWidth: 1,
+      borderRightWidth: 1,
+      borderBottomWidth: 1,
+      borderLeftWidth: 4, // Borde izquierdo grueso
+      borderColor: '#e5e7eb', // Color por defecto para T, R, B
+      borderLeftColor: borderColor,
+      borderRadius: 4,
+    }}>
+      {/* Header con info de la casa y descripción */}
+      <View style={{ marginBottom: 4 }}>
+        <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#1f2937', marginBottom: 2 }}>
+          {casaInfo}
+        </Text>
+        <Text style={{ fontSize: 9, color: '#6b7280' }}>
+          {record.contribuciones?.descripcion ?? 'N/A'}
+        </Text>
+      </View>
+
+      {/* View del cuerpo con la línea divisoria superior */}
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingTop: 4,
+        marginTop: 4,
+        borderTopWidth: 2, // Línea divisoria más ancha
+        borderTopColor: dividerColor,
+      }}>
+        <View>
+          <Text style={{ fontSize: 8, color: '#6b7280' }}>{t('manageContributions.card.dateLabel')}</Text>
+          <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{formatDate(record.fecha, locale)}</Text>
+          {record.fecha_maxima_pago && (
+             <Text style={{ fontSize: 8, color: '#6b7280', marginTop: 2 }}>
+                {t('manageContributions.card.maxPaymentDate')}: {formatDate(record.fecha_maxima_pago, locale)}
+             </Text>
+          )}
+        </View>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 8, color: '#6b7280' }}>{t('manageContributions.card.amountPaidLabel')}</Text>
+          <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{montoPagado}</Text>
+          <View style={{
+              backgroundColor: statusBg,
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+              borderRadius: 10,
+              marginTop: 4,
+            }}>
+            <Text style={{ color: statusText, fontSize: 8, fontWeight: 'bold' }}>
+              {isPaid ? t('manageContributions.card.statusPaid') : t('manageContributions.card.statusPending')}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
 
 const ReportDocument = ({ records, t, locale, currency, logoBase64 }: { records: ContribucionPorCasaExt[], t: (key: string, params?: Record<string, string | number>) => string, locale: string, currency: string, logoBase64: string | null }) => (
   <Document title={t('contributionReport.fileName')}>
