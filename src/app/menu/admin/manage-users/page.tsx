@@ -18,7 +18,7 @@ import UserCard from './components/UserCard';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
-import { Menu, Transition, Popover, Listbox } from '@headlessui/react';
+import { Menu, Transition, Listbox } from '@headlessui/react';
 
 type SortableKeys = keyof Usuario;
 
@@ -33,6 +33,7 @@ export default function ManageUsersPage() {
   const [currentUserRole, setCurrentUserRole] = useState<string | undefined>(undefined);
   const [uiError, setUiError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<Usuario> | null>(null);
 
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({
@@ -251,62 +252,15 @@ export default function ManageUsersPage() {
         <h1 className="text-1xl font-bold text-gray-800 text-center">{t('manageUsers.title')}</h1>
 
         <div className="relative flex items-center gap-2">
-          <Popover className="relative">
-            {({ open }) => (
-              <>
-                <Popover.Button
-                  className={`p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 ${open ? 'bg-gray-200' : 'hover:bg-gray-200'}`}
-                  aria-label={t('manageUsers.ariaLabels.openFilters')}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
-                  </svg>
-                </Popover.Button>
-                <Transition
-                  as={Fragment}
-                  enter="transition ease-out duration-200"
-                  enterFrom="opacity-0 translate-y-1"
-                  enterTo="opacity-100 translate-y-0"
-                  leave="transition ease-in duration-150"
-                  leaveFrom="opacity-100 translate-y-0"
-                  leaveTo="opacity-0 translate-y-1"
-                >
-                  <Popover.Panel className="absolute right-0 z-10 mt-2 w-64 transform px-4 sm:px-0">
-                    <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                      <div className="relative bg-white p-4 space-y-4">
-                        <div>
-                          <label htmlFor="filter-id" className="block text-sm font-medium text-gray-700">{t('manageUsers.filterModal.houseLabel')}</label>
-                          <input id="filter-id" name="id" value={filters.id} onChange={handleFilterChange} placeholder={t('manageUsers.filterModal.housePlaceholder')} className="mt-1 w-full p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                        </div>
-                        <div>
-                          <label htmlFor="filter-responsable" className="block text-sm font-medium text-gray-700">{t('manageUsers.filterModal.responsibleLabel')}</label>
-                          <input id="filter-responsable" name="responsable" value={filters.responsable} onChange={handleFilterChange} placeholder={t('manageUsers.filterModal.responsiblePlaceholder')} className="mt-1 w-full p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                        </div>
-                        <div>
-                          <Listbox value={filters.tipo_usuario} onChange={(value) => handleFilterChange({ target: { name: 'tipo_usuario', value } })}>
-                            <Listbox.Label className="block text-sm font-medium text-gray-700">{t('manageUsers.filterModal.userTypeLabel')}</Listbox.Label>
-                            <div className="relative mt-1">
-                              <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
-                                <span className="block truncate">{(userTypesForFilter.find(type => type.id === filters.tipo_usuario) || userTypesForFilter[0]).name}</span>
-                                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-gray-400" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /></svg></span>
-                              </Listbox.Button>
-                              <Listbox.Options className="absolute z-40 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                {userTypesForFilter.map((type) => (
-                                  <Listbox.Option key={type.id} className={({ active }) => `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'}`} value={type.id}>
-                                    {({ selected }) => <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{type.name}</span>}
-                                  </Listbox.Option>
-                                ))}
-                              </Listbox.Options>
-                            </div>
-                          </Listbox>
-                        </div>
-                      </div>
-                    </div>
-                  </Popover.Panel>
-                </Transition>
-              </>
-            )}
-          </Popover>
+          <button
+            onClick={() => setIsFilterModalOpen(true)}
+            className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            aria-label={t('manageUsers.ariaLabels.openFilters')}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+            </svg>
+          </button>
 
           <Menu as="div" className="relative">
             <Menu.Button className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400" aria-label={t('manageUsers.ariaLabels.openSortMenu')}>
@@ -323,21 +277,27 @@ export default function ManageUsersPage() {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                <div className="px-1 py-1">
+              <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200 focus:outline-none">
+                <div className="py-1">
                   <Menu.Item>
                     {({ active }) => (
-                      <button onClick={() => handleSort('id')} className={`${active ? 'bg-indigo-500 text-white' : 'text-gray-900'} group flex w-full items-center rounded-md px-2 py-2 text-sm`}>{t('manageUsers.sortMenu.byHouse')}</button>
+                      <button onClick={() => handleSort('id')} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 flex items-center gap-2 md:gap-3`}>
+                        {t('manageUsers.sortMenu.byHouse')}
+                      </button>
                     )}
                   </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
-                      <button onClick={() => handleSort('responsable')} className={`${active ? 'bg-indigo-500 text-white' : 'text-gray-900'} group flex w-full items-center rounded-md px-2 py-2 text-sm`}>{t('manageUsers.sortMenu.byResponsible')}</button>
+                      <button onClick={() => handleSort('responsable')} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 flex items-center gap-2 md:gap-3`}>
+                        {t('manageUsers.sortMenu.byResponsible')}
+                      </button>
                     )}
                   </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
-                      <button onClick={() => handleSort('tipo_usuario')} className={`${active ? 'bg-indigo-500 text-white' : 'text-gray-900'} group flex w-full items-center rounded-md px-2 py-2 text-sm`}>{t('manageUsers.sortMenu.byType')}</button>
+                      <button onClick={() => handleSort('tipo_usuario')} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 flex items-center gap-2 md:gap-3`}>
+                        {t('manageUsers.sortMenu.byType')}
+                      </button>
                     )}
                   </Menu.Item>
                 </div>
@@ -403,6 +363,51 @@ export default function ManageUsersPage() {
         currentUserRole={currentUserRole}
         user={editingUser}
       />
+
+      {/* Modal de Filtros para Móvil */}
+      {isFilterModalOpen && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h2 className="text-xl font-bold mb-4">{t('manageUsers.filterModal.title')}</h2>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="filter-id" className="block text-sm font-medium text-gray-700">{t('manageUsers.filterModal.houseLabel')}</label>
+                <input id="filter-id" name="id" value={filters.id} onChange={handleFilterChange} placeholder={t('manageUsers.filterModal.housePlaceholder')} className="mt-1 w-full p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              </div>
+              <div>
+                <label htmlFor="filter-responsable" className="block text-sm font-medium text-gray-700">{t('manageUsers.filterModal.responsibleLabel')}</label>
+                <input id="filter-responsable" name="responsable" value={filters.responsable} onChange={handleFilterChange} placeholder={t('manageUsers.filterModal.responsiblePlaceholder')} className="mt-1 w-full p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              </div>
+              <div>
+                <Listbox value={filters.tipo_usuario} onChange={(value) => handleFilterChange({ target: { name: 'tipo_usuario', value } })}>
+                  <Listbox.Label className="block text-sm font-medium text-gray-700">{t('manageUsers.filterModal.userTypeLabel')}</Listbox.Label>
+                  <div className="relative mt-1">
+                    <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                      <span className="block truncate">{(userTypesForFilter.find(type => type.id === filters.tipo_usuario) || userTypesForFilter[0]).name}</span>
+                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-gray-400" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /></svg></span>
+                    </Listbox.Button>
+                    <Listbox.Options className="absolute z-40 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                      {userTypesForFilter.map((type) => (
+                        <Listbox.Option key={type.id} className={({ active }) => `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'}`} value={type.id}>
+                          {({ selected }) => <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{type.name}</span>}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setIsFilterModalOpen(false)}
+                className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
+              >
+                {t('manageUsers.filterModal.close')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

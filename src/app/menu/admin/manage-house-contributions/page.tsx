@@ -11,7 +11,8 @@
  * @acceso_a_datos Utiliza el hook `useContributionsData` para obtener todos los registros de la vista
  * `v_usuarios_contribuciones`. El filtrado y la ordenación se realizan en el lado del cliente mediante `useMemo`.
  */
-import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useState, useCallback, useRef, useMemo, useEffect, Fragment } from 'react';
+import { Menu, Transition } from '@headlessui/react';
 import { toast } from 'react-hot-toast';
 import { createClient } from '@/utils/supabase/client';
 import type { ContribucionPorCasa } from '@/types/database';
@@ -38,10 +39,8 @@ export default function ManageHouseContributionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Partial<ContribucionPorCasaExt> | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUploadingCsv, setIsUploadingCsv] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false); // Estado para el menú de ordenamiento
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({
     key: 'fecha',
     direction: 'descending',
@@ -53,9 +52,6 @@ export default function ManageHouseContributionsPage() {
     pagado: '',
     realizado: '',
   });
-
-  const menuRef = useRef<HTMLDivElement>(null);
-  const sortMenuRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -99,22 +95,6 @@ export default function ManageHouseContributionsPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
-        setIsSortMenuOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const handleOpenModal = (record: Partial<ContribucionPorCasaExt> | null = null) => {
     setEditingRecord(record);
@@ -487,73 +467,129 @@ export default function ManageHouseContributionsPage() {
             </button>
             
             {/* Botón de Ordenamiento (solo para móvil) */}
-            <div className="relative" ref={sortMenuRef}>
-              <button
-                onClick={() => setIsSortMenuOpen(prev => !prev)}
+            <Menu as="div" className="relative">
+              <Menu.Button
                 className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
                 aria-label={t('manageContributions.ariaLabels.openSortMenu')}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 text-gray-700">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
                 </svg>
-              </button>
-              {isSortMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200 focus:outline-none">
                   <div className="py-1">
-                    <button onClick={() => { handleSort('fecha'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byDate')}</button>
-                    <button onClick={() => { handleSort('usuarios'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byHouse')}</button>
-                    <button onClick={() => { handleSort('contribuciones'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-1 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byContribution')}</button>
-                    <button onClick={() => { handleSort('realizado'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('manageContributions.sortMenu.byStatus')}</button>
-                    <button onClick={() => { handleSort('ubicacion'); setIsSortMenuOpen(false); }} className="w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 md:gap-3">{t('contributionReport.headerLocation')}</button>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={() => handleSort('fecha')} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 flex items-center gap-2 md:gap-3`}>
+                          {t('manageContributions.sortMenu.byDate')}
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={() => handleSort('usuarios')} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 flex items-center gap-2 md:gap-3`}>
+                          {t('manageContributions.sortMenu.byHouse')}
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={() => handleSort('contribuciones')} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-2 py-1 md:px-4 md:py-2 text-sm text-gray-700 flex items-center gap-2 md:gap-3`}>
+                          {t('manageContributions.sortMenu.byContribution')}
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={() => handleSort('realizado')} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 flex items-center gap-2 md:gap-3`}>
+                          {t('manageContributions.sortMenu.byStatus')}
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={() => handleSort('ubicacion')} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-2 py-0.5 md:px-4 md:py-2 text-sm text-gray-700 flex items-center gap-2 md:gap-3`}>
+                          {t('contributionReport.headerLocation')}
+                        </button>
+                      )}
+                    </Menu.Item>
                   </div>
-                </div>
-              )}
-            </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
 
             {/* Botón de Menú de Acciones */}
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setIsMenuOpen(prev => !prev)}
+            <Menu as="div" className="relative">
+              <Menu.Button
                 className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-700">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
                 </svg>
-              </button>
-
-              {/* Menú Desplegable */}
-              {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border border-gray-200 focus:outline-none">
                   <div className="py-1">
-                    <button onClick={() => { handleOpenModal(null); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={isUploadingCsv} >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                      {t('manageContributions.actionsMenu.addNew')}
-                    </button>
-                    <button onClick={() => { fileInputRef.current?.click(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-                      {isUploadingCsv ? t('manageContributions.actionsMenu.processing') : t('manageContributions.actionsMenu.uploadCsv')}
-                    </button>
-                    <button onClick={() => { handleGeneratePDF(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3" disabled={loading || isUploadingCsv} >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                      {t('manageContributions.actionsMenu.pdfReport')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        // Guardar los datos en localStorage para que la otra página los lea
-                        localStorage.setItem('pdfReportData', JSON.stringify(filteredAndSortedRecords));
-                        window.open('/menu/admin/manage-house-contributions/report', '_blank');
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
-                      disabled={loading || isUploadingCsv}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      {t('manageContributions.actionsMenu.pdfCardReport')}
-                    </button>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={() => handleOpenModal(null)} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-4 py-2 text-sm text-gray-700 flex items-center gap-3`} disabled={isUploadingCsv}>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                          {t('manageContributions.actionsMenu.addNew')}
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={() => fileInputRef.current?.click()} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-4 py-2 text-sm text-gray-700 flex items-center gap-3`} disabled={loading || isUploadingCsv}>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                          {isUploadingCsv ? t('manageContributions.actionsMenu.processing') : t('manageContributions.actionsMenu.uploadCsv')}
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={handleGeneratePDF} className={`${active ? 'bg-gray-100' : ''} w-full text-left px-4 py-2 text-sm text-gray-700 flex items-center gap-3`} disabled={loading || isUploadingCsv}>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                          {t('manageContributions.actionsMenu.pdfReport')}
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => {
+                            localStorage.setItem('pdfReportData', JSON.stringify(filteredAndSortedRecords));
+                            window.open('/menu/admin/manage-house-contributions/report', '_blank');
+                          }}
+                          className={`${active ? 'bg-gray-100' : ''} w-full text-left px-4 py-2 text-sm text-gray-700 flex items-center gap-3`}
+                          disabled={loading || isUploadingCsv}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          {t('manageContributions.actionsMenu.pdfCardReport')}
+                        </button>
+                      )}
+                    </Menu.Item>
                   </div>
-                </div>
-              )}
-            </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
           </div>
           <input
             type="file"
