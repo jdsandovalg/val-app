@@ -129,12 +129,16 @@ export default function ManageHouseContributionsPage() {
   const handleSave = useCallback(async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null); // Limpiar errores de UI
     try {
+      // CORRECCIÓN: Mapear los nombres de campos del frontend a las columnas reales de la tabla.
+      // Frontend: fecha -> Tabla: fecha_cargo
+      // Frontend: pagado -> Tabla: monto_pagado
+      // Frontend: realizado ('S'/'N') -> Tabla: estado ('PAGADO'/'PENDIENTE')
       const recordToSave = {
         id_casa: recordData.id_casa,
         id_contribucion: recordData.id_contribucion,
-        fecha: recordData.fecha,
-        pagado: recordData.pagado,
-        realizado: recordData.realizado,
+        fecha_cargo: recordData.fecha, 
+        monto_pagado: recordData.pagado,
+        estado: recordData.realizado === 'S' ? 'PAGADO' : 'PENDIENTE',
         fechapago: recordData.fechapago,
         url_comprobante: recordData.url_comprobante,
       };
@@ -144,7 +148,9 @@ export default function ManageHouseContributionsPage() {
         const { error } = await supabase
           .from('contribucionesporcasa')
           .update(recordToSave)
-          .match({ id_casa: editingRecord.id_casa, id_contribucion: editingRecord.id_contribucion, fecha: editingRecord.fecha });
+          .eq('id_casa', editingRecord.id_casa)
+          .eq('id_contribucion', editingRecord.id_contribucion)
+          .eq('fecha_cargo', editingRecord.fecha);
         if (error) throw error;
       } else {
         // De lo contrario, es una INSERCIÓN (INSERT).
@@ -173,11 +179,18 @@ export default function ManageHouseContributionsPage() {
 
   const handleDelete = useCallback(async (recordToDelete: ContribucionPorCasa) => {
     if (window.confirm(t('manageContributions.alerts.deleteConfirm'))) {
-      // CORRECCIÓN: Usar una operación DELETE directa a la tabla.
+      // CORRECCIÓN: En lugar de eliminar (DELETE), actualizamos a 'PENDIENTE' según regla de negocio.
       const { error } = await supabase
         .from('contribucionesporcasa')
-        .delete()
-        .match({ id_casa: recordToDelete.id_casa, id_contribucion: recordToDelete.id_contribucion, fecha: recordToDelete.fecha });
+        .update({
+          estado: 'PENDIENTE',
+          monto_pagado: null,
+          fechapago: null,
+          url_comprobante: null
+        })
+        .eq('id_casa', recordToDelete.id_casa)
+        .eq('id_contribucion', recordToDelete.id_contribucion)
+        .eq('fecha_cargo', recordToDelete.fecha);
 
       if (error) {
         const errorMessage = t('manageContributions.alerts.deleteError', { message: error.message });
@@ -406,7 +419,14 @@ export default function ManageHouseContributionsPage() {
             throw new Error(`Datos inválidos en la fila ${index + 1}: id_casa, id_contribucion y fecha son obligatorios y deben tener el formato correcto.`);
           }
 
-          return { id_casa, id_contribucion, fecha, pagado, realizado };
+          // CORRECCIÓN: Mapear a las columnas de la tabla.
+          return { 
+            id_casa, 
+            id_contribucion, 
+            fecha_cargo: fecha, 
+            monto_pagado: pagado, 
+            estado: realizado === 'S' ? 'PAGADO' : 'PENDIENTE' 
+          };
         });
 
         if (recordsToInsert.length === 0) {

@@ -41,7 +41,7 @@ const ContributionCard: React.FC<ContributionCardProps> = ({ record, onDelete, o
 
       <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-3">
         <button onClick={() => onOpenModal(record)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Editar</button>
-        <button onClick={() => onDelete(record)} className="text-red-600 hover:text-red-900 text-sm font-medium">Eliminar</button>
+        <button onClick={() => onDelete(record)} className="text-red-600 hover:text-red-900 text-sm font-medium">Restablecer</button>
       </div>
     </div>
   );
