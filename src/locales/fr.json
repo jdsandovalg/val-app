@@ -262,7 +262,9 @@
       "dateLabel": "Date",
       "editAction": "Modifier",
       "resetAction": "Réinitialiser",
-      "maxPaymentDate": "Date Max. Paiement"
+      "maxPaymentDate": "Date Max. Paiement",
+      "edit": "Modifier",
+      "delete": "Supprimer"
     },
     "alerts": {
       "saveSuccess": "Enregistrement sauvegardé avec succès !",
