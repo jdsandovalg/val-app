@@ -47,6 +47,17 @@ const ContributionCard: React.FC<ContributionCardProps> = ({ record, onDelete, o
       </div>
 
       <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-3">
+        {record.url_comprobante && (
+          <a
+            href={record.url_comprobante}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-600 hover:text-green-900 text-sm font-medium mr-auto flex items-center gap-1"
+            title="Ver Comprobante"
+          >
+            📄 Ver Comprobante
+          </a>
+        )}
         <button onClick={() => onOpenModal(record)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">{t('manageContributions.card.editAction')}</button>
         <button onClick={() => onDelete(record)} className="text-red-600 hover:text-red-900 text-sm font-medium">{t('manageContributions.card.resetAction')}</button>
       </div>

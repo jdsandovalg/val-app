@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import type { ContribucionPorCasaExt } from '@/types';
 import { useI18n } from '@/app/i18n-provider';
 import type { Usuario } from '@/types/database';
+import { createClient } from '@/utils/supabase/client';
+import { toast } from 'react-hot-toast';
 
 interface ContributionModalProps {
   isOpen: boolean;
@@ -14,6 +16,8 @@ interface ContributionModalProps {
   contribuciones: { id_contribucion: string; descripcion: string | null }[];
 }
 
+const BUCKET_NAME = 'imagenespagos';
+
 function ContributionModal({
   isOpen,
   onClose,
@@ -22,18 +26,26 @@ function ContributionModal({
   usuarios,
   contribuciones,
 }: ContributionModalProps) {
+  const supabase = createClient();
   const { t } = useI18n();
   const [formData, setFormData] = useState<Partial<ContribucionPorCasaExt>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    setFormData(
-      record || {
+    if (record) {
+      // Normalizar 'realizado' a 'S'/'N' ya que la vista puede devolver 'PAGADO'
+      const isPaid = record.realizado === 'PAGADO' || record.realizado === 'S';
+      setFormData({ ...record, realizado: isPaid ? 'S' : 'N' });
+    } else {
+      setFormData({
         fecha: new Date().toISOString().split('T')[0],
         pagado: null,
         realizado: 'N',
-      }
-    );
+      });
+    }
+    setFile(null); // Resetear archivo al abrir/cambiar registro
   }, [record]);
 
   if (!isOpen) return null;
@@ -53,10 +65,49 @@ function ContributionModal({
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    await onSave(formData);
+    setUploading(true);
+
+    let urlComprobante = formData.url_comprobante;
+
+    try {
+      // Si hay un archivo seleccionado, subirlo a Supabase Storage
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `pagos/${fileName}`; // Carpeta 'pagos' dentro del bucket
+
+        const { error: uploadError } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(filePath, file);
+
+        if (uploadError) {
+          throw new Error(`Error al subir imagen: ${uploadError.message}`);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(filePath);
+
+        urlComprobante = publicUrlData.publicUrl;
+      }
+
+      // Guardar datos incluyendo la URL (nueva o existente)
+      await onSave({ ...formData, url_comprobante: urlComprobante });
+      
+    } catch (error: any) {
+      console.error('Error en handleSubmit:', error);
+      toast.error(error.message || 'Error al guardar');
+    }
+    setUploading(false);
     setIsSaving(false);
   };
 
@@ -96,6 +147,28 @@ function ContributionModal({
             <label htmlFor="pagado" className="block text-sm font-medium text-gray-700">{t('contributionModal.amountPaidLabel')}</label>
             <input type="number" name="pagado" id="pagado" value={formData.pagado ?? ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder={t('contributionModal.amountPaidPlaceholder')} step="0.01" />
           </div>
+
+          {/* Input para Comprobante */}
+          <div className="mb-4">
+            <label htmlFor="comprobante" className="block text-sm font-medium text-gray-700">
+              Comprobante de Pago (Imagen/PDF)
+            </label>
+            <input
+              type="file"
+              id="comprobante"
+              accept="image/*,application/pdf"
+              onChange={handleFileChange}
+              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            />
+            {formData.url_comprobante && !file && (
+              <div className="mt-2 text-sm">
+                <a href={formData.url_comprobante} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                  Ver comprobante actual
+                </a>
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center mb-6">
             <div className="flex items-center">
               <input id="realizado" name="realizado" type="checkbox" checked={formData.realizado === 'S'} onChange={handleChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
@@ -106,8 +179,8 @@ function ContributionModal({
           {/* Acciones */}
           <div className="flex justify-end gap-4">
             <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded hover:bg-gray-300">{t('contributionModal.cancelButton')}</button>
-            <button type="submit" disabled={isSaving} className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400">
-              {isSaving ? t('contributionModal.savingButton') : t('contributionModal.saveButton')}
+            <button type="submit" disabled={isSaving || uploading} className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400">
+              {uploading ? 'Subiendo...' : (isSaving ? t('contributionModal.savingButton') : t('contributionModal.saveButton'))}
             </button>
           </div>
         </form>
