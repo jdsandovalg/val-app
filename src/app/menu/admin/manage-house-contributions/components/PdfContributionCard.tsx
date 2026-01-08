@@ -34,7 +34,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
     : t('manageContributions.card.notPaid');
 
   const statusText = record.realizado === 'PAGADO'
-    ? t('manageContributions.card.statusDone')
+    ? t('manageContributions.card.statusPaid')
     : t('manageContributions.card.statusPending');
 
   // Lógica de color basada en el estado del registro
@@ -42,11 +42,16 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
   const statusColor = isPaid ? colorMap.green : colorMap.red;
   const dividerColor = isPaid ? '#A7F3D0' : '#FECACA'; // green-200 y red-200
 
+  // Obtener nombre del mes (ej: ENE, FEB)
+  const dateObj = new Date(record.fecha);
+  const monthName = dateObj.toLocaleDateString(locale, { month: 'short', timeZone: 'UTC' }).toUpperCase().replace('.', '');
+
   const styles = StyleSheet.create({
     card: {
+      position: 'relative', // Necesario para posicionar el círculo absoluto
       backgroundColor: '#FFFFFF',
-      padding: 10, // Aumentado ligeramente
-      marginBottom: 10, // Aumentado ligeramente
+      padding: 8, // Reducido para ajustar 6 filas
+      marginBottom: 8, // Reducido para ajustar 6 filas
       borderRadius: 6,
       borderLeftWidth: 4,
       borderLeftColor: statusColor, // Usar el color del estado
@@ -59,14 +64,14 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 6, // Reducido
+      marginBottom: 4, // Reducido
     },
     headerText: {
-      fontSize: 11, // Aumentado ligeramente
+      fontSize: 10, // Aumentado ligeramente
       fontWeight: 'bold',
     },
     subHeaderText: {
-      fontSize: 9, // Aumentado ligeramente
+      fontSize: 8, // Aumentado ligeramente
       color: '#4B5563', // gray-600
     },
     status: {
@@ -82,7 +87,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
       flexDirection: 'row',
       justifyContent: 'space-between',
       fontSize: 9, // Aumentado ligeramente
-      paddingTop: 6, // Reducido
+      paddingTop: 4, // Reducido
       borderTopWidth: 1,
       borderTopColor: dividerColor, // Usar el color del divisor
     },
@@ -95,10 +100,30 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
     bodyValue: {
       fontWeight: 'bold',
     },
+    monthBadge: {
+      position: 'absolute',
+      top: 5,
+      right: 5,
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: '#F3F4F6', // gray-100
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 10,
+    },
+    monthText: {
+      fontSize: 7,
+      fontWeight: 'bold',
+      color: '#4B5563', // gray-600
+    },
   });
 
   return (
     <View style={styles.card}>
+      <View style={styles.monthBadge}>
+        <Text style={styles.monthText}>{monthName}</Text>
+      </View>
       <View style={styles.header}>
         <View>
           <Text style={styles.headerText}>{casaInfo}</Text>
@@ -107,14 +132,14 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
       </View>
       <View style={styles.body}>
         <View style={styles.bodyColumn}>
-          <Text style={styles.bodyLabel}>{t('manageContributions.card.date')}</Text>
+          <Text style={styles.bodyLabel}>{t('manageContributions.card.dateLabel')}</Text>
           <Text style={styles.bodyValue}>{formatDate(record.fecha, locale)}</Text>
           {record.fecha_maxima_pago && (
             <Text style={styles.subHeaderText}>{t('manageContributions.card.maxPaymentDate')}: {formatDate(record.fecha_maxima_pago, locale)}</Text>
           )}
         </View>
         <View style={[styles.bodyColumn, { alignItems: 'flex-end' }]}>
-          <Text style={styles.bodyLabel}>{t('manageContributions.card.paidAmount')}</Text>
+          <Text style={styles.bodyLabel}>{t('manageContributions.card.amountPaidLabel')}</Text>
           <Text style={styles.bodyValue}>{montoPagado}</Text>
           <Text style={styles.status}>{statusText}</Text>
         </View>

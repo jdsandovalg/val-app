@@ -304,7 +304,7 @@ export default function ManageHouseContributionsPage() {
       return;
     }
 
-    const doc = new jsPDF();
+    const doc = new jsPDF({ compress: true });
     const pageWidth = doc.internal.pageSize.getWidth();
 
     const generatePdfContent = (docInstance: jsPDF) => {
@@ -340,7 +340,23 @@ export default function ManageHouseContributionsPage() {
         styles: { font: 'helvetica', fontSize: 8 },
       });
 
-      docInstance.save(t('contributionReport.fileName'));
+      try {
+        const fileName = t('contributionReport.fileName');
+        // Usar output('arraybuffer') y crear el Blob manualmente suele ser más eficiente en memoria que output('blob')
+        const arrayBuffer = docInstance.output('arraybuffer');
+        const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        toast.error('Error al generar el PDF. Intente filtrar los datos para reducir el tamaño.');
+      }
     };
 
     // Cargar el logo y luego generar el contenido del PDF
