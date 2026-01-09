@@ -50,21 +50,21 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
     card: {
       position: 'relative', // Necesario para posicionar el círculo absoluto
       backgroundColor: '#FFFFFF',
-      padding: 8, // Reducido para ajustar 6 filas
-      marginBottom: 8, // Reducido para ajustar 6 filas
+      padding: 10, // Reducido ligeramente para ajustar espacio
       borderRadius: 6,
       borderLeftWidth: 4,
       borderLeftColor: statusColor, // Usar el color del estado
       fontFamily: 'Helvetica',
       color: '#1F2937', // gray-800
       width: '48%', // Ancho reducido para que quepan dos por fila
-      margin: '0.8%', // Reducido
+      marginHorizontal: '1%', // Mantiene la separación lateral
+      marginBottom: 14, // Reducido para evitar hoja en blanco extra
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 4, // Reducido
+      marginBottom: 6, // Ajustado
     },
     headerText: {
       fontSize: 10, // Aumentado ligeramente
@@ -87,7 +87,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
       flexDirection: 'row',
       justifyContent: 'space-between',
       fontSize: 9, // Aumentado ligeramente
-      paddingTop: 4, // Reducido
+      paddingTop: 6, // Ajustado
       borderTopWidth: 1,
       borderTopColor: dividerColor, // Usar el color del divisor
     },
@@ -107,7 +107,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
       width: 22,
       height: 22,
       borderRadius: 11,
-      backgroundColor: '#F3F4F6', // gray-100
+      backgroundColor: statusColor,
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 10,
@@ -115,7 +115,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
     monthText: {
       fontSize: 7,
       fontWeight: 'bold',
-      color: '#4B5563', // gray-600
+      color: '#FFFFFF',
     },
   });
 
