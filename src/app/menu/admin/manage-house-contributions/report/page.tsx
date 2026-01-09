@@ -45,7 +45,7 @@ export default function ReportViewerPage() {
           });
         }
       } catch (error) {
-        console.warn("No se pudo cargar el logo para el PDF.");
+        console.warn("No se pudo cargar el logo para el PDF:", error);
       } finally {
         setIsReady(true);
       }
