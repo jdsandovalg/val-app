@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ContribucionPorCasaExt } from '@/types';
 import { useI18n } from '@/app/i18n-provider';
-import { formatCurrency } from '@/utils/format';
+import { formatCurrency, formatDate } from '@/utils/format';
 
 interface ContributionCardProps {
   record: ContribucionPorCasaExt;
@@ -37,12 +37,20 @@ const ContributionCard: React.FC<ContributionCardProps> = ({ record, onDelete, o
 
       <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <div>
-          <p className="text-gray-500">{t('manageContributions.card.dateLabel')}</p>
-          <p className="font-medium text-gray-900">{record.fecha}</p>
+          <p className="text-gray-500">{t('contributionModal.dateLabel')}</p>
+          <p className="font-medium text-gray-900">{formatDate(record.fecha, locale)}</p>
         </div>
         <div className="text-right">
           <p className="text-gray-500">{t('manageContributions.card.amountPaidLabel')}</p>
           <p className="font-medium text-gray-900">{montoPagado}</p>
+        </div>
+        {record.fechapago && (
+        <div>
+          <p className="text-gray-500">{t('contributionModal.paymentDateLabel', { defaultValue: 'Fecha de Pago' })}</p>
+          <p className="font-medium text-gray-900">{formatDate(record.fechapago, locale)}</p>
+        </div>
+        )}
+        <div className="text-right">
         </div>
       </div>
 

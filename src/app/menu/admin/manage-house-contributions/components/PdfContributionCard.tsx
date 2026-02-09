@@ -137,6 +137,9 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
           {record.fecha_maxima_pago && (
             <Text style={styles.subHeaderText}>{t('manageContributions.card.maxPaymentDate')}: {formatDate(record.fecha_maxima_pago, locale)}</Text>
           )}
+          {record.fechapago && (
+            <Text style={styles.subHeaderText}>{t('contributionModal.paymentDateLabel', { defaultValue: 'Fecha de Pago' })}: {formatDate(record.fechapago, locale)}</Text>
+          )}
         </View>
         <View style={[styles.bodyColumn, { alignItems: 'flex-end' }]}>
           <Text style={styles.bodyLabel}>{t('manageContributions.card.amountPaidLabel')}</Text>

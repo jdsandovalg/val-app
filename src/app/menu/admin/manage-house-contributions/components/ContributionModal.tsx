@@ -41,6 +41,7 @@ function ContributionModal({
     } else {
       setFormData({
         fecha: new Date().toISOString().split('T')[0],
+        fechapago: new Date().toISOString().split('T')[0],
         pagado: null,
         realizado: 'N',
       });
@@ -140,7 +141,20 @@ function ContributionModal({
 
           <div className="mb-4">
             <label htmlFor="fecha" className="block text-sm font-medium text-gray-700">{t('contributionModal.dateLabel')}</label>
-            <input type="date" name="fecha" id="fecha" value={formData.fecha || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+            <input 
+              type="date" 
+              name="fecha" 
+              id="fecha" 
+              value={formData.fecha || ''} 
+              onChange={handleChange} 
+              required 
+              disabled={!!record}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed" 
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="fechapago" className="block text-sm font-medium text-gray-700">{t('contributionModal.paymentDateLabel', { defaultValue: 'Fecha de Pago' })}</label>
+            <input type="date" name="fechapago" id="fechapago" value={formData.fechapago || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
           </div>
 
           <div className="mb-4">

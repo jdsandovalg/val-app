@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Document, Page, Text, View, Image, StyleSheet, Font, PDFViewer } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, StyleSheet, Font, PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import type { ContribucionPorCasaExt } from '@/types';
 import PdfContributionCard from '../components/PdfContributionCard';
 
@@ -81,31 +81,69 @@ interface ReportContentProps {
 const ReportContent: React.FC<ReportContentProps> = ({ records, t, locale, currency, logoBase64, onClose }) => {
   const pages = chunkArray(records, ITEMS_PER_PAGE);
 
+  const MyDocument = (
+    <Document title={t('contributionReport.fileName')}>
+      {pages.map((pageRecords, index) => (
+        <Page key={index} size="LETTER" style={styles.page}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          {logoBase64 && <Image style={styles.logo} src={logoBase64} />}
+          <View style={styles.header}>
+            <Text style={styles.title}>{t('contributionReport.title')}</Text>
+          </View>
+
+          <View style={styles.cardContainer}>
+            {pageRecords.map((record) => (
+              <PdfContributionCard key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`} record={record} t={t} locale={locale} currency={currency} />
+            ))}
+          </View>
+
+          <Text style={styles.footer}>
+            {`${t('contributionReport.generatedOn')} ${new Date().toLocaleDateString(locale)} | ${index + 1} / ${pages.length}`}
+          </Text>
+        </Page>
+      ))}
+    </Document>
+  );
+
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
       <PDFViewer style={{ width: '100%', height: '100%' }}>
-        <Document title={t('contributionReport.fileName')}>
-          {pages.map((pageRecords, index) => (
-            <Page key={index} size="LETTER" style={styles.page}>
-              {/* eslint-disable-next-line jsx-a11y/alt-text */}
-              {logoBase64 && <Image style={styles.logo} src={logoBase64} />}
-              <View style={styles.header}>
-                <Text style={styles.title}>{t('contributionReport.title')}</Text>
-              </View>
-
-              <View style={styles.cardContainer}>
-                {pageRecords.map((record) => (
-                  <PdfContributionCard key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`} record={record} t={t} locale={locale} currency={currency} />
-                ))}
-              </View>
-
-              <Text style={styles.footer}>
-                {`${t('contributionReport.generatedOn')} ${new Date().toLocaleDateString(locale)} | ${index + 1} / ${pages.length}`}
-              </Text>
-            </Page>
-          ))}
-        </Document>
+        {MyDocument}
       </PDFViewer>
+      
+      <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 20 }}>
+        <PDFDownloadLink document={MyDocument} fileName={t('contributionReport.fileName')}>
+          {({ blob, url, loading, error }) => (
+            <button
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#2563EB',
+                color: 'white',
+                border: 'none',
+                borderRadius: '30px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              {loading ? (
+                <span>{t('manageContributions.actionsMenu.processing')}</span>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                  <span>{t('summary.downloadPdf')}</span>
+                </>
+              )}
+            </button>
+          )}
+        </PDFDownloadLink>
+      </div>
+
       <button
         onClick={onClose}
         style={{

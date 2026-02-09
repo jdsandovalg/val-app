@@ -115,35 +115,41 @@ export default function ManageHouseContributionsPage() {
   const handleSave = useCallback(async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null); // Limpiar errores de UI
     try {
-      // CORRECCIÓN: Mapear los nombres de campos del frontend a las columnas reales de la tabla.
-      // Frontend: fecha -> Tabla: fecha_cargo
-      // Frontend: pagado -> Tabla: monto_pagado
-      // Frontend: realizado ('S'/'N') -> Tabla: estado ('PAGADO'/'PENDIENTE')
-      const recordToSave = {
-        id_casa: recordData.id_casa,
-        id_contribucion: recordData.id_contribucion,
-        fecha_cargo: recordData.fecha, 
-        monto_pagado: recordData.pagado,
-        estado: recordData.realizado === 'S' ? 'PAGADO' : 'PENDIENTE',
-        fechapago: recordData.fechapago,
-        url_comprobante: recordData.url_comprobante,
-      };
-
       // Si editingRecord existe, es una ACTUALIZACIÓN (UPDATE).
       if (editingRecord && editingRecord.id_casa && editingRecord.id_contribucion && editingRecord.fecha) {
+        // Para la actualización, solo enviamos los campos que pueden cambiar.
+        // La fecha de cargo (parte de la PK) no debería cambiar.
+        const recordToUpdate = {
+          monto_pagado: recordData.pagado,
+          estado: recordData.realizado === 'S' ? 'PAGADO' : 'PENDIENTE',
+          fechapago: recordData.fechapago, // Este es el campo de fecha de pago
+          url_comprobante: recordData.url_comprobante,
+        };
+
         const { error } = await supabase
           .from('contribucionesporcasa')
-          .update(recordToSave)
+          .update(recordToUpdate)
           .eq('id_casa', editingRecord.id_casa)
           .eq('id_contribucion', editingRecord.id_contribucion)
           .eq('fecha_cargo', editingRecord.fecha);
         if (error) throw error;
       } else {
         // De lo contrario, es una INSERCIÓN (INSERT).
+        // Para la inserción, se necesitan todos los campos, incluyendo la PK.
+        const recordToInsert = {
+          id_casa: recordData.id_casa,
+          id_contribucion: recordData.id_contribucion,
+          fecha_cargo: recordData.fecha, // Esta es la fecha del cargo
+          monto_pagado: recordData.pagado,
+          estado: recordData.realizado === 'S' ? 'PAGADO' : 'PENDIENTE',
+          fechapago: recordData.fechapago, // Esta es la fecha del pago
+          url_comprobante: recordData.url_comprobante,
+        };
+
         if (!recordData.id_casa || !recordData.id_contribucion || !recordData.fecha) {
           throw new Error("Casa, Contribución y Fecha son obligatorios para crear un nuevo registro.");
         }
-        const { error } = await supabase.from('contribucionesporcasa').insert(recordToSave);
+        const { error } = await supabase.from('contribucionesporcasa').insert(recordToInsert);
         if (error) throw error;
       }
 
