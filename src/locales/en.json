@@ -310,7 +310,8 @@
     "headerAmount": "Amount Paid",
     "headerStatus": "Done",
     "headerLocation": "Location",
-    "fileName": "Contributions_Report.pdf"
+    "fileName": "Contributions_Report.pdf",
+    "downloadPdf": "Download PDF"
   },
   "catalog": {
     "title": "Catalog Management",

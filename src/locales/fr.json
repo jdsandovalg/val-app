@@ -310,7 +310,8 @@
     "headerAmount": "Montant Payé",
     "headerStatus": "Réalisé",
     "headerLocation": "Emplacement",
-    "fileName": "Rapport_Contributions.pdf"
+    "fileName": "Rapport_Contributions.pdf",
+    "downloadPdf": "Télécharger PDF"
   },
   "catalog": {
     "title": "Gestion des Catalogues",

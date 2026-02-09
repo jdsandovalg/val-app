@@ -311,7 +311,8 @@
     "headerAmount": "Monto Pagado",
     "headerStatus": "Realizado",
     "headerLocation": "Ubicación",
-    "fileName": "Reporte_Aportaciones.pdf"
+    "fileName": "Reporte_Aportaciones.pdf",
+    "downloadPdf": "Descargar PDF"
   },
   "catalog": {
     "title": "Gestión de Catálogos",
