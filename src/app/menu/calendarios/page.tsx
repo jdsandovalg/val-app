@@ -277,6 +277,13 @@ export default function CalendariosPage() {
       });
     }
 
+    if (filters.dateFrom) {
+      currentContribuciones = currentContribuciones.filter(c => c.fecha_cargo >= filters.dateFrom!);
+    }
+    if (filters.dateTo) {
+      currentContribuciones = currentContribuciones.filter(c => c.fecha_cargo <= filters.dateTo!);
+    }
+
     // Apply sorting
     currentContribuciones.sort((a, b) => {
       let compare = 0;
