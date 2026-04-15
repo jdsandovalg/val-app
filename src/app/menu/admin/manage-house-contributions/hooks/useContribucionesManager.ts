@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { ContribucionPorCasaExt, SortableKeys } from '@/types';
 import type { ContribucionPorCasa } from '@/types/database';
@@ -100,6 +100,11 @@ setRecords(formattedRecords);
       setLoading(false);
     }
   }, [supabase]);
+
+  // Auto-load data on mount (only once)
+  useEffect(() => {
+    fetchData();
+  }, []); // Empty deps = run once on mount
 
   // Derived data
   const uniqueYears = useMemo(() => {

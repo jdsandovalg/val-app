@@ -37,14 +37,8 @@ export default function ManageHouseContributionsPage() {
   const {
     uniqueYears: hookUniqueYears,
     uniqueContribucionTypes: hookUniqueContribTypes,
-    refetch,
   } = useContribucionesManager();
-  
-  // Cargar datos del hook al montar
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-  
+
   const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
   const [usuarios, setUsuarios] = useState<{ id: number; responsable: string; }[]>([]);
   const [contribuciones, setContribuciones] = useState<{ id_contribucion: string; descripcion: string | null; }[]>([]);
