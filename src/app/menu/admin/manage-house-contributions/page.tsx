@@ -517,10 +517,8 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
             sortConfig={sortConfig}
             onYearChange={setSelectedYear}
             onContribucionChange={setSelectedContribucion}
-            onSortByChange={(by) => {
-              setSortBy(by);
-              setSortConfig({ key: by === 'casa' ? 'usuarios' : 'fecha', direction: sortConfig?.direction === 'ascending' ? 'descending' : 'ascending' });
-            }}
+            onSortByChange={setSortBy}
+            onSortConfigChange={setSortConfig}
           />
 
           {/* Contenedor de Acciones */}

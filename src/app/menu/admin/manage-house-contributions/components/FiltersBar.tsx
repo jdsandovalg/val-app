@@ -12,6 +12,7 @@ interface FiltersBarProps {
   onYearChange: (year: string) => void;
   onContribucionChange: (id: string) => void;
   onSortByChange: (by: 'fecha' | 'casa') => void;
+  onSortConfigChange: (config: { key: SortableKeys; direction: 'ascending' | 'descending' } | null) => void;
 }
 
 export default function FiltersBar({
@@ -24,6 +25,7 @@ export default function FiltersBar({
   onYearChange,
   onContribucionChange,
   onSortByChange,
+  onSortConfigChange,
 }: FiltersBarProps) {
   return (
     <div className="mb-2 sm:mb-4">
@@ -75,20 +77,26 @@ export default function FiltersBar({
         <div className="flex items-center gap-1 shrink-0">
           <span className="text-xs text-gray-500 whitespace-nowrap">Ordenar:</span>
           <button
-            onClick={() => onSortByChange('fecha')}
+            onClick={() => {
+              onSortConfigChange({ key: 'fecha', direction: sortConfig?.direction === 'ascending' ? 'descending' : 'ascending' });
+              onSortByChange('fecha');
+            }}
             className={`px-1.5 py-0.5 text-xs rounded-full ${
               sortBy === 'fecha' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'
             }`}
           >
-            F {sortConfig?.direction === 'ascending' ? '↑' : '↓'}
+            Fecha {sortConfig?.direction === 'ascending' ? '↑' : '↓'}
           </button>
           <button
-            onClick={() => onSortByChange('casa')}
+            onClick={() => {
+              onSortConfigChange({ key: 'usuarios', direction: sortConfig?.direction === 'ascending' ? 'descending' : 'ascending' });
+              onSortByChange('casa');
+            }}
             className={`px-1.5 py-0.5 text-xs rounded-full ${
               sortBy === 'casa' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'
             }`}
           >
-            C {sortConfig?.direction === 'ascending' ? '↑' : '↓'}
+            Casa {sortConfig?.direction === 'ascending' ? '↑' : '↓'}
           </button>
         </div>
       </div>
