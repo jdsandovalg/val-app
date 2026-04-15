@@ -21,6 +21,7 @@ import ContributionModal from './components/ContributionModal';
 import ContributionCard from './components/ContributionCard';
 import { useI18n } from '@/app/i18n-provider';
 import { formatDate, formatCurrency } from '@/utils/format';
+import { useContribucionesManager } from './hooks/useContribucionesManager';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -30,6 +31,18 @@ export default function ManageHouseContributionsPage() {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t, locale, currency } = useI18n();
+  
+  // Usar hook para datos derivados (sin duplicar lógica)
+  const {
+    uniqueYears: hookUniqueYears,
+    uniqueContribucionTypes: hookUniqueContribTypes,
+    refetch,
+  } = useContribucionesManager();
+  
+  // Cargar datos del hook al montar
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
   
   const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
   const [usuarios, setUsuarios] = useState<{ id: number; responsable: string; }[]>([]);
@@ -99,26 +112,9 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     fetchData();
   }, [fetchData]);
 
-  const uniqueYears = useMemo(() => {
-    const years = new Set<string>();
-    records.forEach(record => {
-      if (record.fecha) {
-        const year = record.fecha.substring(0, 4);
-        years.add(year);
-      }
-    });
-    return Array.from(years).sort().reverse();
-  }, [records]);
-
-  const uniqueContribucionTypes = useMemo(() => {
-    const contribs = new Map<string, string>();
-    records.forEach(record => {
-      if (record.id_contribucion && record.contribuciones?.descripcion) {
-        contribs.set(record.id_contribucion, record.contribuciones.descripcion);
-      }
-    });
-    return Array.from(contribs.entries()).sort((a, b) => a[1].localeCompare(b[1]));
-  }, [records]);
+  // Usar valores del hook para uniqueYears y uniqueContribucionTypes
+  const uniqueYears = hookUniqueYears;
+  const uniqueContribucionTypes = hookUniqueContribTypes;
 
   const handleOpenModal = (record: Partial<ContribucionPorCasaExt> | null = null) => {
     setEditingRecord(record);
