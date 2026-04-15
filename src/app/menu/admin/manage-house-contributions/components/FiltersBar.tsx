@@ -28,7 +28,7 @@ export default function FiltersBar({
   onSortConfigChange,
 }: FiltersBarProps) {
   return (
-    <div className="mt-1 mb-2">
+    <div className="mt-2 mb-2">
       <div className="flex flex-nowrap gap-0.5 overflow-x-auto pb-1.5">
         {/* Año */}
         {uniqueYears.length > 1 && (
