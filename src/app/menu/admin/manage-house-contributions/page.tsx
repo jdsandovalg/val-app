@@ -19,6 +19,7 @@ import type { ContribucionPorCasa } from '@/types/database';
 import type { ContribucionPorCasaExt, SortableKeys } from '@/types';
 import ContributionModal from './components/ContributionModal';
 import ContributionCard from './components/ContributionCard';
+import FiltersBar from './components/FiltersBar';
 import { useI18n } from '@/app/i18n-provider';
 import { formatDate, formatCurrency } from '@/utils/format';
 import { useContribucionesManager } from './hooks/useContribucionesManager';
@@ -506,98 +507,21 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-1xl font-bold text-gray-800 text-center">{t('manageContributions.title')}</h1>
 
-          {/* Filtros Rápidos */}
-          <div className="flex flex-wrap items-center gap-2 mt-3">
-            {/* Filtro por Año */}
-            {uniqueYears.length > 1 && (
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-gray-500 mr-1">Año:</span>
-                {uniqueYears.map(year => (
-                  <button
-                    key={year}
-                    onClick={() => setSelectedYear(selectedYear === year ? '' : year)}
-                    className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                      selectedYear === year
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    {year}
-                  </button>
-                ))}
-                {selectedYear && (
-                  <button
-                    onClick={() => setSelectedYear('')}
-                    className="ml-1 text-gray-500 hover:text-gray-700"
-                    title="Borrar filtro"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Filtro por Contribución */}
-            {uniqueContribucionTypes.length > 1 && (
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-gray-500 mr-1">Tipo:</span>
-                {uniqueContribucionTypes.map(([id, desc]) => (
-                  <button
-                    key={id}
-                    onClick={() => setSelectedContribucion(selectedContribucion === id ? '' : id)}
-                    className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                      selectedContribucion === id
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                    title={desc}
-                  >
-                    {desc.length > 10 ? desc.substring(0, 10) + '...' : desc}
-                  </button>
-                ))}
-                {selectedContribucion && (
-                  <button
-                    onClick={() => setSelectedContribucion('')}
-                    className="ml-1 text-gray-500 hover:text-gray-700"
-                    title="Borrar filtro"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-)}
-            </div>
-
-            {/* Filtros de Ordenamiento Rápido */}
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-500 mr-1">Ordenar:</span>
-              <button
-                onClick={() => {
-                  setSortBy('fecha');
-                  setSortConfig({ key: 'fecha', direction: sortConfig?.direction === 'ascending' ? 'descending' : 'ascending' });
-                }}
-                className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                  sortBy === 'fecha'
-                    ? 'bg-indigo-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Fecha {sortConfig?.direction === 'ascending' ? '↑' : '↓'}
-              </button>
-              <button
-                onClick={() => {
-                  setSortBy('casa');
-                  setSortConfig({ key: 'usuarios', direction: sortConfig?.direction === 'ascending' ? 'descending' : 'ascending' });
-                }}
-                className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                  sortBy === 'casa'
-                    ? 'bg-indigo-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Casa {sortConfig?.direction === 'ascending' ? '↑' : '↓'}
-              </button>
-            </div>
+{/* Filtros Rápidos - componente separado */}
+          <FiltersBar
+            uniqueYears={uniqueYears}
+            uniqueContribucionTypes={uniqueContribucionTypes}
+            selectedYear={selectedYear}
+            selectedContribucion={selectedContribucion}
+            sortBy={sortBy}
+            sortConfig={sortConfig}
+            onYearChange={setSelectedYear}
+            onContribucionChange={setSelectedContribucion}
+            onSortByChange={(by) => {
+              setSortBy(by);
+              setSortConfig({ key: by === 'casa' ? 'usuarios' : 'fecha', direction: sortConfig?.direction === 'ascending' ? 'descending' : 'ascending' });
+            }}
+          />
 
           {/* Contenedor de Acciones */}
           <div className="relative flex items-center gap-2">
