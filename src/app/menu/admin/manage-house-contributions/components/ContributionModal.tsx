@@ -35,33 +35,40 @@ function ContributionModal({
 
   useEffect(() => {
     if (record) {
-      // Normalizar 'realizado' a 'S'/'N' ya que la vista puede devolver 'PAGADO'
-      const isPaid = record.realizado === 'PAGADO' || record.realizado === 'S';
-      setFormData({ ...record, realizado: isPaid ? 'S' : 'N' });
+      // Normalizar 'realizado': la vista puede devolver 'PAGADO', 'PENDIENTE' o 'MOROSO'
+      let estado = 'PENDIENTE';
+      if (record.realizado === 'PAGADO' || record.realizado === 'S') {
+        estado = 'PAGADO';
+      } else if (record.realizado === 'MOROSO') {
+        estado = 'MOROSO';
+      }
+      setFormData({ ...record, realizado: estado });
     } else {
       setFormData({
         fecha: new Date().toISOString().split('T')[0],
         fechapago: new Date().toISOString().split('T')[0],
         pagado: null,
-        realizado: 'N',
+        realizado: 'PENDIENTE',
       });
     }
-    setFile(null); // Resetear archivo al abrir/cambiar registro
+    setFile(null);
   }, [record]);
 
   if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    const isCheckbox = type === 'checkbox';
+    const isRadio = type === 'radio';
 
-    if (isCheckbox && name === 'realizado') {
+    if (isRadio && name === 'realizado') {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    } else if (type === 'checkbox' && name === 'realizado') {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({ ...prev, [name]: checked ? 'S' : 'N' }));
+      setFormData((prev) => ({ ...prev, [name]: checked ? 'PAGADO' : 'PENDIENTE' }));
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
       }));
     }
   };
@@ -183,10 +190,42 @@ function ContributionModal({
             )}
           </div>
 
-          <div className="flex items-center mb-6">
-            <div className="flex items-center">
-              <input id="realizado" name="realizado" type="checkbox" checked={formData.realizado === 'S'} onChange={handleChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-              <label htmlFor="realizado" className="ml-2 block text-sm text-gray-900">{t('contributionModal.statusLabel')}</label>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t('contributionModal.statusLabel')}</label>
+            <div className="flex gap-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="realizado"
+                  value="PENDIENTE"
+                  checked={formData.realizado === 'PENDIENTE'}
+                  onChange={handleChange}
+                  className="h-4 w-4 border-gray-300 text-red-600 focus:ring-red-500"
+                />
+                <span className="ml-2 text-sm text-gray-900">{t('manageContributions.card.statusPending')}</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="realizado"
+                  value="PAGADO"
+                  checked={formData.realizado === 'PAGADO'}
+                  onChange={handleChange}
+                  className="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-500"
+                />
+                <span className="ml-2 text-sm text-gray-900">{t('manageContributions.card.statusPaid')}</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="realizado"
+                  value="MOROSO"
+                  checked={formData.realizado === 'MOROSO'}
+                  onChange={handleChange}
+                  className="h-4 w-4 border-gray-300 text-yellow-600 focus:ring-yellow-500"
+                />
+                <span className="ml-2 text-sm text-gray-900">{t('manageContributions.card.statusOverdue')}</span>
+              </label>
             </div>
           </div>
 

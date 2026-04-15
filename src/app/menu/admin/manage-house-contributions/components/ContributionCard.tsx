@@ -20,18 +20,21 @@ const ContributionCard: React.FC<ContributionCardProps> = ({ record, onDelete, o
     ? formatCurrency(record.pagado, locale, currency)
     : t('manageContributions.card.notPaid');
 
-  // La vista v_usuarios_contribuciones devuelve 'PAGADO' o 'PENDIENTE' en el campo 'realizado'
   const isPaid = record.realizado === 'PAGADO';
+  const isOverdue = record.realizado === 'MOROSO';
+  const statusClass = isPaid ? 'border-green-500' : isOverdue ? 'border-yellow-500' : 'border-red-500';
+  const badgeClass = isPaid ? 'bg-green-100 text-green-800' : isOverdue ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800';
+  const statusLabel = isPaid ? t('manageContributions.card.statusPaid') : isOverdue ? t('manageContributions.card.statusOverdue') : t('manageContributions.card.statusPending');
 
   return (
-    <div className={`bg-white shadow-md rounded-lg p-4 mb-4 border-l-4 ${isPaid ? 'border-green-500' : 'border-red-500'}`}>
+    <div className={`bg-white shadow-md rounded-lg p-4 mb-4 border-l-4 ${statusClass}`}>
       <div className="flex justify-between items-start">
         <div>
           <p className="font-bold text-gray-800">{record.contribuciones?.descripcion ?? 'N/A'}</p>
           <p className="text-sm text-gray-500">{casaInfo}</p>
         </div>
-        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${isPaid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-          {isPaid ? t('manageContributions.card.statusPaid') : t('manageContributions.card.statusPending')}
+        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${badgeClass}`}>
+          {statusLabel}
         </span>
       </div>
 

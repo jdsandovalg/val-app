@@ -259,6 +259,7 @@
       "notPaid": "No pagado",
       "statusPaid": "Pagado",
       "statusPending": "Pendiente",
+      "statusOverdue": "Moroso",
       "dateLabel": "Fecha",
       "paymentDateLabel": "Fecha de Pago",
       "editAction": "Editar",

@@ -22,6 +22,8 @@ const colorMap: { [key: string]: string } = {
   indigo: '#6366F1',
   teal: '#14B8A6',
   default: '#6B7280',
+  orange: '#F97316',
+  amber: '#F59E0B',
 };
 
 const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, locale, currency }) => {
@@ -35,12 +37,18 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
 
   const statusText = record.realizado === 'PAGADO'
     ? t('manageContributions.card.statusPaid')
-    : t('manageContributions.card.statusPending');
+    : record.realizado === 'MOROSO'
+      ? t('manageContributions.card.statusOverdue')
+      : t('manageContributions.card.statusPending');
+
+  // Debug: ver el valor real que llega
+  console.log('PDF record realizarse:', record.realizado, 'id_casa:', record.id_casa);
 
   // Lógica de color basada en el estado del registro
   const isPaid = record.realizado === 'PAGADO';
-  const statusColor = isPaid ? colorMap.green : colorMap.red;
-  const dividerColor = isPaid ? '#A7F3D0' : '#FECACA'; // green-200 y red-200
+  const isOverdue = record.realizado === 'MOROSO';
+  const statusColor = isPaid ? colorMap.green : isOverdue ? colorMap.amber : colorMap.red;
+  const dividerColor = isPaid ? '#A7F3D0' : isOverdue ? '#FDE68A' : '#FECACA';
 
   // Obtener nombre del mes (ej: ENE, FEB)
   const dateObj = new Date(record.fecha);

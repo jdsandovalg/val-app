@@ -47,8 +47,8 @@ export default function ContributionFilterModal({
 
   useEffect(() => {
     const fetchDropdownData = async () => {
-      // Fetch houses
-      const { data: housesData, error: housesError } = await supabase.from('casas').select('id, responsable');
+      // Fetch houses (usuarios with tipo_usuario = 'PRE')
+      const { data: housesData, error: housesError } = await supabase.from('usuarios').select('id, responsable').eq('tipo_usuario', 'PRE').order('id');
       if (housesError) console.error('Error fetching houses:', housesError);
       else setHouses(housesData || []);
 

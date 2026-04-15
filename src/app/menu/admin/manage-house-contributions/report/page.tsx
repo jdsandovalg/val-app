@@ -26,8 +26,19 @@ export default function ReportViewerPage() {
     const loadData = async () => {
       // Cargar datos desde localStorage
       const savedData = localStorage.getItem('pdfReportData');
+      console.log('Loading PDF data, savedData exists:', !!savedData);
       if (savedData) {
-        setRecords(JSON.parse(savedData));
+        try {
+          const parsed = JSON.parse(savedData);
+          console.log('First record:', parsed[0]);
+          console.log('First record realizado:', parsed[0]?.realizado);
+          console.log('Parsed records count:', parsed.length);
+          setRecords(parsed);
+        } catch (e) {
+          console.error('Error parsing PDF data:', e);
+        }
+      } else {
+        console.warn('No pdfReportData found in localStorage');
       }
 
       // Cargar el logo de forma asíncrona antes de renderizar el PDF

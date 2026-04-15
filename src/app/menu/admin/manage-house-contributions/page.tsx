@@ -40,11 +40,7 @@ export default function ManageHouseContributionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Partial<ContribucionPorCasaExt> | null>(null);
   const [isUploadingCsv, setIsUploadingCsv] = useState(false);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({
-    key: 'fecha',
-    direction: 'descending',
-  });
+const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     casa: '',
     contribucion: '',
@@ -52,6 +48,13 @@ export default function ManageHouseContributionsPage() {
     pagado: '',
     realizado: '',
   });
+  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({
+    key: 'fecha',
+    direction: 'descending',
+  });
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedContribucion, setSelectedContribucion] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'fecha' | 'casa'>('fecha');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -95,6 +98,27 @@ export default function ManageHouseContributionsPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const uniqueYears = useMemo(() => {
+    const years = new Set<string>();
+    records.forEach(record => {
+      if (record.fecha) {
+        const year = record.fecha.substring(0, 4);
+        years.add(year);
+      }
+    });
+    return Array.from(years).sort().reverse();
+  }, [records]);
+
+  const uniqueContribucionTypes = useMemo(() => {
+    const contribs = new Map<string, string>();
+    records.forEach(record => {
+      if (record.id_contribucion && record.contribuciones?.descripcion) {
+        contribs.set(record.id_contribucion, record.contribuciones.descripcion);
+      }
+    });
+    return Array.from(contribs.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+  }, [records]);
 
   const handleOpenModal = (record: Partial<ContribucionPorCasaExt> | null = null) => {
     setEditingRecord(record);
@@ -211,6 +235,17 @@ export default function ManageHouseContributionsPage() {
   const filteredAndSortedRecords = useMemo(() => {
     let filteredItems = [...records];
 
+    // Filtros rápidos
+    if (selectedYear) {
+      filteredItems = filteredItems.filter(record => {
+        const recordYear = record.fecha?.substring(0, 4);
+        return recordYear === selectedYear;
+      });
+    }
+    if (selectedContribucion) {
+      filteredItems = filteredItems.filter(record => record.id_contribucion === selectedContribucion);
+    }
+
     // Aplicar filtros
     if (filters.casa) {
       filteredItems = filteredItems.filter(record =>
@@ -260,8 +295,8 @@ export default function ManageHouseContributionsPage() {
 
         switch (sortConfig.key) {
           case 'usuarios':
-            aValue = a.usuarios?.responsable?.toLowerCase() ?? '';
-            bValue = b.usuarios?.responsable?.toLowerCase() ?? '';
+            aValue = a.id_casa ?? 0;
+            bValue = b.id_casa ?? 0;
             break;
           case 'contribuciones':
             aValue = a.contribuciones?.descripcion?.toLowerCase() ?? '';
@@ -475,6 +510,99 @@ export default function ManageHouseContributionsPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-1xl font-bold text-gray-800 text-center">{t('manageContributions.title')}</h1>
 
+          {/* Filtros Rápidos */}
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            {/* Filtro por Año */}
+            {uniqueYears.length > 1 && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 mr-1">Año:</span>
+                {uniqueYears.map(year => (
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(selectedYear === year ? '' : year)}
+                    className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                      selectedYear === year
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {year}
+                  </button>
+                ))}
+                {selectedYear && (
+                  <button
+                    onClick={() => setSelectedYear('')}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                    title="Borrar filtro"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Filtro por Contribución */}
+            {uniqueContribucionTypes.length > 1 && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 mr-1">Tipo:</span>
+                {uniqueContribucionTypes.map(([id, desc]) => (
+                  <button
+                    key={id}
+                    onClick={() => setSelectedContribucion(selectedContribucion === id ? '' : id)}
+                    className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                      selectedContribucion === id
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                    title={desc}
+                  >
+                    {desc.length > 10 ? desc.substring(0, 10) + '...' : desc}
+                  </button>
+                ))}
+                {selectedContribucion && (
+                  <button
+                    onClick={() => setSelectedContribucion('')}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                    title="Borrar filtro"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+)}
+            </div>
+
+            {/* Filtros de Ordenamiento Rápido */}
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs text-gray-500 mr-1">Ordenar:</span>
+              <button
+                onClick={() => {
+                  setSortBy('fecha');
+                  setSortConfig({ key: 'fecha', direction: sortConfig?.direction === 'ascending' ? 'descending' : 'ascending' });
+                }}
+                className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                  sortBy === 'fecha'
+                    ? 'bg-indigo-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Fecha {sortConfig?.direction === 'ascending' ? '↑' : '↓'}
+              </button>
+              <button
+                onClick={() => {
+                  setSortBy('casa');
+                  setSortConfig({ key: 'usuarios', direction: sortConfig?.direction === 'ascending' ? 'descending' : 'ascending' });
+                }}
+                className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                  sortBy === 'casa'
+                    ? 'bg-indigo-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Casa {sortConfig?.direction === 'ascending' ? '↑' : '↓'}
+              </button>
+            </div>
+
           {/* Contenedor de Acciones */}
           <div className="relative flex items-center gap-2">
             {/* Botón de Filtros (solo para móvil) */}
@@ -597,6 +725,7 @@ export default function ManageHouseContributionsPage() {
                       {({ active }) => (
                         <button
                           onClick={() => {
+                            console.log('Saving PDF data, sample record:', filteredAndSortedRecords[0]);
                             localStorage.setItem('pdfReportData', JSON.stringify(filteredAndSortedRecords));
                             window.open('/menu/admin/manage-house-contributions/report', '_blank');
                           }}

@@ -259,6 +259,7 @@
       "notPaid": "Not paid",
       "statusPaid": "Paid",
       "statusPending": "Pending",
+      "statusOverdue": "Overdue",
       "dateLabel": "Date",
       "paymentDateLabel": "Payment Date",
       "editAction": "Edit",
