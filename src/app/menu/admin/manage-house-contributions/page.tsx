@@ -506,7 +506,7 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   }, [supabase, fetchData]);
 
   return (
-      <div className="bg-gray-50 p-4 sm:p-8">
+      <div className="bg-gray-50 p-2 sm:p-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-1xl font-bold text-gray-800 text-center">{t('manageContributions.title')}</h1>
 
