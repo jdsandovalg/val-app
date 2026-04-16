@@ -21,12 +21,10 @@ import ContributionModal from './components/ContributionModal';
 import ContributionCard from './components/ContributionCard';
 import FiltersBar from './components/FiltersBar';
 import PageHeader from './components/PageHeader';
+import MobileFilterModal from './components/MobileFilterModal';
 import { useI18n } from '@/app/i18n-provider';
-import { formatDate, formatCurrency } from '@/utils/format';
 import { useContribucionesManager } from './hooks/useContribucionesManager';
-
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { parseContributionsCSV } from './components/contributionExport';
 
 // --- Componente Principal de la Página ---
 export default function ManageHouseContributionsPage() {
@@ -118,77 +116,9 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
       toast.error(t('manageContributions.alerts.pdfNoData'));
       return;
     }
-
-    const doc = new jsPDF({ compress: true });
-    const pageWidth = doc.internal.pageSize.getWidth();
-
-    const generatePdfContent = (docInstance: jsPDF) => {
-      // Encabezado del reporte
-      docInstance.setFontSize(22);
-      docInstance.setFont('helvetica', 'bold');
-      docInstance.text(t('contributionReport.title'), pageWidth / 2, 22, { align: 'center' });
-      
-      docInstance.setFontSize(10);
-      docInstance.setFont('helvetica', 'normal');
-      docInstance.text(`${t('contributionReport.generatedOn')} ${new Date().toLocaleDateString()}`, pageWidth - 14, 22, { align: 'right' });
-
-      // Preparar datos para la tabla
-      const tableColumn = [t('contributionReport.headerHouse'), t('contributionReport.headerContribution'), t('contributionReport.headerDate'), t('contributionReport.headerAmount'), t('contributionReport.headerStatus')];
-      const tableRows = filteredAndSortedRecords.map(record => {
-        const casa = record.usuarios
-          ? `${t('groups.house')} #${record.usuarios.id} - ${record.usuarios.responsable}`
-          : `${t('groups.house')} ID: ${record.id_casa}`;
-        const contribucion = record.contribucion ?? `ID: ${record.id_contribucion}`;
-      const pagado = record.pagado != null ? formatCurrency(record.pagado, locale, currency) : t('manageContributions.card.notPaid');
-        const realizado = record.realizado === 'PAGADO' ? t('calendar.table.yes') : t('calendar.table.no');
-      return [casa, contribucion, formatDate(record.fecha, locale), pagado, realizado];
-      });
-
-      // Crear la tabla
-      autoTable(docInstance, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: 35,
-        theme: 'grid',
-        headStyles: { fillColor: [22, 78, 99], textColor: [255, 255, 255], fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [241, 245, 249] },
-        styles: { font: 'helvetica', fontSize: 8 },
-      });
-
-      try {
-        const fileName = t('contributionReport.fileName');
-        // Usar output('arraybuffer') y crear el Blob manualmente suele ser más eficiente en memoria que output('blob')
-        const arrayBuffer = docInstance.output('arraybuffer');
-        const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error('Error generating PDF:', error);
-        toast.error('Error al generar el PDF. Intente filtrar los datos para reducir el tamaño.');
-      }
-    };
-
-    // Cargar el logo y luego generar el contenido del PDF
-    fetch('/logo.png')
-      .then(response => response.ok ? response.blob() : Promise.reject('Logo not found'))
-      .then(blob => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => {
-          const logoBase64 = reader.result as string;
-          doc.addImage(logoBase64, 'PNG', 14, 15, 20, 20);
-          generatePdfContent(doc);
-        };
-      }).catch(() => {
-        console.warn("No se pudo cargar el logo. El reporte se generará sin él.");
-        generatePdfContent(doc);
-      });
+    localStorage.setItem('pdfReportData', JSON.stringify(filteredAndSortedRecords));
+    localStorage.setItem('pdfReportType', 'flat');
+    window.open('/menu/admin/manage-house-contributions/report', '_blank');
   }, [filteredAndSortedRecords, t, locale, currency]);
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -198,59 +128,10 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     setIsUploadingCsv(true)
     setError(null);
     
-      const reader = new FileReader();
+    const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        const text = e.target?.result as string;
-        let lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
-
-        if (lines.length === 0) {
-          throw new Error('El archivo CSV está vacío.');
-        }
-
-        // Detectar y omitir la cabecera si el primer campo de la primera línea no es un número.
-        const firstLineValues = lines[0].split(',');
-        if (isNaN(parseInt(firstLineValues[0], 10))) {
-          lines = lines.slice(1);
-        }
-
-        if (lines.length === 0) {
-          throw new Error('El archivo CSV no contiene registros de datos (después de omitir la cabecera).');
-        }
-
-        const recordsToInsert = lines.map((line, index) => {
-          const values = line.split(',').map(v => v.trim());
-
-          if (values.length < 5) {
-            throw new Error(`La fila ${index + 1} tiene menos de 5 columnas. Se esperan: id_casa, id_contribucion, fecha, pagado, realizado.`);
-          }
-
-          const [idCasaStr, idContribucionStr, fechaStr, pagadoStr, realizadoStr] = values;
-
-          const id_casa = parseInt(idCasaStr, 10);
-          const id_contribucion = idContribucionStr;
-          const fecha = fechaStr;
-          const pagado = (pagadoStr && pagadoStr.trim() !== '') ? parseFloat(pagadoStr) : null;
-          const realizado = ['true', '1', 's', 'si', 'yes', 'verdadero'].includes(realizadoStr?.toLowerCase() || '') ? 'S' : 'N';
-
-          if (isNaN(id_casa) || !id_contribucion || !fecha) {
-            throw new Error(`Datos inválidos en la fila ${index + 1}: id_casa, id_contribucion y fecha son obligatorios y deben tener el formato correcto.`);
-          }
-
-          // CORRECCIÓN: Mapear a las columnas de la tabla.
-          return { 
-            id_casa, 
-            id_contribucion, 
-            fecha_cargo: fecha, 
-            monto_pagado: pagado, 
-            estado: realizado === 'S' ? 'PAGADO' : 'PENDIENTE' 
-          };
-        });
-
-        if (recordsToInsert.length === 0) {
-          throw new Error('No se encontraron registros válidos para insertar en el CSV.');
-        }
-
+        const recordsToInsert = parseContributionsCSV(e.target?.result as string);
         const { error: insertError } = await supabase.from('contribucionesporcasa').insert(recordsToInsert);
         if (insertError) throw insertError;
 
@@ -288,6 +169,7 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
             onExportPdf={handleGeneratePDF}
             onExportCards={() => {
               localStorage.setItem('pdfReportData', JSON.stringify(filteredAndSortedRecords));
+              localStorage.setItem('pdfReportType', 'cards');
               window.open('/menu/admin/manage-house-contributions/report', '_blank');
             }}
             onFilterClick={() => setIsFilterModalOpen(true)}

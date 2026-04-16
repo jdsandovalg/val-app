@@ -1,86 +1,98 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import { PDFViewer, Document, Page, View, StyleSheet } from '@react-pdf/renderer';
 import { useI18n } from '@/app/i18n-provider';
+import { ContributionFlatReport } from '../components/ContributionFlatReport';
+import PdfContributionCard from '../components/PdfContributionCard';
 import type { ContribucionPorCasaExt } from '@/types';
 
-// Importar dinámicamente el contenido del reporte para evitar errores de SSR/Hidratación
-const ReportContent = dynamic(() => import('./ReportContent'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-screen w-screen bg-gray-50">
-      <div className="text-gray-500 font-medium">Cargando visor PDF...</div>
-    </div>
-  ),
+const styles = StyleSheet.create({
+  viewer: {
+    width: '100%',
+    height: '100vh',
+    border: 'none',
+  },
+  page: {
+    padding: 30,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    backgroundColor: '#f9fafb',
+  },
 });
 
+/**
+ * Componente que envuelve las tarjetas en un documento PDF
+ */
+const ContributionCardsReport = ({ records, t, locale, currency }: any) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      {records.map((record: ContribucionPorCasaExt) => (
+        <PdfContributionCard
+          key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`}
+          record={record}
+          t={t}
+          locale={locale}
+          currency={currency}
+        />
+      ))}
+    </Page>
+  </Document>
+);
 
-export default function ReportViewerPage() {
+export default function ContributionReportPage() {
   const { t, locale, currency } = useI18n();
-  const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
-  const [logoBase64, setLogoBase64] = useState<string | null>(null);
+  const [data, setData] = useState<ContribucionPorCasaExt[]>([]);
+  const [reportType, setReportType] = useState<'flat' | 'cards'>('flat');
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      // Cargar datos desde localStorage
-      const savedData = localStorage.getItem('pdfReportData');
-      console.log('Loading PDF data, savedData exists:', !!savedData);
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          console.log('First record:', parsed[0]);
-          console.log('First record realizado:', parsed[0]?.realizado);
-          console.log('Parsed records count:', parsed.length);
-          setRecords(parsed);
-        } catch (e) {
-          console.error('Error parsing PDF data:', e);
-        }
-      } else {
-        console.warn('No pdfReportData found in localStorage');
-      }
+    const savedData = localStorage.getItem('pdfReportData');
+    const savedType = localStorage.getItem('pdfReportType') as 'flat' | 'cards';
+    
+    if (savedData) {
+      setData(JSON.parse(savedData));
+    }
+    if (savedType) {
+      setReportType(savedType);
+    }
+    setIsReady(true);
 
-      // Cargar el logo de forma asíncrona antes de renderizar el PDF
-      try {
-        const response = await fetch('/logo.png');
-        if (response.ok) {
-          const blob = await response.blob();
-          await new Promise<void>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setLogoBase64(reader.result as string);
-              resolve();
-            };
-            reader.readAsDataURL(blob);
-          });
-        }
-      } catch (error) {
-        console.warn("No se pudo cargar el logo para el PDF:", error);
-      } finally {
-        setIsReady(true);
-      }
-    };
-
-    loadData();
+    // Limpieza opcional al desmontar para no dejar basura en el storageSi, 
+    // return () => {
+    //   localStorage.removeItem('pdfReportData');
+    //   localStorage.removeItem('pdfReportType');
+    // };
   }, []);
 
-  if (!isReady) {
+  if (!isReady || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen bg-gray-50">
-        <div className="text-gray-500 font-medium">Generando vista previa...</div>
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-500">{t('manageContributions.loading')}</p>
       </div>
     );
   }
 
   return (
-    <ReportContent
-      records={records}
-      t={t}
-      locale={locale}
-      currency={currency}
-      logoBase64={logoBase64}
-      onClose={() => window.close()}
-    />
+    <div className="w-full h-screen">
+      <PDFViewer style={styles.viewer} showToolbar={true}>
+        {reportType === 'cards' ? (
+          <ContributionCardsReport 
+            records={data} 
+            t={t} 
+            locale={locale} 
+            currency={currency} 
+          />
+        ) : (
+          <ContributionFlatReport 
+            records={data} 
+            t={t} 
+            locale={locale} 
+            currency={currency} 
+          />
+        )}
+      </PDFViewer>
+    </div>
   );
 }
