@@ -64,8 +64,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
       borderLeftColor: statusColor, // Usar el color del estado
       fontFamily: 'Helvetica',
       color: '#1F2937', // gray-800
-      width: '48%', // Ancho reducido para que quepan dos por fila
-      marginHorizontal: '1%', // Mantiene la separación lateral
+      width: '49%', // Ajustado para dos columnas con space-between
       marginBottom: 14, // Reducido para evitar hoja en blanco extra
     },
     header: {

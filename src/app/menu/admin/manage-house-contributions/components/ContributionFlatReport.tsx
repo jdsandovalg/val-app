@@ -42,7 +42,7 @@ export const ContributionFlatReport = ({ records, t, locale, currency }: any) =>
 
   return (
     <Document title={t('contributionReport.fileName')}>
-      <Page size="A4" style={styles.page}>
+      <Page size="LETTER" style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('contributionReport.title')}</Text>
           <Text style={styles.dateText}>{new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}</Text>
