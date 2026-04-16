@@ -24,7 +24,7 @@ interface UseContribucionesManagerResult {
     contribucion: string;
     fecha: string;
     pagado: string;
-    realizados: string;
+    realizado: string;
   };
   
   // Filtered & sorted data
@@ -39,7 +39,7 @@ interface UseContribucionesManagerResult {
   setSortConfig: (config: { key: SortableKeys; direction: 'ascending' | 'descending' } | null) => void;
   setFilters: (filters: UseContribucionesManagerResult['filters']) => void;
   handleFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  handleSave: (recordData: Partial<ContribucionPorCasaExt>) => Promise<void>;
+  handleSave: (recordData: Partial<ContribucionPorCasaExt>, isUpdate: boolean) => Promise<void>;
   handleDelete: (recordToDelete: ContribucionPorCasa) => Promise<void>;
   refetch: () => Promise<void>;
 }
@@ -67,7 +67,7 @@ export function useContribucionesManager(): UseContribucionesManagerResult {
     contribucion: '',
     fecha: '',
     pagado: '',
-    realizados: '',
+    realizado: '',
   });
 
   const fetchData = useCallback(async () => {
@@ -153,9 +153,9 @@ setRecords(formattedRecords);
       filteredItems = filteredItems.filter(record =>
         (record.pagado != null ? `$${Number(record.pagado).toFixed(2)}` : 'no pagado').toLowerCase().includes(filters.pagado.toLowerCase()));
     }
-    if (filters.realizados) {
+    if (filters.realizado) {
       filteredItems = filteredItems.filter(record =>
-        (record.realizado === 'PAGADO' ? 'si' : 'no').toLowerCase().includes(filters.realizados.toLowerCase()));
+        (record.realizado === 'PAGADO' ? 'si' : 'no').toLowerCase().includes(filters.realizado.toLowerCase()));
     }
 
     // Sort
@@ -206,41 +206,31 @@ setRecords(formattedRecords);
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = useCallback(async (recordData: Partial<ContribucionPorCasaExt>) => {
-    const editingRecord = recordData.id_casa && recordData.id_contribucion && recordData.fecha ? recordData : null;
-    let recordToUpdate: Record<string, unknown> | Record<string, unknown> = {};
+  const handleSave = useCallback(async (recordData: Partial<ContribucionPorCasaExt>, isUpdate: boolean) => {
+    const { error } = await supabase.rpc('gestionar_contribuciones_casa', {
+      p_accion: isUpdate ? 'UPDATE_PAGADO' : 'INSERT',
+      p_id_casa: recordData.id_casa,
+      p_id_contribucion: recordData.id_contribucion,
+      p_fecha_cargo: recordData.fecha,
+      p_monto_pagado: recordData.pagado,
+      p_estado: recordData.realizado === 'PAGADO' ? 'PAGADO' : 'PENDIENTE',
+      p_fechapago: recordData.fechapago,
+      p_url_comprobante: recordData.url_comprobante,
+    });
 
-    if (editingRecord) {
-      recordToUpdate = {
-        monto_pagado: recordData.pagado,
-        estado: recordData.realizado === 'PAGADO' ? 'PAGADO' : recordData.realizado === 'MOROSO' ? 'MOROSO' : 'PENDIENTE',
-        fechapago: recordData.fechapago,
-        url_comprobante: recordData.url_comprobante,
-      };
-      await supabase.from('contribucionesporcasa').update(recordToUpdate)
-        .eq('id_casa', editingRecord.id_casa).eq('id_contribucion', editingRecord.id_contribucion).eq('fecha_cargo', editingRecord.fecha);
-    } else {
-      recordToUpdate = {
-        id_casa: recordData.id_casa,
-        id_contribucion: recordData.id_contribucion,
-        fecha_cargo: recordData.fecha,
-        monto_pagado: recordData.pagado,
-        estado: recordData.realizado === 'PAGADO' ? 'PAGADO' : recordData.realizado === 'MOROSO' ? 'MOROSO' : 'PENDIENTE',
-        fechapago: recordData.fechapago,
-        url_comprobante: recordData.url_comprobante,
-      };
-      await supabase.from('contribucionesporcasa').insert(recordToUpdate);
-    }
+    if (error) throw error;
     await fetchData();
   }, [supabase, fetchData]);
 
   const handleDelete = useCallback(async (recordToDelete: ContribucionPorCasa) => {
-    await supabase.from('contribucionesporcasa').update({
-      estado: 'PENDIENTE',
-      monto_pagado: null,
-      fechapago: null,
-      url_comprobante: null,
-    }).eq('id_casa', recordToDelete.id_casa).eq('id_contribucion', recordToDelete.id_contribucion).eq('fecha_cargo', recordToDelete.fecha);
+    const { error } = await supabase.rpc('gestionar_contribuciones_casa', {
+      p_accion: 'RESET_PAGO',
+      p_id_casa: recordToDelete.id_casa,
+      p_id_contribucion: recordToDelete.id_contribucion,
+      p_fecha_cargo: recordToDelete.fecha
+    });
+
+    if (error) throw error;
     await fetchData();
   }, [supabase, fetchData]);
 

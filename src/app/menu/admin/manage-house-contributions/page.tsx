@@ -35,82 +35,34 @@ export default function ManageHouseContributionsPage() {
   
   // Usar hook para datos derivados (sin duplicar lógica)
   const {
-    uniqueYears: hookUniqueYears,
-    uniqueContribucionTypes: hookUniqueContribTypes,
+    records,
+    usuarios,
+    contribuciones,
+    loading,
+    fetchError,
+    selectedYear,
+    selectedContribucion,
+    sortBy,
+    sortConfig,
+    filters,
+    filteredAndSortedRecords,
+    uniqueYears,
+    uniqueContribucionTypes,
+    setSelectedYear,
+    setSelectedContribucion,
+    setSortBy,
+    setSortConfig,
+    handleFilterChange,
+    handleSave: hookHandleSave,
+    handleDelete: hookHandleDelete,
+    refetch
   } = useContribucionesManager();
 
-  const [records, setRecords] = useState<ContribucionPorCasaExt[]>([]);
-  const [usuarios, setUsuarios] = useState<{ id: number; responsable: string; }[]>([]);
-  const [contribuciones, setContribuciones] = useState<{ id_contribucion: string; descripcion: string | null; }[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Partial<ContribucionPorCasaExt> | null>(null);
   const [isUploadingCsv, setIsUploadingCsv] = useState(false);
 const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [filters, setFilters] = useState({
-    casa: '',
-    contribucion: '',
-    fecha: '',
-    pagado: '',
-    realizado: '',
-  });
-  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({
-    key: 'fecha',
-    direction: 'descending',
-  });
-  const [selectedYear, setSelectedYear] = useState<string>('');
-  const [selectedContribucion, setSelectedContribucion] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'fecha' | 'casa'>('fecha');
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setFetchError(null);
-    try {
-      // CORRECCIÓN: Usar la vista 'v_usuarios_contribuciones' como única fuente de datos.
-      const { data: recordsData, error: recordsError } = await supabase
-        .from('v_usuarios_contribuciones')
-        .select('*')
-        .order('fecha', { ascending: false });
-
-      if (recordsError) throw recordsError;
-
-      const data = recordsData || [];
-
-      // Mapear los datos de la vista al formato esperado por el componente.
-      const formattedRecords = data.map(record => ({
-        ...record, // Esto ya incluye todos los campos de la vista, como `ubicacion`
-        usuarios: { id: record.id, responsable: record.responsable },
-        contribuciones: { id_contribucion: record.id_contribucion, descripcion: record.descripcion, color_del_borde: record.color_del_borde },
-      }));
-      setRecords(formattedRecords);
-
-      // Extraer datos únicos para los modales desde la data ya obtenida.
-      const uniqueUsers = [...new Map(data.map(item => [item.id, { id: item.id, responsable: item.responsable }])).values()];
-      const uniqueContribs = [...new Map(data.map(item => [item.id_contribucion, { id_contribucion: item.id_contribucion, descripcion: item.descripcion }])).values()];
-
-      setUsuarios(uniqueUsers);
-      setContribuciones(uniqueContribs);
-
-    } catch (err: unknown) {
-      // Mejoramos el manejo de errores para obtener un mensaje claro.
-      const message = err && typeof err === 'object' && 'message' in err ? (err as { message: string }).message : 'Ocurrió un error desconocido.';
-      console.error("Error completo al cargar datos de aportaciones:", err); // Log para depuración
-      setFetchError(`Error al cargar los datos: ${message}`);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Usar valores del hook para uniqueYears y uniqueContribucionTypes
-  const uniqueYears = hookUniqueYears;
-  const uniqueContribucionTypes = hookUniqueContribTypes;
-
   const handleOpenModal = (record: Partial<ContribucionPorCasaExt> | null = null) => {
     setEditingRecord(record);
     setIsModalOpen(true);
@@ -121,94 +73,36 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     setEditingRecord(null);
   }, []);
 
-  // TODO: Refactorizar para usar la función de base de datos `gestionar_contribuciones_casa`.
-  // Actualmente, las operaciones de guardado y eliminación se hacen directamente contra la tabla.
-  // Sería ideal centralizar esta lógica en una función RPC para mayor seguridad y mantenibilidad.
-  // Ejemplo de llamada RPC:
-  // await supabase.rpc('gestionar_contribuciones_casa', { p_accion: 'UPDATE_PAGADO', ...params })
-
   const handleSave = useCallback(async (recordData: Partial<ContribucionPorCasaExt>) => {
     setError(null); // Limpiar errores de UI
     try {
-      // Si editingRecord existe, es una ACTUALIZACIÓN (UPDATE).
-      if (editingRecord && editingRecord.id_casa && editingRecord.id_contribucion && editingRecord.fecha) {
-        // Para la actualización, solo enviamos los campos que pueden cambiar.
-        // La fecha de cargo (parte de la PK) no debería cambiar.
-        const recordToUpdate = {
-          monto_pagado: recordData.pagado,
-          estado: recordData.realizado === 'S' ? 'PAGADO' : 'PENDIENTE',
-          fechapago: recordData.fechapago, // Este es el campo de fecha de pago
-          url_comprobante: recordData.url_comprobante,
-        };
-
-        const { error } = await supabase
-          .from('contribucionesporcasa')
-          .update(recordToUpdate)
-          .eq('id_casa', editingRecord.id_casa)
-          .eq('id_contribucion', editingRecord.id_contribucion)
-          .eq('fecha_cargo', editingRecord.fecha);
-        if (error) throw error;
-      } else {
-        // De lo contrario, es una INSERCIÓN (INSERT).
-        // Para la inserción, se necesitan todos los campos, incluyendo la PK.
-        const recordToInsert = {
-          id_casa: recordData.id_casa,
-          id_contribucion: recordData.id_contribucion,
-          fecha_cargo: recordData.fecha, // Esta es la fecha del cargo
-          monto_pagado: recordData.pagado,
-          estado: recordData.realizado === 'S' ? 'PAGADO' : 'PENDIENTE',
-          fechapago: recordData.fechapago, // Esta es la fecha del pago
-          url_comprobante: recordData.url_comprobante,
-        };
-
-        if (!recordData.id_casa || !recordData.id_contribucion || !recordData.fecha) {
-          throw new Error("Casa, Contribución y Fecha son obligatorios para crear un nuevo registro.");
-        }
-        const { error } = await supabase.from('contribucionesporcasa').insert(recordToInsert);
-        if (error) throw error;
+      if (!editingRecord && (!recordData.id_casa || !recordData.id_contribucion || !recordData.fecha)) {
+        throw new Error("Casa, Contribución y Fecha son obligatorios para crear un nuevo registro.");
       }
 
+      await hookHandleSave(recordData, !!editingRecord);
       toast.success(t('manageContributions.alerts.saveSuccess'));
+      handleCloseModal();
     } catch (err: unknown) {
-      console.error('Error en handleSave:', err);
-      let message = 'desconocido';
-      if (err && typeof err === 'object' && 'message' in err) {
-        message = (err as { message: string }).message;
-      }
+      const message = err && typeof err === 'object' && 'message' in err ? (err as { message: string }).message : 'desconocido';
       const errorMessage = t('manageContributions.alerts.saveError', { message });
       setError(errorMessage);
       toast.error(errorMessage, { duration: 6000 });
-    } finally {
-      handleCloseModal();
-      fetchData(); // Recargar datos
     }
-  }, [supabase, editingRecord, t, handleCloseModal, fetchData]);
+  }, [editingRecord, t, handleCloseModal, hookHandleSave]);
 
   const handleDelete = useCallback(async (recordToDelete: ContribucionPorCasa) => {
     if (window.confirm(t('manageContributions.alerts.resetConfirm'))) {
-      // CORRECCIÓN: En lugar de eliminar (DELETE), actualizamos a 'PENDIENTE' según regla de negocio.
-      const { error } = await supabase
-        .from('contribucionesporcasa')
-        .update({
-          estado: 'PENDIENTE',
-          monto_pagado: null,
-          fechapago: null,
-          url_comprobante: null
-        })
-        .eq('id_casa', recordToDelete.id_casa)
-        .eq('id_contribucion', recordToDelete.id_contribucion)
-        .eq('fecha_cargo', recordToDelete.fecha);
-
-      if (error) {
-        const errorMessage = t('manageContributions.alerts.resetError', { message: error.message });
+      try {
+        await hookHandleDelete(recordToDelete);
+        toast.success(t('manageContributions.alerts.resetSuccess'));
+      } catch (error: any) {
+        const errorMessage = t('manageContributions.alerts.resetError', { message: error.message || 'Error desconocido' });
         setError(errorMessage);
         toast.error(errorMessage);
-      } else {
-        toast.success(t('manageContributions.alerts.resetSuccess'));
-        fetchData(); // Recargar datos
       }
     }
-  }, [supabase, t, fetchData]);
+  }, [t, hookHandleDelete]);
 
   const handleSort = (key: SortableKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -217,118 +111,6 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     }
     setSortConfig({ key, direction });
   };
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
-
-  const filteredAndSortedRecords = useMemo(() => {
-    let filteredItems = [...records];
-
-    // Filtros rápidos
-    if (selectedYear) {
-      filteredItems = filteredItems.filter(record => {
-        const recordYear = record.fecha?.substring(0, 4);
-        return recordYear === selectedYear;
-      });
-    }
-    if (selectedContribucion) {
-      filteredItems = filteredItems.filter(record => record.id_contribucion === selectedContribucion);
-    }
-
-    // Aplicar filtros
-    if (filters.casa) {
-      filteredItems = filteredItems.filter(record =>
-        (record.usuarios ? `Casa #${record.usuarios.id} - ${record.usuarios.responsable}` : `Casa ID: ${record.id_casa}`)
-          .toLowerCase()
-          .includes(filters.casa.toLowerCase())
-      );
-    }
-    if (filters.contribucion) {
-      filteredItems = filteredItems.filter(record =>
-        (record.contribuciones?.descripcion ?? `ID: ${record.id_contribucion}`) // Usar la descripción
-          .toLowerCase()
-          .includes(filters.contribucion.toLowerCase()) // Búsqueda parcial (LIKE)
-      );
-    }
-    if (filters.fecha) {
-      const filterLowerCase = filters.fecha.toLowerCase();
-      filteredItems = filteredItems.filter(record => {
-        if (!record.fecha) return false;
-        // Formatear la fecha a un string más amigable para la búsqueda (ej: "15 de enero de 2024")
-        const date = new Date(`${record.fecha}T00:00:00`); // Asegurar que se interprete como fecha local
-        const formattedDate = date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
-        // Permitir búsqueda por el formato original o por el nombre del mes
-        return record.fecha.includes(filterLowerCase) || formattedDate.toLowerCase().includes(filterLowerCase);
-      }
-      );
-    }
-    if (filters.pagado) {
-      filteredItems = filteredItems.filter(record =>
-        (record.pagado != null ? `$${Number(record.pagado).toFixed(2)}` : 'no pagado')
-          .toLowerCase()
-          .includes(filters.pagado.toLowerCase())
-      );
-    }
-    if (filters.realizado) {
-      const filterValue = filters.realizado.toLowerCase();
-      filteredItems = filteredItems.filter(record =>
-        (record.realizado === 'PAGADO' ? t('calendar.table.yes') : t('calendar.table.no')).toLowerCase().includes(filterValue)
-      );
-    }
-
-    const sortableItems: ContribucionPorCasaExt[] = [...filteredItems];
-    if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        let aValue: string | number | null | undefined;
-        let bValue: string | number | null | undefined;
-
-        switch (sortConfig.key) {
-          case 'usuarios':
-            aValue = a.id_casa ?? 0;
-            bValue = b.id_casa ?? 0;
-            break;
-          case 'contribuciones':
-            aValue = a.contribuciones?.descripcion?.toLowerCase() ?? '';
-            bValue = b.contribuciones?.descripcion?.toLowerCase() ?? '';
-            break;
-          case 'ubicacion':
-            aValue = a.ubicacion?.toLowerCase() ?? '';
-            bValue = b.ubicacion?.toLowerCase() ?? '';
-            break;
-          case 'pagado':
-            aValue = a.pagado ?? -Infinity; // Treat null as the smallest value
-            bValue = b.pagado ?? -Infinity;
-            break;
-          default:
-            // Para el resto de las claves, se tratan como strings o tipos comparables directamente.
-            aValue = a[sortConfig.key as keyof ContribucionPorCasa];
-            bValue = b[sortConfig.key as keyof ContribucionPorCasa];
-        }
-
-        // Lógica de comparación específica para números (como 'pagado')
-        if (typeof aValue === 'number' && typeof bValue === 'number') {
-          if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
-          if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
-          return 0;
-        }
-
-        // Lógica de comparación para strings y otros tipos
-        const valA = aValue === null || aValue === undefined ? '' : aValue;
-        const valB = bValue === null || bValue === undefined ? '' : bValue;
-
-        if (valA < valB) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (valA > valB) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [records, sortConfig, filters, t]);
 
   const handleGeneratePDF = useCallback(() => {
     if (filteredAndSortedRecords.length === 0) {
@@ -472,7 +254,7 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
         if (insertError) throw insertError;
 
         alert(`${recordsToInsert.length} registros insertados correctamente.`);
-        fetchData();
+        refetch();
       } catch (err: unknown) {
         console.error('Error en handleFileUpload:', err);
         if (err instanceof Error) {
@@ -494,29 +276,16 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     };
 
     reader.readAsText(file);
-  }, [supabase, fetchData]);
+  }, [supabase, refetch]);
 
   return (
       <div className="bg-gray-50 p-2 sm:p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-1xl font-bold text-gray-800 text-center">{t('manageContributions.title')}</h1>
+        <div className="mb-6 space-y-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl font-bold text-gray-800">{t('manageContributions.title')}</h1>
 
-{/* Filtros Rápidos - componente separado */}
-          <FiltersBar
-            uniqueYears={uniqueYears}
-            uniqueContribucionTypes={uniqueContribucionTypes}
-            selectedYear={selectedYear}
-            selectedContribucion={selectedContribucion}
-            sortBy={sortBy}
-            sortConfig={sortConfig}
-            onYearChange={setSelectedYear}
-            onContribucionChange={setSelectedContribucion}
-            onSortByChange={setSortBy}
-            onSortConfigChange={setSortConfig}
-          />
-
-          {/* Contenedor de Acciones */}
-          <div className="relative flex items-center gap-2">
+            {/* Contenedor de Acciones */}
+            <div className="relative flex items-center gap-2">
             {/* Botón de Filtros (solo para móvil) */}
             <button
               onClick={() => setIsFilterModalOpen(true)}
@@ -654,6 +423,22 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
               </Transition>
             </Menu>
           </div>
+          </div>
+
+          {/* Filtros Rápidos - Ahora debajo del título y acciones para evitar scroll horizontal */}
+          <FiltersBar
+            uniqueYears={uniqueYears}
+            uniqueContribucionTypes={uniqueContribucionTypes}
+            selectedYear={selectedYear}
+            selectedContribucion={selectedContribucion}
+            sortBy={sortBy}
+            sortConfig={sortConfig}
+            onYearChange={setSelectedYear}
+            onContribucionChange={setSelectedContribucion}
+            onSortByChange={setSortBy}
+            onSortConfigChange={setSortConfig}
+          />
+        </div>
           <input
             type="file"
             ref={fileInputRef}
@@ -661,7 +446,6 @@ const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
             className="hidden"
             accept=".csv"
           />
-        </div>
 
       {loading && <p className="text-center">{t('manageContributions.loading')}</p>}
       {isUploadingCsv && <p className="text-center text-purple-600">{t('manageContributions.uploading')}</p>}
