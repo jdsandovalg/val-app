@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
  */
 const ContributionCardsReport = ({ records, t, locale, currency }: any) => (
   <Document>
-    <Page size="A4" style={styles.page}>
+    <Page size="LETTER" style={styles.page}>
       {records.map((record: ContribucionPorCasaExt) => (
         <PdfContributionCard
           key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`}
