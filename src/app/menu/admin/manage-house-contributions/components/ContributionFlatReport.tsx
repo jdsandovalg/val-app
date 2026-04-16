@@ -41,7 +41,7 @@ export const ContributionFlatReport = ({ records, t, locale, currency }: any) =>
   };
 
   return (
-    <Document title={t('contributionReport.fileName')}>
+    <Document title="Contribuciones_Flat">
       <Page size="LETTER" style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('contributionReport.title')}</Text>
