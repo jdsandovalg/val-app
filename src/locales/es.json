@@ -51,7 +51,10 @@
     "loadingButton": "Ingresando...",
     "error": {
       "credentials": "Identificador o clave incorrectos.",
-      "generic": "Error al iniciar sesión. Verifique sus credenciales."
+      "generic": "Error al iniciar sesión. Verifique sus credenciales.",
+      "noConnection": "Sin conexión al servidor. Verifica tu internet e intenta de nuevo.",
+      "dnsError": "Problema de DNS. Contacta a tu proveedor de internet.",
+      "timeout": "Tiempo de espera agotado. Intenta más tarde."
     }
   },
   "calendar": {

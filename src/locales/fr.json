@@ -51,7 +51,10 @@
     "loadingButton": "Connexion en cours...",
     "error": {
       "credentials": "Identifiant ou mot de passe incorrect.",
-      "generic": "Erreur de connexion. Veuillez vérifier vos identifiants."
+      "generic": "Erreur de connexion. Veuillez vérifier vos identifiants.",
+      "noConnection": "Pas de connexion au serveur. Vérifiez votre internet et réessayez.",
+      "dnsError": "Problème DNS. Contactez votre fournisseur internet.",
+      "timeout": "Délai d'attente dépassé. Réessayez plus tard."
     }
   },
   "calendar": {

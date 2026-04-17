@@ -8,7 +8,7 @@
  */
 import './globals.css';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'; 
 import { toast } from 'react-hot-toast';
 import { createClient } from '@/utils/supabase/client';
@@ -22,19 +22,64 @@ export default function Home() {
   const [identifier, setIdentifier] = useState('');
   const [clave, setClave] = useState('');
   const [loading, setLoading] = useState(false);
+  const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+
+  // Verificar conectividad al cargar
+  useEffect(() => {
+    const checkServer = async () => {
+      try {
+        const { error } = await supabase.from('usuarios').select('id').limit(1);
+        
+        if (error) {
+          // Analizar tipo de error
+          const errorMessage = error.message?.toLowerCase() || '';
+          
+          if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorMessage.includes('dns')) {
+            setConnectionError('DNS_ERROR');
+          } else if (errorMessage.includes('timeout')) {
+            setConnectionError('TIMEOUT');
+          } else {
+            setConnectionError('SERVER_ERROR');
+          }
+          setServerStatus('offline');
+        } else {
+          setServerStatus('online');
+          setConnectionError(null);
+        }
+      } catch (err) {
+        setServerStatus('offline');
+        setConnectionError('UNKNOWN');
+      }
+    };
+    checkServer();
+  }, [supabase]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Validar conectividad primero
+    if (serverStatus === 'offline') {
+      toast.error(t('login.error.noConnection') || 'Sin conexión al servidor. Verifica tu internet.');
+      return;
+    }
+
     setLoading(true);
 
     try {
+      console.log('Intentando login con:', identifier);
+      
       // CORRECCIÓN: Llamar a la función 'login_user' para autenticar contra la tabla 'usuarios'.
       const { data, error: rpcError } = await supabase.rpc('login_user', {
         p_identifier: identifier,
         p_clave: clave,
       });
 
+      console.log('Respuesta RPC:', { data, rpcError });
+
       if (rpcError) throw rpcError;
+
+      console.log('Data recibida:', data);
 
       if (!data || data.length === 0) {
         throw new Error(t('login.error.credentials'));
@@ -64,7 +109,29 @@ export default function Home() {
           </div>
         </div>
         <h1 className="text-2xl font-bold mb-2 text-center text-gray-800">{t('welcome')}</h1>
-        <p className="mb-8 text-center text-gray-500">{t('subtitle')}</p>
+        <p className="mb-4 text-center text-gray-500">{t('subtitle')}</p>
+
+        {/* Indicador de estado del servidor */}
+        {serverStatus === 'checking' && (
+          <div className="mb-4 p-2 bg-yellow-50 text-yellow-700 text-sm text-center rounded">
+            Verificando conexión...
+          </div>
+        )}
+        {serverStatus === 'offline' && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm text-center rounded">
+            <p className="font-semibold">⚠️ Sin conexión al servidor</p>
+            <p className="text-xs mt-1">
+              {connectionError === 'DNS_ERROR' && 'Problema de DNS. Contacta a tu proveedor de internet.'}
+              {connectionError === 'TIMEOUT' && 'Tiempo de espera agotado. Intenta más tarde.'}
+              {(!connectionError || connectionError === 'UNKNOWN') && 'Verifica tu conexión a internet e intenta de nuevo.'}
+            </p>
+          </div>
+        )}
+        {serverStatus === 'online' && (
+          <div className="mb-4 p-2 bg-green-50 text-green-700 text-sm text-center rounded">
+            ✓ Conectado
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="w-full max-w-xs space-y-4">
           <input
@@ -85,8 +152,8 @@ export default function Home() {
           />
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-gray-100 text-black font-bold py-3 rounded-lg hover:bg-gray-300  transition-all duration-300 shadow-lg disabled:bg-gray-400"
+            disabled={loading || serverStatus === 'offline'}
+            className="w-full bg-gray-100 text-black font-bold py-3 rounded-lg hover:bg-gray-300 transition-all duration-300 shadow-lg disabled:bg-gray-400"
           >
             {loading ? t('login.loadingButton') : t('login.button')}
           </button>

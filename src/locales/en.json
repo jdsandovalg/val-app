@@ -51,7 +51,10 @@
     "loadingButton": "Logging in...",
     "error": {
       "credentials": "Incorrect identifier or password.",
-      "generic": "Login error. Please check your credentials."
+      "generic": "Login error. Please check your credentials.",
+      "noConnection": "No server connection. Check your internet and try again.",
+      "dnsError": "DNS problem. Contact your internet provider.",
+      "timeout": "Connection timeout. Try again later."
     }
   },
   "calendar": {
