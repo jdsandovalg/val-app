@@ -113,23 +113,20 @@ export default function Home() {
 
         {/* Indicador de estado del servidor */}
         {serverStatus === 'checking' && (
-          <div className="mb-4 p-2 bg-yellow-50 text-yellow-700 text-sm text-center rounded">
-            Verificando conexión...
+          <div className="mb-4 p-2 bg-gray-100 text-gray-500 text-xs text-center rounded">
+            Verificando...
           </div>
         )}
         {serverStatus === 'offline' && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm text-center rounded">
-            <p className="font-semibold">⚠️ Sin conexión al servidor</p>
-            <p className="text-xs mt-1">
-              {connectionError === 'DNS_ERROR' && 'Problema de DNS. Contacta a tu proveedor de internet.'}
-              {connectionError === 'TIMEOUT' && 'Tiempo de espera agotado. Intenta más tarde.'}
-              {(!connectionError || connectionError === 'UNKNOWN') && 'Verifica tu conexión a internet e intenta de nuevo.'}
-            </p>
+          <div className="mb-4 p-2 bg-gray-100 text-gray-600 text-xs text-center rounded">
+            {connectionError === 'DNS_ERROR' && 'Sin conexión • Contacta a tu proveedor'}
+            {connectionError === 'TIMEOUT' && 'Sin conexión • Intenta más tarde'}
+            {(!connectionError || connectionError === 'UNKNOWN') && 'Sin conexión • Verifica tu internet'}
           </div>
         )}
         {serverStatus === 'online' && (
-          <div className="mb-4 p-2 bg-green-50 text-green-700 text-sm text-center rounded">
-            ✓ Conectado
+          <div className="mb-4 p-2 bg-gray-100 text-gray-500 text-xs text-center rounded">
+            ✓
           </div>
         )}
 
