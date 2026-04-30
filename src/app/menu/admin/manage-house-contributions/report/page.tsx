@@ -20,6 +20,26 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 30,
+    borderBottomWidth: 2,
+    borderBottomColor: '#164e63',
+    paddingBottom: 10,
+    width: '100%',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#164e63',
+    letterSpacing: 0.5,
+  },
+  dateText: {
+    fontSize: 10,
+    color: '#6b7280',
+  },
 });
 
 /**
@@ -28,6 +48,10 @@ const styles = StyleSheet.create({
 const ContributionCardsReport = ({ records, t, locale, currency }: any) => (
   <Document title="Contribuciones_Tarjetas">
     <Page size="LETTER" style={[styles.page, { backgroundColor: '#f9fafb' }]}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{t('contributionReport.title')}</Text>
+        <Text style={styles.dateText}>{new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}</Text>
+      </View>
       {records.map((record: ContribucionPorCasaExt) => (
         <PdfContributionCard
           key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`}
