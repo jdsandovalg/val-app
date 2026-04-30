@@ -73,7 +73,7 @@
     },
     "status": {
       "paid": "Paid",
-      "overdue": "Overdue",
+      "overdue": "Arrears",
       "scheduled": "Scheduled ({days} days)",
       "pending": "Pending"
     },
@@ -119,7 +119,7 @@
     "groupTitle": "Group #{number}",
     "status_done": "Done",
     "status_pending": "Pending",
-    "status_overdue": "Overdue"
+    "status_overdue": "Arrears"
   },
   "groupsSortMenu": {
     "byGroup": "Sort by Group",

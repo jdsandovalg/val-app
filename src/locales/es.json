@@ -77,7 +77,7 @@
     },
     "status": {
       "paid": "Pagado",
-      "overdue": "Vencido",
+      "overdue": "Mora",
       "scheduled": "Programado ({days} días)",
       "pending": "Pendiente"
     },
@@ -123,7 +123,7 @@
     "groupTitle": "Grupo #{number}",
     "status_done": "Realizado",
     "status_pending": "Pendiente",
-    "status_overdue": "Vencido"
+    "status_overdue": "Mora"
   },
   "groupsSortMenu": {
     "byGroup": "Ordenar por Grupo",

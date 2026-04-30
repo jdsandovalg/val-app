@@ -41,9 +41,6 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
       ? t('manageContributions.card.statusOverdue')
       : t('manageContributions.card.statusPending');
 
-  // Debug: ver el valor real que llega
-  console.log('PDF record realizarse:', record.realizado, 'id_casa:', record.id_casa);
-
   // Lógica de color basada en el estado del registro
   const isPaid = record.realizado === 'PAGADO';
   const isOverdue = record.realizado === 'MOROSO';

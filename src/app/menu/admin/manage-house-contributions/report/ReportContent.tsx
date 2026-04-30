@@ -23,30 +23,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   header: {
-    position: 'absolute',
-    top: 30,
-    left: 40,
-    right: 40,
-    textAlign: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingBottom: 10,
   },
   logo: {
-    position: 'absolute',
-    top: 25,
-    left: 30,
-    width: 40,
-    height: 40,
+    width: 45,
+    height: 45,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 10,
   },
   cardContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 50,
   },
   footer: {
     position: 'absolute',
@@ -85,10 +82,15 @@ const ReportContent: React.FC<ReportContentProps> = ({ records, t, locale, curre
     <Document title={t('contributionReport.fileName')}>
       {pages.map((pageRecords, index) => (
         <Page key={index} size="LETTER" style={styles.page}>
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          {logoBase64 && <Image style={styles.logo} src={logoBase64} />}
           <View style={styles.header}>
-            <Text style={styles.title}>{t('contributionReport.title')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {/* eslint-disable-next-line jsx-a11y/alt-text */}
+              <Image style={[styles.logo, { marginRight: 12 }]} src="/logo.png" />
+              <Text style={styles.title}>{t('contributionReport.title')}</Text>
+            </View>
+            <Text style={{ fontSize: 10, color: '#6B7280' }}>
+              {new Date().toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })}
+            </Text>
           </View>
 
           <View style={styles.cardContainer}>
@@ -110,7 +112,7 @@ const ReportContent: React.FC<ReportContentProps> = ({ records, t, locale, curre
       <PDFViewer style={{ width: '100%', height: '100%' }}>
         {MyDocument}
       </PDFViewer>
-      
+
       <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 20 }}>
         <PDFDownloadLink document={MyDocument} fileName={t('contributionReport.fileName')}>
           {({ blob, url, loading, error }) => (
