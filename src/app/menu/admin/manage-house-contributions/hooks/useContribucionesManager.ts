@@ -207,28 +207,55 @@ setRecords(formattedRecords);
   };
 
   const handleSave = useCallback(async (recordData: Partial<ContribucionPorCasaExt>, isUpdate: boolean) => {
-    const { error } = await supabase.rpc('gestionar_contribuciones_casa', {
-      p_accion: isUpdate ? 'UPDATE_PAGADO' : 'INSERT',
-      p_id_casa: recordData.id_casa,
-      p_id_contribucion: recordData.id_contribucion,
-      p_fecha_cargo: recordData.fecha,
-      p_monto_pagado: recordData.pagado,
-      p_estado: recordData.realizado === 'PAGADO' ? 'PAGADO' : 'PENDIENTE',
-      p_fechapago: recordData.fechapago,
-      p_url_comprobante: recordData.url_comprobante,
-    });
+    if (isUpdate) {
+      // UPDATE_PAGADO: actualizar pago existente
+      const { error } = await supabase.rpc('gestionar_contribuciones_casa', {
+        p_accion: 'UPDATE_PAGADO',
+        p_id_casa: recordData.id_casa,
+        p_id_contribucion: recordData.id_contribucion,
+        p_fecha_cargo: recordData.fecha,
+        p_monto_pagado: recordData.pagado,
+        p_fecha_pago: recordData.fechapago,
+        p_url_comprobante: recordData.url_comprobante,
+      });
 
-    if (error) throw error;
+      if (error) throw error;
+    } else {
+      // INSERT: no soportado por esta función, usar INSERT directo
+      const { error } = await supabase
+        .from('contribucionesporcasa')
+        .upsert(
+          {
+            id_casa: recordData.id_casa,
+            id_contribucion: recordData.id_contribucion,
+            fecha_cargo: recordData.fecha,
+            estado: recordData.realizado === 'PAGADO' ? 'PAGADO' : 'PENDIENTE',
+            monto_pagado: recordData.pagado,
+            fechapago: recordData.fechapago,
+            url_comprobante: recordData.url_comprobante,
+          },
+          { onConflict: 'id_casa,id_contribucion,fecha_cargo' }
+        );
+
+      if (error) throw error;
+    }
+
     await fetchData();
   }, [supabase, fetchData]);
 
   const handleDelete = useCallback(async (recordToDelete: ContribucionPorCasa) => {
-    const { error } = await supabase.rpc('gestionar_contribuciones_casa', {
-      p_accion: 'RESET_PAGO',
-      p_id_casa: recordToDelete.id_casa,
-      p_id_contribucion: recordToDelete.id_contribucion,
-      p_fecha_cargo: recordToDelete.fecha
-    });
+    // Como la función no tiene RESET_PAGO, hacemos UPDATE directo
+    const { error } = await supabase
+      .from('contribucionesporcasa')
+      .update({
+        estado: 'PENDIENTE',
+        monto_pagado: null,
+        fechapago: null,
+        url_comprobante: null,
+      })
+      .eq('id_casa', recordToDelete.id_casa)
+      .eq('id_contribucion', recordToDelete.id_contribucion)
+      .eq('fecha_cargo', recordToDelete.fecha);
 
     if (error) throw error;
     await fetchData();
