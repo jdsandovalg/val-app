@@ -77,7 +77,7 @@
     },
     "status": {
       "paid": "Payé",
-      "overdue": "En retard",
+      "overdue": "Retard",
       "scheduled": "Prévu ({days} jours)",
       "pending": "En attente"
     },
@@ -123,7 +123,7 @@
     "groupTitle": "Groupe #{number}",
     "status_done": "Réalisé",
     "status_pending": "En attente",
-    "status_overdue": "En retard"
+    "status_overdue": "Retard"
   },
   "groupsSortMenu": {
     "byGroup": "Trier par Groupe",
@@ -262,7 +262,7 @@
       "notPaid": "Non payé",
       "statusPaid": "Payé",
       "statusPending": "En attente",
-      "statusOverdue": "En retard",
+      "statusOverdue": "Retard",
       "dateLabel": "Date",
       "paymentDateLabel": "Paiement Date",
       "editAction": "Modifier",
@@ -568,8 +568,8 @@
     "FOTOGRAFIA_01": "Photographie 01",
     "FOTOGRAFIA_02": "Photographie 02",
     "FOTOGRAFIA_03": "Photographie 03",
-        "ACTIVIDAD": "Activité",
-        "CALENDARIO": "Calendrier",
+    "ACTIVIDAD": "Activité",
+    "CALENDARIO": "Calendrier",
     "COTIZACION_PARA_VOTACION": "Devis pour Vote",
     "default": "Document",
     "CONTRATO": "Contrat"

@@ -121,7 +121,7 @@
     "membersTitle": "Miembros del Grupo",
     "house": "Casa",
     "groupTitle": "Grupo #{number}",
-    "status_done": "Realizado", 
+    "status_done": "Realizado",
     "status_pending": "Pendiente",
     "status_overdue": "Vencido"
   },
@@ -212,11 +212,11 @@
     "passwordPlaceholderOptional": "Dejar en blanco para no cambiar",
     "passwordConfirmLabel": "Confirmar Nueva Clave",
     "passwordConfirmPlaceholder": "Repita la nueva clave",
-      "locationLabel": "Ubicación",
-      "locationPlaceholder": "Ej: XX00",
-      "emailLabel": "Correo Electrónico",
-      "emailPlaceholder": "correo@ejemplo.com",
-      "emailInvalid": "Por favor, ingrese un correo electrónico válido.",
+    "locationLabel": "Ubicación",
+    "locationPlaceholder": "Ej: XX00",
+    "emailLabel": "Correo Electrónico",
+    "emailPlaceholder": "correo@ejemplo.com",
+    "emailInvalid": "Por favor, ingrese un correo electrónico válido.",
     "userTypeLabel": "Tipo de Usuario",
     "saveButton": "Guardar",
     "cancelButton": "Cancelar",
@@ -262,7 +262,7 @@
       "notPaid": "No pagado",
       "statusPaid": "Pagado",
       "statusPending": "Pendiente",
-      "statusOverdue": "Moroso",
+      "statusOverdue": "Mora",
       "dateLabel": "Fecha",
       "paymentDateLabel": "Fecha de Pago",
       "editAction": "Editar",
@@ -295,8 +295,7 @@
     "saveButton": "Guardar",
     "savingButton": "Guardando...",
     "cancelButton": "Cancelar"
-  }
-,
+  },
   "contributionFilterModal": {
     "title": "Filtrar Aportaciones",
     "housePlaceholder": "Filtrar por casa...",
@@ -518,10 +517,10 @@
         "FACTURA": "Factura",
         "RECIBO": "Recibo",
         "TRANSFERENCIA": "Transferencia",
-      "RECOMENDACION": "Recomendación",
-      "FOTOGRAFIA_01": "Fotografía 01",
-      "FOTOGRAFIA_02": "Fotografía 02",
-      "FOTOGRAFIA_03": "Fotografía 03"
+        "RECOMENDACION": "Recomendación",
+        "FOTOGRAFIA_01": "Fotografía 01",
+        "FOTOGRAFIA_02": "Fotografía 02",
+        "FOTOGRAFIA_03": "Fotografía 03"
       },
       "emptyState": "No se han registrado evidencias para este proyecto.",
       "alerts": {
@@ -569,8 +568,8 @@
     "FOTOGRAFIA_01": "Fotografía 01",
     "FOTOGRAFIA_02": "Fotografía 02",
     "FOTOGRAFIA_03": "Fotografía 03",
-      "ACTIVIDAD": "Actividad",
-      "CALENDARIO": "Calendario",
+    "ACTIVIDAD": "Actividad",
+    "CALENDARIO": "Calendario",
     "COTIZACION_PARA_VOTACION": "Cotización para Votación",
     "default": "Documento",
     "CONTRATO": "Contrato"

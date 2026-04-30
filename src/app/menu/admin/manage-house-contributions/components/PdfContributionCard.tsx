@@ -37,7 +37,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
 
   const statusText = record.realizado === 'PAGADO'
     ? t('manageContributions.card.statusPaid')
-    : record.realizado === 'MORA'
+    : record.realizado === 'MOROSO'
       ? t('manageContributions.card.statusOverdue')
       : t('manageContributions.card.statusPending');
 
@@ -46,7 +46,7 @@ const PdfContributionCard: React.FC<PdfContributionCardProps> = ({ record, t, lo
 
   // Lógica de color basada en el estado del registro
   const isPaid = record.realizado === 'PAGADO';
-  const isOverdue = record.realizado === 'MORA';
+  const isOverdue = record.realizado === 'MOROSO';
   const statusColor = isPaid ? colorMap.green : isOverdue ? colorMap.amber : colorMap.red;
   const dividerColor = isPaid ? '#A7F3D0' : isOverdue ? '#FDE68A' : '#FECACA';
 
