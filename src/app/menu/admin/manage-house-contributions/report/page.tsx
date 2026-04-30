@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PDFViewer, Document, Page, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import { PDFViewer, Document, Page, StyleSheet, PDFDownloadLink, View, Text } from '@react-pdf/renderer';
 import { useI18n } from '@/app/i18n-provider';
 import { Download, X } from 'lucide-react';
 import { ContributionFlatReport } from '../components/ContributionFlatReport';
