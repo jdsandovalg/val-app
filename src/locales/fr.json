@@ -31,15 +31,16 @@
       "title": "Opération",
       "projects_management": "Gestion de Projets"
     },
-    "admin": {
-      "ariaLabel": "Ouvrir le menu d'administration",
-      "title": "Administration",
-      "contributions": "Contributions",
-      "users": "Gérer les Utilisateurs",
-      "catalog_management": "Gestion des Catalogues",
-      "project_classification_management": "Classification de Projets",
-      "houseContributions": "Gestion des Frais de Contribution"
-    },
+     "admin": {
+       "ariaLabel": "Ouvrir le menu d'administration",
+       "title": "Administration",
+       "contributions": "Contributions",
+       "users": "Gérer les Utilisateurs",
+       "catalog_management": "Gestion des Catalogues",
+       "project_classification_management": "Classification de Projets",
+       "houseContributions": "Gestion des Frais de Contribution",
+       "contributions_catalog": "Catalogue des Contributions"
+     },
     "logout": {
       "ariaLabel": "Se déconnecter"
     }
@@ -271,14 +272,39 @@
       "edit": "Modifier",
       "delete": "Supprimer"
     },
-    "alerts": {
-      "saveSuccess": "Enregistrement sauvegardé avec succès !",
-      "saveError": "Erreur lors de la sauvegarde de l'enregistrement : {message}.\n\nVeuillez vérifier que tous les champs obligatoires ont une valeur.",
-      "resetConfirm": "Êtes-vous sûr de vouloir annuler ce paiement et réinitialiser l'enregistrement à EN ATTENTE ?",
-      "resetError": "Erreur lors de la réinitialisation : {message}",
-      "resetSuccess": "Enregistrement réinitialisé à 'en attente' avec succès !",
-      "pdfNoData": "Aucune donnée pour générer le rapport. Essayez de changer les filtres."
-    }
+     "alerts": {
+       "saveSuccess": "Enregistrement sauvegardé avec succès !",
+       "saveError": "Erreur lors de l'enregistrement : {message}.\n\nVeuillez vérifier que tous les champs obligatoires ont une valeur.",
+       "resetConfirm": "Êtes-vous sûr de vouloir annuler ce paiement et réinitialiser l'enregistrement à PENDING ?",
+       "resetError": "Erreur de réinitialisation : {message}",
+       "resetSuccess": "Enregistrement réinitialisé à pending avec succès !",
+       "pdfNoData": "Aucune donnée pour générer le rapport. Essayez de changer les filtres.",
+       "deleteConfirm": "Supprimer cette contribution ?",
+       "deleteSuccess": "Contribution supprimée avec succès"
+     },
+     "catalog": {
+       "title": "Catalogue des Contributions",
+       "modal": {
+         "titleAdd": "Nouvelle Contribution",
+         "titleEdit": "Modifier la Contribution",
+         "nameLabel": "Nom",
+         "namePlaceholder": "Ex: Entretien des aires communes",
+         "descriptionLabel": "Description",
+         "descriptionPlaceholder": "Description optionnelle",
+         "colorLabel": "Couleur de la Bordure",
+         "dayLabel": "Jour de Prélèvement",
+         "dayPlaceholder": "Ex: 15",
+         "periodicityLabel": "Périodicité (jours)",
+         "periodicityPlaceholder": "Ex: 30",
+         "typeLabel": "Type de Prélèvement",
+         "typeCasa": "Maison",
+         "typeGrupo": "Groupe",
+         "commentsLabel": "Commentaires",
+         "commentsPlaceholder": "Commentaire sur cette contribution",
+         "cancelButton": "Annuler",
+         "saveButton": "Enregistrer"
+       }
+     }
   },
   "contributionModal": {
     "titleAdd": "Ajouter une Contribution",

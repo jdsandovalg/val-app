@@ -31,15 +31,16 @@
       "title": "Operación",
       "projects_management": "Gestión de Proyectos"
     },
-    "admin": {
-      "ariaLabel": "Abrir menú de administración",
-      "title": "Administración",
-      "contributions": "Aportaciones",
-      "users": "Gestionar Usuarios",
-      "catalog_management": "Gestión de Catálogos",
-      "project_classification_management": "Clasificación de Proyectos",
-      "houseContributions": "Gestion de Cargos por Contribuciones"
-    },
+     "admin": {
+       "ariaLabel": "Abrir menú de administración",
+       "title": "Administración",
+       "contributions": "Aportaciones",
+       "users": "Gestionar Usuarios",
+       "catalog_management": "Gestión de Catálogos",
+       "project_classification_management": "Clasificación de Proyectos",
+       "houseContributions": "Gestion de Cargos por Contribuciones",
+       "contributions_catalog": "Catálogo de Aportaciones"
+     },
     "logout": {
       "ariaLabel": "Cerrar Sesión"
     }
@@ -271,14 +272,39 @@
       "edit": "Editar",
       "delete": "Eliminar"
     },
-    "alerts": {
-      "saveSuccess": "¡Registro guardado exitosamente!",
-      "saveError": "Error al guardar el registro: {message}.\n\nVerifique que todos los campos obligatorios tienen un valor.",
-      "resetConfirm": "¿Estás seguro de que quieres anular este pago y restablecer el registro a PENDIENTE?",
-      "resetError": "Error al restablecer: {message}",
-      "resetSuccess": "¡Registro restablecido a pendiente exitosamente!",
-      "pdfNoData": "No hay datos para generar el reporte. Pruebe cambiando los filtros."
-    }
+     "alerts": {
+       "saveSuccess": "¡Registro guardado exitosamente!",
+       "saveError": "Error al guardar el registro: {message}.\n\nVerifique que todos los campos obligatorios tienen un valor.",
+       "resetConfirm": "¿Estás seguro de que quieres anular este pago y restablecer el registro a PENDIENTE?",
+       "resetError": "Error al restablecer: {message}",
+       "resetSuccess": "¡Registro restablecido a pendiente exitosamente!",
+       "pdfNoData": "No hay datos para generar el reporte. Pruebe cambiando los filtros.",
+       "deleteConfirm": "¿Eliminar esta contribución?",
+       "deleteSuccess": "Contribución eliminada correctamente"
+     },
+     "catalog": {
+       "title": "Catálogo de Aportaciones",
+       "modal": {
+         "titleAdd": "Nueva Contribución",
+         "titleEdit": "Editar Contribución",
+         "nameLabel": "Nombre",
+         "namePlaceholder": "Ej: Mantenimiento áreas comunes",
+         "descriptionLabel": "Descripción",
+         "descriptionPlaceholder": "Descripción opcional",
+         "colorLabel": "Color del Borde",
+         "dayLabel": "Día de Cargo",
+         "dayPlaceholder": "Ej: 15",
+         "periodicityLabel": "Periodicidad (días)",
+         "periodicityPlaceholder": "Ej: 30",
+         "typeLabel": "Tipo de Cargo",
+         "typeCasa": "Casa",
+         "typeGrupo": "Grupo",
+         "commentsLabel": "Comentarios",
+         "commentsPlaceholder": "Comentario sobre esta contribución",
+         "cancelButton": "Cancelar",
+         "saveButton": "Guardar"
+       }
+     }
   },
   "contributionModal": {
     "titleAdd": "Agregar Aportación",

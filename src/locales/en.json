@@ -31,15 +31,16 @@
       "title": "Operation",
       "projects_management": "Project Management"
     },
-    "admin": {
-      "ariaLabel": "Open administration menu",
-      "title": "Administration",
-      "contributions": "Contributions",
-      "users": "Manage Users",
-      "catalog_management": "Catalog Management",
-      "project_classification_management": "Project Classification",
-      "houseContributions": "Manage Contribution Charges"
-    },
+     "admin": {
+       "ariaLabel": "Open administration menu",
+       "title": "Administration",
+       "contributions": "Contributions",
+       "users": "Manage Users",
+       "catalog_management": "Catalog Management",
+       "project_classification_management": "Project Classification",
+       "houseContributions": "Manage Contribution Charges",
+       "contributions_catalog": "Contributions Catalog"
+     },
     "logout": {
       "ariaLabel": "Log out"
     }
@@ -271,14 +272,39 @@
       "edit": "Edit",
       "delete": "Delete"
     },
-    "alerts": {
-      "saveSuccess": "Record saved successfully!",
-      "saveError": "Error saving record: {message}.\n\nPlease ensure all required fields have a value.",
-      "resetConfirm": "Are you sure you want to cancel this payment and reset the record to PENDING?",
-      "resetError": "Error resetting: {message}",
-      "resetSuccess": "Record successfully reset to pending!",
-      "pdfNoData": "No data to generate the report. Try changing the filters."
-    }
+     "alerts": {
+       "saveSuccess": "Record saved successfully!",
+       "saveError": "Error saving record: {message}.\n\nPlease check all required fields have values.",
+       "resetConfirm": "Are you sure you want to void this payment and reset the record to PENDING?",
+       "resetError": "Error resetting: {message}",
+       "resetSuccess": "Record reset to pending successfully!",
+       "pdfNoData": "No data to generate report. Try changing the filters.",
+       "deleteConfirm": "Delete this contribution?",
+       "deleteSuccess": "Contribution deleted successfully"
+     },
+     "catalog": {
+       "title": "Contributions Catalog",
+       "modal": {
+         "titleAdd": "New Contribution",
+         "titleEdit": "Edit Contribution",
+         "nameLabel": "Name",
+         "namePlaceholder": "Eg: Common area maintenance",
+         "descriptionLabel": "Description",
+         "descriptionPlaceholder": "Optional description",
+         "colorLabel": "Border Color",
+         "dayLabel": "Charge Day",
+         "dayPlaceholder": "Eg: 15",
+         "periodicityLabel": "Periodicity (days)",
+         "periodicityPlaceholder": "Eg: 30",
+         "typeLabel": "Charge Type",
+         "typeCasa": "House",
+         "typeGrupo": "Group",
+         "commentsLabel": "Comments",
+         "commentsPlaceholder": "Comment about this contribution",
+         "cancelButton": "Cancel",
+         "saveButton": "Save"
+       }
+     }
   },
   "contributionModal": {
     "titleAdd": "Add Contribution",
