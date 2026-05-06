@@ -21,14 +21,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 30,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    marginBottom: 20,
     borderBottomWidth: 2,
     borderBottomColor: '#164e63',
     paddingBottom: 10,
     width: '100%',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 8,
   },
   title: {
     fontSize: 20,
@@ -40,30 +46,52 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#6b7280',
   },
+  subHeader: {
+    marginTop: 4,
+    alignItems: 'center',
+    width: '100%',
+  },
+  subHeaderText: {
+    fontSize: 11,
+    color: '#4b5563',
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
 });
 
 /**
  * Componente que envuelve las tarjetas en un documento PDF
  */
-const ContributionCardsReport = ({ records, t, locale, currency }: any) => (
-  <Document title="Contribuciones_Tarjetas">
-    <Page size="LETTER" style={[styles.page, { backgroundColor: '#f9fafb' }]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('contributionReport.title')}</Text>
-        <Text style={styles.dateText}>{new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}</Text>
-      </View>
-      {records.map((record: ContribucionPorCasaExt) => (
-        <PdfContributionCard
-          key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`}
-          record={record}
-          t={t}
-          locale={locale}
-          currency={currency}
-        />
-      ))}
-    </Page>
-  </Document>
-);
+const ContributionCardsReport = ({ records, t, locale, currency }: any) => {
+  const comentario = records[0]?.comentarios_contribucion || '';
+
+  return (
+    <Document title="Contribuciones_Tarjetas">
+      <Page size="LETTER" style={[styles.page, { backgroundColor: '#f9fafb' }]}>
+        <View style={styles.header}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{t('contributionReport.title')}</Text>
+            <Text style={styles.dateText}>{new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}</Text>
+          </View>
+          {comentario && (
+            <View style={styles.subHeader}>
+              <Text style={styles.subHeaderText}>{comentario}</Text>
+            </View>
+          )}
+        </View>
+        {records.map((record: ContribucionPorCasaExt) => (
+          <PdfContributionCard
+            key={`${record.id_casa}-${record.id_contribucion}-${record.fecha}`}
+            record={record}
+            t={t}
+            locale={locale}
+            currency={currency}
+          />
+        ))}
+      </Page>
+    </Document>
+  );
+};
 
 export default function ContributionReportPage() {
   const { t, locale, currency } = useI18n();

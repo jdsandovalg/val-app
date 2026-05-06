@@ -10,6 +10,7 @@ export type ContribucionPorCasaExt = ContribucionPorCasa & {
   color_del_borde: string | null;
   ubicacion: string | null;
   fecha_maxima_pago: string | null;
+  comentarios_contribucion: string | null; // ← campo agregado según DDL real
 
   // Objetos anidados para compatibilidad con componentes existentes
   usuarios: {

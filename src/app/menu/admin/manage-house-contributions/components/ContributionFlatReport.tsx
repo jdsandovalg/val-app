@@ -3,9 +3,12 @@ import { formatDate, formatCurrency } from '@/utils/format';
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 9, fontFamily: 'Helvetica', backgroundColor: '#FFFFFF' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30, borderBottomWidth: 2, borderBottomColor: '#164e63', paddingBottom: 10 },
+  header: { flexDirection: 'column', alignItems: 'flex-start', marginBottom: 20, borderBottomWidth: 2, borderBottomColor: '#164e63', paddingBottom: 10 },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 8 },
   title: { fontSize: 20, fontWeight: 'bold', color: '#164e63', letterSpacing: 0.5 },
   dateText: { fontSize: 10, color: '#6b7280' },
+  subHeader: { marginTop: 4, alignItems: 'center', width: '100%' },
+  subHeaderText: { fontSize: 11, color: '#4b5563', fontStyle: 'italic', textAlign: 'center' },
   table: { display: 'flex', width: 'auto', borderStyle: 'solid', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 4, overflow: 'hidden' },
   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e5e7eb', minHeight: 25, alignItems: 'center' },
   tableRowEven: { backgroundColor: '#f9fafb' },
@@ -44,8 +47,15 @@ export const ContributionFlatReport = ({ records, t, locale, currency }: any) =>
     <Document title="Contribuciones_Flat">
       <Page size="LETTER" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.title}>{t('contributionReport.title')}</Text>
-          <Text style={styles.dateText}>{new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{t('contributionReport.title')}</Text>
+            <Text style={styles.dateText}>{new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}</Text>
+          </View>
+          {records.length > 0 && records[0].comentarios_contribucion && (
+            <View style={styles.subHeader}>
+              <Text style={styles.subHeaderText}>{records[0].comentarios_contribucion}</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.table}>
