@@ -70,11 +70,11 @@ export default function UserModal({ isOpen, onClose, onSave, user, currentUserRo
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setUserData(prev => ({ ...prev, [name]: value }));
+    setUserData((prev: any) => ({ ...prev, [name]: value }));
   };
 
   const handleUserTypeChange = (value: string) => {
-    setUserData(prev => ({ ...prev, tipo_usuario: value }));
+    setUserData((prev: any) => ({ ...prev, tipo_usuario: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

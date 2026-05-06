@@ -45,27 +45,6 @@ export interface Database {
           comentarios_contribucion?: string
         }
       }
-        Insert: {
-          id_contribucion?: number
-          descripcion?: string | null
-          nombre?: string | null
-          color_del_borde?: string | null
-          dia_cargo?: number | null
-          periodicidad_dias?: number | null
-          tipo_cargo?: "casa" | "grupo" | null
-          comentarios_contribucion?: string
-        }
-        Update: {
-          id_contribucion?: number
-          descripcion?: string | null
-          nombre?: string | null
-          color_del_borde?: string | null
-          dia_cargo?: number | null
-          periodicidad_dias?: number | null
-          tipo_cargo?: "casa" | "grupo" | null
-          comentarios_contribucion?: string
-        }
-      }
       contribucionesporcasa: {
         Row: {
           id_casa: number

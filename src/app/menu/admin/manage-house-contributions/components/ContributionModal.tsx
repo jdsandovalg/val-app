@@ -60,17 +60,17 @@ function ContributionModal({
     const { name, value, type } = e.target;
     const isRadio = type === 'radio';
 
-    if (isRadio && name === 'realizado') {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    } else if (type === 'checkbox' && name === 'realizado') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({ ...prev, [name]: checked ? 'PAGADO' : 'PENDIENTE' }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-      }));
-    }
+     if (isRadio && name === 'realizado') {
+       setFormData((prev: any) => ({ ...prev, [name]: value }));
+     } else if (type === 'checkbox' && name === 'realizado') {
+       const checked = (e.target as HTMLInputElement).checked;
+       setFormData((prev: any) => ({ ...prev, [name]: checked ? 'PAGADO' : 'PENDIENTE' }));
+     } else {
+       setFormData((prev: any) => ({
+         ...prev,
+         [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+       }));
+     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
