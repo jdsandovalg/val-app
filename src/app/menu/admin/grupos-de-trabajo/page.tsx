@@ -2,17 +2,19 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 import { useGruposManager } from './hooks/useGruposManager';
 import GrupoPrincipalCard from './components/GrupoPrincipalCard';
 import CrearGrupoModal from './components/CrearGrupoModal';
-import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronRightIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import type { GrupoConDetalles } from '@/types';
 import type { Contribuciones } from '@/types/database';
 
 export default function GruposDeTrabajoPage() {
   const supabase = createClient();
+  const router = useRouter();
   const { t } = useI18n();
 
   const {
@@ -87,6 +89,26 @@ export default function GruposDeTrabajoPage() {
     setModalCrearAbierto(true);
   }, []);
 
+  const handleGenerarReporte = useCallback((idContribucion: number) => {
+    const contribucionObj = contribuciones.find(c => c.id_contribucion === idContribucion);
+    const gruposDeEsta = grupos.filter(g => g.id_contribucion === idContribucion);
+
+    if (!contribucionObj) {
+      toast.error('Contribución no encontrada');
+      return;
+    }
+
+    // Guardar en localStorage para que la página de reporte la lea
+    localStorage.setItem('grupoReportData', JSON.stringify({
+      contribucion: contribucionObj,
+      grupos: gruposDeEsta,
+    }));
+    localStorage.setItem('grupoReportCargos', JSON.stringify(Array.from(gruposConCargos)));
+
+    // Navegar a página de reporte
+    router.push(`/menu/admin/grupos-de-trabajo/report?contribucion_id=${idContribucion}`);
+  }, [contribuciones, grupos, gruposConCargos, router]);
+
   const cerrarModalCrear = useCallback(() => {
     setModalCrearAbierto(false);
     setContribucionPreseleccionada(null);
@@ -142,9 +164,17 @@ export default function GruposDeTrabajoPage() {
             return (
               <div key={idContribucion} className="bg-white rounded-lg shadow-sm border border-gray-200">
                 {/* Header de contribución — click para expandir/contraer */}
-                <button
-                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 focus:outline-none"
+                <div
+                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 focus:outline-none cursor-pointer"
                   onClick={() => toggleExpand(idContribucion)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleExpand(idContribucion);
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2">
                     {isExpanded ? (
@@ -160,22 +190,36 @@ export default function GruposDeTrabajoPage() {
                     <span className="text-sm text-gray-500">
                       {gruposLista.length} {gruposLista.length === 1 ? 'grupo' : 'grupos'}
                     </span>
-                    {!estaBloqueada && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          abrirModalCrear(idContribucion);
-                        }}
-                        className="p-1 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                        aria-label="Agregar grupo a esta contribución"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-gray-700">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                      </button>
-                    )}
                   </div>
-                </button>
+                </div>
+                {/* Botones de acción: Reporte y Crear Grupo */}
+                <div className="px-4 pb-3 flex justify-end gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleGenerarReporte(idContribucion);
+                    }}
+                    className="p-1 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    aria-label="Generar reporte PDF"
+                    title="Generar reporte PDF"
+                  >
+                    <DocumentTextIcon className="w-5 h-5 text-blue-600" />
+                  </button>
+                  {!estaBloqueada && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        abrirModalCrear(idContribucion);
+                      }}
+                      className="p-1 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                      aria-label="Agregar grupo a esta contribución"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-gray-700">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
 
                 {/* Contenido expandible */}
                 {isExpanded && (
