@@ -34,7 +34,7 @@ export function useGruposManager() {
       if (contribucionesError) throw contribucionesError;
       setContribuciones(contribucionesData || []);
 
-      // 3. Traer grupos con join a usuarios y contribuciones
+      // 3. Traer grupos con join a contribuciones (usuarios se trae aparte)
       const { data: gruposData, error: gruposError } = await supabase
         .from('grupos')
         .select(`
@@ -42,13 +42,21 @@ export function useGruposManager() {
           id_usuario,
           id_contribucion,
           created_at,
-          usuarios ( id, responsable ),
-          contribuciones ( id_contribucion, nombre, descripcion, tipo_cargo )
+          contribuciones (
+            id_contribucion,
+            nombre,
+            descripcion,
+            tipo_cargo,
+            color_del_borde,
+            dia_cargo,
+            periodicidad_dias,
+            comentarios_contribucion
+          )
         `)
         .order('id_grupo', { ascending: true });
       if (gruposError) throw gruposError;
 
-      // 4. Agrupar por id_grupo
+      // 4. Agrupar por id_grupo y asignar usuarios desde usuariosData
       const map = new Map<number, GrupoConDetalles>();
       (gruposData || []).forEach(row => {
         if (!map.has(row.id_grupo)) {
@@ -61,13 +69,12 @@ export function useGruposManager() {
             usuarios: []
           });
         }
-        // row.usuarios es un array por la relación M:N
-        if (row.usuarios && Array.isArray(row.usuarios)) {
-          row.usuarios.forEach((u: any) => {
-            map.get(row.id_grupo)?.usuarios.push({
-              id: u.id,
-              responsable: u.responsable
-            });
+        // Buscar el usuario completo en usuariosData
+        const usuario = usuariosData.find(u => u.id === row.id_usuario);
+        if (usuario) {
+          map.get(row.id_grupo)!.usuarios.push({
+            id: usuario.id,
+            responsable: usuario.responsable
           });
         }
       });
