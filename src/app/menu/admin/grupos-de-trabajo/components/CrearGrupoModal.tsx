@@ -136,6 +136,8 @@ export default function CrearGrupoModal({
             <option value="">Selecciona una contribución...</option>
             {contribucionesDisponibles
               .filter(c => c.tipo_cargo === 'grupo')
+              // Excluir contribuciones que ya tienen algún grupo (con o sin cargos)
+              .filter(c => !gruposExistentes.some(g => g.id_contribucion === c.id_contribucion))
               .map(c => (
                 <option key={c.id_contribucion} value={c.id_contribucion}>
                   {c.nombre}
@@ -145,6 +147,11 @@ export default function CrearGrupoModal({
           {contribucionesDisponibles.filter(c => c.tipo_cargo === 'grupo').length === 0 && (
             <p className="text-sm text-orange-600 mt-1">
               Sin contribuciones tipo grupo disponibles para configurar.
+            </p>
+          )}
+          {contribucionesDisponibles.filter(c => c.tipo_cargo === 'grupo' && gruposExistentes.some(g => g.id_contribucion === c.id_contribucion)).length > 0 && (
+            <p className="text-xs text-gray-500 mt-1">
+              Contribuciones con grupos existentes no se muestran (ya están en uso).
             </p>
           )}
         </div>

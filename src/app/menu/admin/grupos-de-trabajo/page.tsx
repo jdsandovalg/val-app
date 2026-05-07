@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { useGruposManager } from './hooks/useGruposManager';
 import GrupoPrincipalCard from './components/GrupoPrincipalCard';
 import CrearGrupoModal from './components/CrearGrupoModal';
+import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import type { GrupoConDetalles } from '@/types';
 import type { Contribuciones } from '@/types/database';
 
@@ -34,6 +35,21 @@ export default function GruposDeTrabajoPage() {
 
   // Modal state (crear grupo)
   const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
+
+  // Estado de expansión por contribución
+  const [expandedContribuciones, setExpandedContribuciones] = useState<Set<number>>(new Set());
+
+  const toggleExpand = useCallback((idContribucion: number) => {
+    setExpandedContribuciones(prev => {
+      const next = new Set(prev);
+      if (next.has(idContribucion)) {
+        next.delete(idContribucion);
+      } else {
+        next.add(idContribucion);
+      }
+      return next;
+    });
+  }, []);
 
   // Disponibles para mover: grupos sin cargos y de contribución diferente a la del usuario actual
   const gruposDisponibles = grupos.filter(g =>
@@ -123,29 +139,50 @@ export default function GruposDeTrabajoPage() {
       )}
 
       {!loading && error === null && gruposPorContribucion.size > 0 && (
-        <div>
+        <div className="space-y-4">
           {Array.from(gruposPorContribucion.entries()).map(([idContribucion, gruposLista]) => {
             const contribucion = getContribucion(idContribucion);
+            const isExpanded = expandedContribuciones.has(idContribucion);
             return (
-              <section key={idContribucion} className="mb-8">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2">
-                  Contribución: {contribucion?.nombre || 'Sin nombre'}
-                </h2>
-                <div>
-                  {gruposLista.map((grupo) => {
-                    const tieneCargos = gruposConCargos.has(grupo.id_grupo);
-                    return (
-                      <GrupoPrincipalCard
-                        key={grupo.id_grupo}
-                        grupo={grupo}
-                        tieneCargos={tieneCargos}
-                        onEditUsuario={abrirModalMover}
-                        onDeleteUsuario={confirmarEliminar}
-                      />
-                    );
-                  })}
-                </div>
-              </section>
+              <div key={idContribucion} className="bg-white rounded-lg shadow-sm border border-gray-200">
+                {/* Header de contribución — click para expandir/contraer */}
+                <button
+                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 focus:outline-none"
+                  onClick={() => toggleExpand(idContribucion)}
+                >
+                  <div className="flex items-center gap-2">
+                    {isExpanded ? (
+                      <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+                    ) : (
+                      <ChevronRightIcon className="w-5 h-5 text-gray-500" />
+                    )}
+                    <h2 className="text-lg font-bold text-gray-800">
+                      {contribucion?.nombre || 'Sin nombre'}
+                    </h2>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {gruposLista.length} {gruposLista.length === 1 ? 'grupo' : 'grupos'}
+                  </span>
+                </button>
+
+                {/* Contenido expandible */}
+                {isExpanded && (
+                  <div className="px-4 pb-4 space-y-3">
+                    {gruposLista.map((grupo) => {
+                      const tieneCargos = gruposConCargos.has(grupo.id_grupo);
+                      return (
+                        <GrupoPrincipalCard
+                          key={grupo.id_grupo}
+                          grupo={grupo}
+                          tieneCargos={tieneCargos}
+                          onEditUsuario={abrirModalMover}
+                          onDeleteUsuario={confirmarEliminar}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
