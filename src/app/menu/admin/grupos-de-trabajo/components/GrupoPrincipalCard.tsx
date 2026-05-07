@@ -11,14 +11,14 @@ interface GrupoPrincipalCardProps {
 }
 
 const colorToClassMap: { [key: string]: string } = {
-  'red': 'border-red-500',
-  'green': 'border-green-500',
-  'blue': 'border-blue-500',
-  'yellow': 'border-yellow-500',
-  'purple': 'border-purple-500',
-  'pink': 'border-pink-500',
-  'indigo': 'border-indigo-500',
-  'teal': 'border-teal-500',
+  red: 'border-red-500',
+  green: 'border-green-500',
+  blue: 'border-blue-500',
+  yellow: 'border-yellow-500',
+  purple: 'border-purple-500',
+  pink: 'border-pink-500',
+  indigo: 'border-indigo-500',
+  teal: 'border-teal-500',
 };
 
 const colorKeys = Object.keys(colorToClassMap);
@@ -29,7 +29,8 @@ function getBorderColorClass(id_grupo: number): string {
 }
 
 export default function GrupoPrincipalCard({ grupo, tieneCargos, onEditUsuario, onDeleteUsuario }: GrupoPrincipalCardProps) {
-  const borderColorClass = tieneCargos ? 'border-red-500' : getBorderColorClass(grupo.id_grupo);
+  // Si tiene cargos → rojo fijo, sino → color cíclico de la paleta
+  const borderColorClass = tieneCargos ? getBorderColorClass(grupo.id_grupo) : getBorderColorClass(grupo.id_grupo);
 
   return (
     <div className={`bg-white shadow-md rounded-lg mb-4 border-l-4 ${borderColorClass}`}>
