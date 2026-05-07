@@ -92,13 +92,20 @@ export default function CrearGrupoModal({
 
     setCreando(true);
     try {
-      // Calcular siguiente id_grupo para esta contribución específica
-      const gruposDeEstaContribucion = gruposExistentes.filter(
-        g => g.id_contribucion === contribucionSeleccionada
-      );
-      const maxId = gruposDeEstaContribucion.length > 0
-        ? Math.max(...gruposDeEstaContribucion.map(g => g.id_grupo))
-        : 0;
+      const supabase = createClient();
+
+      // Obtener el máximo id_grupo para esta contribución directamente de BD
+      const { data: maxRow, error: maxError } = await supabase
+        .from('grupos')
+        .select('id_grupo')
+        .eq('id_contribucion', contribucionSeleccionada)
+        .order('id_grupo', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (maxError) throw maxError;
+
+      const maxId = maxRow?.id_grupo || 0;
       const nuevoIdGrupo = maxId + 1;
 
       const rows = Array.from(usuariosSeleccionados).map(id_usuario => ({
@@ -107,7 +114,6 @@ export default function CrearGrupoModal({
         id_contribucion: contribucionSeleccionada
       }));
 
-      const supabase = createClient();
       const { error } = await supabase
         .from('grupos')
         .insert(rows);
