@@ -16,7 +16,7 @@ export default function UsuarioCard({ usuario, tieneCargos, onEdit, onDelete }: 
   return (
     <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-2 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <UserIcon className="w-5 h-5 text-gray-400" />
+        <UserIcon className="w-4 h-4 text-gray-400" />
         <div>
           <p className="text-sm font-semibold text-gray-800">Casa #{usuario.id}</p>
           <p className="text-xs text-gray-600">{usuario.responsable}</p>
