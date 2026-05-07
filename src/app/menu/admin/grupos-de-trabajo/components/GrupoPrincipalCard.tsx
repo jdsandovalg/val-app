@@ -58,7 +58,7 @@ export default function GrupoPrincipalCard({ grupo, tieneCargos, onEditUsuario, 
         ) : (
           grupo.usuarios.map((usuario) => (
             <UsuarioCard
-              key={usuario.id}
+              key={`${grupo.id_grupo}-${usuario.id}`}
               usuario={usuario}
               tieneCargos={tieneCargos}
               onEdit={(idUsuario) => onEditUsuario(idUsuario, grupo)}

@@ -73,10 +73,14 @@ export function useGruposManager() {
         // Buscar el usuario completo en usuariosData
         const usuario = usuariosData.find(u => u.id === row.id_usuario);
         if (usuario) {
-          map.get(row.id_grupo)!.usuarios.push({
-            id: usuario.id,
-            responsable: usuario.responsable
-          });
+          const grupo = map.get(row.id_grupo)!;
+          // Evitar duplicados: solo agregar si el usuario no está ya en la lista
+          if (!grupo.usuarios.some(u => u.id === usuario.id)) {
+            grupo.usuarios.push({
+              id: usuario.id,
+              responsable: usuario.responsable
+            });
+          }
         }
       });
 
