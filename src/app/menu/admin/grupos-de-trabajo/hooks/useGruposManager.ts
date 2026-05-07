@@ -166,104 +166,119 @@ export function useGruposManager() {
      }
    }, [supabase, grupos, fetchData]);
 
-   const deleteGrupo = useCallback(async (id_grupo: number) => {
-     try {
-       const { error } = await supabase
-         .from('grupos')
-         .delete()
-         .eq('id_grupo', id_grupo);
-       if (error) throw error;
-       await fetchData();
-     } catch (err: any) {
-       throw err;
-     }
-   }, [supabase, fetchData]);
+    const deleteGrupo = useCallback(async (id_grupo: number) => {
+      try {
+        // Validar que NINGÚN grupo con este id_grupo (en cualquier contribución) tenga cargos
+        const gruposAEliminar = grupos.filter(g => g.id_grupo === id_grupo);
+        const algunoConCargos = gruposAEliminar.some(g =>
+          gruposConCargos.has(`${g.id_contribucion}-${g.id_grupo}`)
+        );
+        if (algunoConCargos) {
+          throw new Error('No se puede eliminar un grupo con cargos generados');
+        }
+
+        const { error } = await supabase
+          .from('grupos')
+          .delete()
+          .eq('id_grupo', id_grupo);
+        if (error) throw error;
+        await fetchData();
+      } catch (err: any) {
+        throw err;
+      }
+    }, [supabase, fetchData, grupos, gruposConCargos]);
 
    // --- Operaciones por usuario ---
 
-   // Elimina un usuario específico de un grupo
-   const eliminarUsuarioDeGrupo = useCallback(async (id_grupo: number, id_usuario: number) => {
-     try {
-       // Validar que el grupo no tenga cargos
-       if (gruposConCargos.has(id_grupo)) {
-         throw new Error('No se puede modificar un grupo con cargos generados');
-       }
+    // Elimina un usuario específico de un grupo
+    const eliminarUsuarioDeGrupo = useCallback(async (id_grupo: number, id_usuario: number) => {
+      try {
+        // Buscar el grupo específico que contiene a este usuario (para obtener id_contribucion)
+        const grupoEncontrado = grupos.find(g =>
+          g.id_grupo === id_grupo && g.usuarios.some(u => u.id === id_usuario)
+        );
+        if (!grupoEncontrado) throw new Error('Grupo no encontrado');
 
-       const { error } = await supabase
-         .from('grupos')
-         .delete()
-         .eq('id_grupo', id_grupo)
-         .eq('id_usuario', id_usuario);
-       if (error) throw error;
-       await fetchData();
-     } catch (err: any) {
-       throw err;
-     }
-   }, [supabase, fetchData, gruposConCargos]);
+        const clave = `${grupoEncontrado.id_contribucion}-${grupoEncontrado.id_grupo}`;
+        if (gruposConCargos.has(clave)) {
+          throw new Error('No se puede modificar un grupo con cargos generados');
+        }
 
-   // Mueve un usuario de un grupo a otro
-   const moverUsuario = useCallback(async (id_usuario: number, id_grupoOrigen: number, id_grupoDestino: number | null) => {
-     try {
-       // Validar que el grupo origen no tenga cargos
-       if (gruposConCargos.has(id_grupoOrigen)) {
-         throw new Error('No se puede modificar un grupo con cargos generados');
-       }
+        const { error } = await supabase
+          .from('grupos')
+          .delete()
+          .eq('id_grupo', id_grupo)
+          .eq('id_usuario', id_usuario);
+        if (error) throw error;
+        await fetchData();
+      } catch (err: any) {
+        throw err;
+      }
+    }, [supabase, fetchData, grupos, gruposConCargos]);
 
-       // Si hay grupo destino, validar que tampoco tenga cargos
-       if (id_grupoDestino !== null && gruposConCargos.has(id_grupoDestino)) {
-         throw new Error('No se puede mover a un grupo con cargos generados');
-       }
+    // Mueve un usuario de un grupo a otro
+    const moverUsuario = useCallback(async (id_usuario: number, id_grupoOrigen: number, id_grupoDestino: number | null) => {
+      try {
+        // Buscar grupo origen para obtener id_contribucion y validar cargos
+        const grupoOrigen = grupos.find(g =>
+          g.id_grupo === id_grupoOrigen && g.usuarios.some(u => u.id === id_usuario)
+        );
+        if (!grupoOrigen) throw new Error('Grupo origen no encontrado');
 
-       // Obtener la contribución del usuario actual (para validar regla 1 usuario x contribución)
-       const grupoOrigen = grupos.find(g => g.id_grupo === id_grupoOrigen);
-       if (!grupoOrigen) throw new Error('Grupo origen no encontrado');
+        const claveOrigen = `${grupoOrigen.id_contribucion}-${grupoOrigen.id_grupo}`;
+        if (gruposConCargos.has(claveOrigen)) {
+          throw new Error('No se puede modificar un grupo con cargos generados');
+        }
 
-       const id_contribucion = grupoOrigen.id_contribucion;
+        // Si hay grupo destino, validar que tampoco tenga cargos
+        if (id_grupoDestino !== null) {
+          const grupoDestino = grupos.find(g => g.id_grupo === id_grupoDestino);
+          if (!grupoDestino) throw new Error('Grupo destino no encontrado');
 
-       // Si el destino es null, solo eliminamos de origen (sacar del grupo)
-       if (id_grupoDestino === null) {
-         const { error: deleteError } = await supabase
-           .from('grupos')
-           .delete()
-           .eq('id_grupo', id_grupoOrigen)
-           .eq('id_usuario', id_usuario);
-         if (deleteError) throw deleteError;
-         await fetchData();
-         return;
-       }
+          const claveDestino = `${grupoDestino.id_contribucion}-${grupoDestino.id_grupo}`;
+          if (gruposConCargos.has(claveDestino)) {
+            throw new Error('No se puede mover a un grupo con cargos generados');
+          }
 
-       // Validar que el usuario no esté ya en el grupo destino (misma contribución)
-       const grupoDestino = grupos.find(g => g.id_grupo === id_grupoDestino);
-       if (!grupoDestino) throw new Error('Grupo destino no encontrado');
+          // Validar que el usuario no esté ya en el grupo destino (misma contribución)
+          if (grupoDestino.id_contribucion === grupoOrigen.id_contribucion) {
+            throw new Error('El usuario ya pertenece a un grupo de esta contribución');
+          }
 
-       // Si la contribución es diferente, permitir; si es la misma, no permitir (regla: 1 usuario x contribución)
-       if (grupoDestino.id_contribucion === id_contribucion) {
-         throw new Error('El usuario ya pertenece a un grupo de esta contribución');
-       }
+          // 1. Eliminar de origen
+          const { error: deleteError } = await supabase
+            .from('grupos')
+            .delete()
+            .eq('id_grupo', id_grupoOrigen)
+            .eq('id_usuario', id_usuario);
+          if (deleteError) throw deleteError;
 
-       // 1. Eliminar de origen
-       const { error: deleteError } = await supabase
-         .from('grupos')
-         .delete()
-         .eq('id_grupo', id_grupoOrigen)
-         .eq('id_usuario', id_usuario);
-       if (deleteError) throw deleteError;
+          // 2. Insertar en destino
+          const { error: insertError } = await supabase
+            .from('grupos')
+            .insert({
+              id_grupo: id_grupoDestino,
+              id_usuario,
+              id_contribucion: grupoDestino.id_contribucion
+            });
+          if (insertError) throw insertError;
 
-       // 2. Insertar en destino
-       const { error: insertError } = await supabase
-         .from('grupos')
-         .insert({
-           id_grupo: id_grupoDestino,
-           id_usuario: id_usuario,
-           id_contribucion: grupoDestino.id_contribucion
-         });
-       if (insertError) throw insertError;
+          await fetchData();
+          return;
+        }
 
-       await fetchData();
-     } catch (err: any) {
-       throw err;
-     }
-   }, [supabase, fetchData, grupos, gruposConCargos]);
+        // Si el destino es null, solo eliminamos de origen
+        const { error: deleteError2 } = await supabase
+          .from('grupos')
+          .delete()
+          .eq('id_grupo', id_grupoOrigen)
+          .eq('id_usuario', id_usuario);
+        if (deleteError2) throw deleteError2;
+        await fetchData();
+      } catch (err: any) {
+        throw err;
+      }
+    }, [supabase, fetchData, grupos, gruposConCargos]);
 
    return {
      grupos,

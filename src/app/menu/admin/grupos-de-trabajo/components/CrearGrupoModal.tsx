@@ -13,8 +13,9 @@ interface CrearGrupoModalProps {
   onSuccess: () => void;
   contribucionesDisponibles: Contribuciones[];
   todosLosUsuarios: Pick<Usuario, 'id' | 'responsable'>[];
-  gruposExistentes: GrupoConDetalles[]; // Array de grupos con sus usuarios
-  gruposConCargos: Set<number>;
+  gruposExistentes: GrupoConDetalles[];
+  gruposConCargos: Set<string>; // Set de "id_contribucion-id_grupo"
+  contribucionPreseleccionada?: number | null;
 }
 
 export default function CrearGrupoModal({
@@ -24,11 +25,14 @@ export default function CrearGrupoModal({
   contribucionesDisponibles,
   todosLosUsuarios,
   gruposExistentes,
-  gruposConCargos
+  gruposConCargos,
+  contribucionPreseleccionada
 }: CrearGrupoModalProps) {
   const { t } = useI18n();
 
-  const [contribucionSeleccionada, setContribucionSeleccionada] = useState<number | null>(null);
+  const [contribucionSeleccionada, setContribucionSeleccionada] = useState<number | null>(
+    contribucionPreseleccionada ?? null
+  );
   const [usuariosSeleccionados, setUsuariosSeleccionados] = useState<Set<number>>(new Set());
   const [creando, setCreando] = useState(false);
 
@@ -43,17 +47,17 @@ export default function CrearGrupoModal({
     );
   }, [gruposExistentes]);
 
-  // Calcular contribuciones disponibles: tipo grupo y sin grupos con cargos
-  const contribucionesFiltradas = useMemo(() => {
-    return contribucionesDisponibles.filter(c => {
-      if (c.tipo_cargo !== 'grupo') return false;
-      // Grupos de esta contribución (usando plano)
-      const gruposDeEsta = gruposPlano.filter(g => g.id_contribucion === c.id_contribucion);
-      if (gruposDeEsta.length === 0) return true;
-      // Si tiene grupos, verificar que NINGUNO tenga cargos
-      return !gruposDeEsta.some(g => gruposConCargos.has(g.id_grupo));
-    });
-  }, [contribucionesDisponibles, gruposPlano, gruposConCargos]);
+   // Calcular contribuciones disponibles: tipo grupo y sin grupos con cargos
+   const contribucionesFiltradas = useMemo(() => {
+     return contribucionesDisponibles.filter(c => {
+       if (c.tipo_cargo !== 'grupo') return false;
+       // Grupos de esta contribución (usando plano)
+       const gruposDeEsta = gruposPlano.filter(g => g.id_contribucion === c.id_contribucion);
+       if (gruposDeEsta.length === 0) return true;
+       // Si tiene grupos, verificar que NINGUNO tenga cargos (clave compuesta)
+       return !gruposDeEsta.some(g => gruposConCargos.has(`${g.id_contribucion}-${g.id_grupo}`));
+     });
+   }, [contribucionesDisponibles, gruposPlano, gruposConCargos]);
 
   // Vecinos disponibles para la contribución seleccionada:
   // - Que no estén ya en un grupo de esta contribución

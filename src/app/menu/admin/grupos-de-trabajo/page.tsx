@@ -35,6 +35,7 @@ export default function GruposDeTrabajoPage() {
 
   // Modal state (crear grupo)
   const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
+  const [contribucionPreseleccionada, setContribucionPreseleccionada] = useState<number | null>(null);
 
   // Estado de expansión por contribución
   const [expandedContribuciones, setExpandedContribuciones] = useState<Set<number>>(new Set());
@@ -50,12 +51,6 @@ export default function GruposDeTrabajoPage() {
       return next;
     });
   }, []);
-
-  // Disponibles para mover: grupos sin cargos y de contribución diferente a la del usuario actual
-  const gruposDisponibles = grupos.filter(g =>
-    !gruposConCargos.has(g.id_grupo) &&
-    g.id_grupo !== grupoOrigenSeleccionado?.id_grupo
-  );
 
   const abrirModalMover = useCallback((id_usuario: number, grupo: GrupoConDetalles) => {
     setUsuarioSeleccionado(id_usuario);
@@ -87,35 +82,33 @@ export default function GruposDeTrabajoPage() {
       .catch((err: any) => toast.error(err.message || 'Error al eliminar usuario'));
   }, [eliminarUsuarioDeGrupo, t]);
 
-  const abrirModalCrear = useCallback(() => {
+  const abrirModalCrear = useCallback((id_contribucion?: number) => {
+    setContribucionPreseleccionada(id_contribucion ?? null);
     setModalCrearAbierto(true);
+  }, []);
+
+  const cerrarModalCrear = useCallback(() => {
+    setModalCrearAbierto(false);
+    setContribucionPreseleccionada(null);
   }, []);
 
   const handleCrearGrupoSuccess = useCallback(() => {
     refetch();
-    setModalCrearAbierto(false);
-  }, [refetch]);
+    cerrarModalCrear();
+  }, [refetch, cerrarModalCrear]);
 
-  // Helper para obtener contribución por id
-  const getContribucion = (id_contribucion: number): Contribuciones | undefined =>
-    contribuciones.find(c => c.id_contribucion === id_contribucion);
+  // Disponibles para mover: grupos sin cargos y de contribución diferente a la del usuario actual
+  const gruposDisponibles = grupos.filter(g =>
+    !gruposConCargos.has(`${g.id_contribucion}-${g.id_grupo}`) &&
+    g.id_grupo !== grupoOrigenSeleccionado?.id_grupo
+  );
 
   return (
     <div className="bg-gray-50 p-4 sm:p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 text-center flex-1">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 text-center">
           {t('manageGroups.title')}
         </h1>
-        <button
-          onClick={abrirModalCrear}
-          disabled={loading}
-          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Agregar grupo"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </button>
       </div>
 
       {loading && (
@@ -142,8 +135,10 @@ export default function GruposDeTrabajoPage() {
       {!loading && error === null && gruposPorContribucion.size > 0 && (
         <div className="space-y-4">
           {Array.from(gruposPorContribucion.entries()).map(([idContribucion, gruposLista]) => {
-            const contribucion = getContribucion(idContribucion);
+            const contribucion = contribuciones.find(c => c.id_contribucion === idContribucion);
             const isExpanded = expandedContribuciones.has(idContribucion);
+            // Verificar si esta contribución tiene ALGÚN grupo con cargos (bloqueada)
+            const estaBloqueada = gruposLista.some(g => gruposConCargos.has(`${g.id_contribucion}-${g.id_grupo}`));
             return (
               <div key={idContribucion} className="bg-white rounded-lg shadow-sm border border-gray-200">
                 {/* Header de contribución — click para expandir/contraer */}
@@ -161,19 +156,35 @@ export default function GruposDeTrabajoPage() {
                       {contribucion?.nombre || 'Sin nombre'}
                     </h2>
                   </div>
-                  <span className="text-sm text-gray-500">
-                    {gruposLista.length} {gruposLista.length === 1 ? 'grupo' : 'grupos'}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-500">
+                      {gruposLista.length} {gruposLista.length === 1 ? 'grupo' : 'grupos'}
+                    </span>
+                    {!estaBloqueada && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          abrirModalCrear(idContribucion);
+                        }}
+                        className="p-1 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                        aria-label="Agregar grupo a esta contribución"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-gray-700">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </button>
 
                 {/* Contenido expandible */}
                 {isExpanded && (
                   <div className="px-4 pb-4 space-y-3">
                     {gruposLista.map((grupo) => {
-                      const tieneCargos = gruposConCargos.has(grupo.id_grupo);
+                      const tieneCargos = gruposConCargos.has(`${grupo.id_contribucion}-${grupo.id_grupo}`);
                       return (
                         <GrupoPrincipalCard
-                          key={grupo.id_grupo}
+                          key={`${grupo.id_contribucion}-${grupo.id_grupo}`}
                           grupo={grupo}
                           tieneCargos={tieneCargos}
                           onEditUsuario={abrirModalMover}
@@ -208,7 +219,7 @@ export default function GruposDeTrabajoPage() {
               </option>
               <option value="null">Sin grupo (eliminar de grupo actual)</option>
               {gruposDisponibles.map(g => (
-                <option key={g.id_grupo} value={g.id_grupo}>
+                <option key={`${g.id_contribucion}-${g.id_grupo}`} value={g.id_grupo}>
                   Grupo #{g.id_grupo} — {g.contribucion?.nombre}
                 </option>
               ))}
@@ -248,12 +259,13 @@ export default function GruposDeTrabajoPage() {
       {/* Modal para crear grupo */}
       <CrearGrupoModal
         isOpen={modalCrearAbierto}
-        onClose={() => setModalCrearAbierto(false)}
+        onClose={cerrarModalCrear}
         onSuccess={handleCrearGrupoSuccess}
         contribucionesDisponibles={contribuciones}
         todosLosUsuarios={usuarios}
         gruposExistentes={grupos}
         gruposConCargos={gruposConCargos}
+        contribucionPreseleccionada={contribucionPreseleccionada}
       />
     </div>
   );
