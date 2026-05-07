@@ -18,7 +18,7 @@ interface CrearGrupoModalProps {
     id_contribucion: number;
     id_usuario: number;
   }>;
-  gruposConCargos: Set<number>;
+  gruposConCargos: Set<number>; // ids de grupos que tienen cargos
 }
 
 export default function CrearGrupoModal({
@@ -36,13 +36,23 @@ export default function CrearGrupoModal({
   const [usuariosSeleccionados, setUsuariosSeleccionados] = useState<Set<number>>(new Set());
   const [creando, setCreando] = useState(false);
 
+  // Calcular contribuciones disponibles: tipo grupo y sin grupos con cargos
+  const contribucionesFiltradas = useMemo(() => {
+    return contribucionesDisponibles.filter(c => {
+      if (c.tipo_cargo !== 'grupo') return false;
+      // Grupos de esta contribución
+      const gruposDeEsta = gruposExistentes.filter(g => g.id_contribucion === c.id_contribucion);
+      if (gruposDeEsta.length === 0) return true;
+      // Si tiene grupos, verificar que NINGUNO tenga cargos
+      return !gruposDeEsta.some(g => gruposConCargos.has(g.id_grupo));
+    });
+  }, [contribucionesDisponibles, gruposExistentes, gruposConCargos]);
+
   // Vecinos disponibles para la contribución seleccionada:
-  // - Que no estén ya en un grupo de esa misma contribución
-  // - Pueden estar en grupos de otras contribuciones (permitido)
+  // - Que no estén ya en un grupo de esta contribución
   const vecinosDisponibles = useMemo(() => {
     if (contribucionSeleccionada === null) return [];
 
-    // IDs de usuarios que ya están en un grupo de esta contribución
     const usuariosEnEstaContribucion = new Set<number>(
       gruposExistentes
         .filter(g => g.id_contribucion === contribucionSeleccionada)
@@ -134,24 +144,15 @@ export default function CrearGrupoModal({
             }}
           >
             <option value="">Selecciona una contribución...</option>
-            {contribucionesDisponibles
-              .filter(c => c.tipo_cargo === 'grupo')
-              // Excluir contribuciones que ya tienen algún grupo (con o sin cargos)
-              .filter(c => !gruposExistentes.some(g => g.id_contribucion === c.id_contribucion))
-              .map(c => (
-                <option key={c.id_contribucion} value={c.id_contribucion}>
-                  {c.nombre}
-                </option>
-              ))}
+            {contribucionesFiltradas.map(c => (
+              <option key={c.id_contribucion} value={c.id_contribucion}>
+                {c.nombre}
+              </option>
+            ))}
           </select>
-          {contribucionesDisponibles.filter(c => c.tipo_cargo === 'grupo').length === 0 && (
+          {contribucionesFiltradas.length === 0 && (
             <p className="text-sm text-orange-600 mt-1">
               Sin contribuciones tipo grupo disponibles para configurar.
-            </p>
-          )}
-          {contribucionesDisponibles.filter(c => c.tipo_cargo === 'grupo' && gruposExistentes.some(g => g.id_contribucion === c.id_contribucion)).length > 0 && (
-            <p className="text-xs text-gray-500 mt-1">
-              Contribuciones con grupos existentes no se muestran (ya están en uso).
             </p>
           )}
         </div>
