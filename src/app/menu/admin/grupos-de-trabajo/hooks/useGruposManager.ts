@@ -7,10 +7,11 @@ import type { GrupoConDetalles, Usuario, Contribuciones } from '@/types';
 export function useGruposManager() {
   const supabase = createClient();
 
-  const [grupos, setGrupos] = useState<GrupoConDetalles[]>([]);
-  const [usuarios, setUsuarios] = useState<Pick<Usuario, 'id' | 'responsable'>[]>([]);
-  const [contribuciones, setContribuciones] = useState<Contribuciones[]>([]);
-  const [gruposConCargos, setGruposConCargos] = useState<Set<number>>(new Set());
+   const [grupos, setGrupos] = useState<GrupoConDetalles[]>([]);
+   const [gruposPorContribucion, setGruposPorContribucion] = useState<Map<number, GrupoConDetalles[]>>(new Map());
+   const [usuarios, setUsuarios] = useState<Pick<Usuario, 'id' | 'responsable'>[]>([]);
+   const [contribuciones, setContribuciones] = useState<Contribuciones[]>([]);
+   const [gruposConCargos, setGruposConCargos] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,7 +80,17 @@ export function useGruposManager() {
         }
       });
 
-      setGrupos(Array.from(map.values()));
+      const gruposLista = Array.from(map.values());
+      setGrupos(gruposLista);
+
+      // 5. Agrupar grupos por contribución
+      const porContribucion = new Map<number, GrupoConDetalles[]>();
+      gruposLista.forEach(grupo => {
+        const lista = porContribucion.get(grupo.id_contribucion) || [];
+        lista.push(grupo);
+        porContribucion.set(grupo.id_contribucion, lista);
+      });
+      setGruposPorContribucion(porContribucion);
 
       // 5. Obtener id_grupo que tienen al menos un cargo en contribucionesporcasa
       const { data: cargosData, error: cargosError } = await supabase
@@ -238,6 +249,7 @@ export function useGruposManager() {
 
    return {
      grupos,
+     gruposPorContribucion,
      usuarios,
      contribuciones,
      gruposConCargos,

@@ -1,19 +1,20 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { useState, useCallback, useMemo } from 'react';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 import { useGruposManager } from './hooks/useGruposManager';
 import GrupoPrincipalCard from './components/GrupoPrincipalCard';
 import type { GrupoConDetalles } from '@/types';
+import type { Contribuciones } from '@/types/database';
 
 export default function GruposDeTrabajoPage() {
-  const supabase = createClient();
   const { t } = useI18n();
 
   const {
     grupos,
+    gruposPorContribucion,
+    contribuciones,
     gruposConCargos,
     loading,
     error,
@@ -63,6 +64,10 @@ export default function GruposDeTrabajoPage() {
       .catch((err: any) => toast.error(err.message || 'Error al eliminar usuario'));
   }, [eliminarUsuarioDeGrupo, t]);
 
+  // Helper para obtener contribución por id
+  const getContribucion = (id_contribucion: number): Contribuciones | undefined =>
+    contribuciones.find(c => c.id_contribucion === id_contribucion);
+
   return (
     <div className="bg-gray-50 p-4 sm:p-8">
       <div className="flex justify-between items-center mb-6">
@@ -94,25 +99,37 @@ export default function GruposDeTrabajoPage() {
 
       {error && <p className="text-center text-red-500 bg-red-100 p-3 rounded mb-4">{error}</p>}
 
-      {!loading && error === null && grupos.length === 0 && (
+      {!loading && error === null && gruposPorContribucion.size === 0 && (
         <div className="text-center py-10 bg-white shadow-md rounded-lg">
           <p className="text-gray-500">{t('manageGroups.noGroups')}</p>
           <p className="text-sm text-gray-400 mt-2">{t('manageGroups.createHint')}</p>
         </div>
       )}
 
-      {!loading && error === null && grupos.length > 0 && (
+      {!loading && error === null && gruposPorContribucion.size > 0 && (
         <div>
-          {grupos.map((grupo) => {
-            const tieneCargos = gruposConCargos.has(grupo.id_grupo);
+          {Array.from(gruposPorContribucion.entries()).map(([idContribucion, gruposLista]) => {
+            const contribucion = getContribucion(idContribucion);
             return (
-              <GrupoPrincipalCard
-                key={grupo.id_grupo}
-                grupo={grupo}
-                tieneCargos={tieneCargos}
-                onEditUsuario={abrirModalMover}
-                onDeleteUsuario={confirmarEliminar}
-              />
+              <section key={idContribucion} className="mb-8">
+                <h2 className="text-xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2">
+                  Contribución: {contribucion?.nombre || 'Sin nombre'}
+                </h2>
+                <div>
+                  {gruposLista.map((grupo) => {
+                    const tieneCargos = gruposConCargos.has(grupo.id_grupo);
+                    return (
+                      <GrupoPrincipalCard
+                        key={grupo.id_grupo}
+                        grupo={grupo}
+                        tieneCargos={tieneCargos}
+                        onEditUsuario={abrirModalMover}
+                        onDeleteUsuario={confirmarEliminar}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
             );
           })}
         </div>
