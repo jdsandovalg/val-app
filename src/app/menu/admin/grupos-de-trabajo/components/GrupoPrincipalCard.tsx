@@ -10,23 +10,31 @@ interface GrupoPrincipalCardProps {
   onDeleteUsuario: (id_usuario: number, grupo: GrupoConDetalles) => void;
 }
 
-//Paleta de colores azules estándar (Tailwind-like blue tones)
-const borderColors = [
-  '#3B82F6', '#2563EB', '#1D4ED8', '#1E40AF', '#1E3A8A',
-  '#0EA5E9', '#0284C7', '#0369A1', '#075985', '#0C4A6E'
-];
+const colorToClassMap: { [key: string]: string } = {
+  'red': 'border-red-500',
+  'green': 'border-green-500',
+  'blue': 'border-blue-500',
+  'yellow': 'border-yellow-500',
+  'purple': 'border-purple-500',
+  'pink': 'border-pink-500',
+  'indigo': 'border-indigo-500',
+  'teal': 'border-teal-500',
+};
 
-function getBorderColor(id_grupo: number): string {
-  return borderColors[id_grupo % borderColors.length];
+const colorKeys = Object.keys(colorToClassMap);
+
+function getBorderColorClass(id_grupo: number): string {
+  const index = id_grupo % colorKeys.length;
+  return colorToClassMap[colorKeys[index]];
 }
 
 export default function GrupoPrincipalCard({ grupo, tieneCargos, onEditUsuario, onDeleteUsuario }: GrupoPrincipalCardProps) {
-  const borderColor = tieneCargos ? '#DC2626' : getBorderColor(grupo.id_grupo);
+  const borderColorClass = tieneCargos ? 'border-red-500' : getBorderColorClass(grupo.id_grupo);
 
   return (
-    <div className="bg-white shadow-md rounded-lg mb-4 border-l-4" style={{ borderLeftColor: borderColor }}>
+    <div className={`bg-white shadow-md rounded-lg mb-4 border-l-4 ${borderColorClass}`}>
       {/* Encabezado del grupo */}
-      <div className="p-3">
+      <div className="p-2">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-lg font-bold text-gray-800">
             Grupo #{grupo.id_grupo}
@@ -43,7 +51,7 @@ export default function GrupoPrincipalCard({ grupo, tieneCargos, onEditUsuario, 
       </div>
 
       {/* Lista de usuarios */}
-      <div className="px-3 pb-3">
+      <div className="px-2 pb-2">
         {grupo.usuarios.length === 0 ? (
           <p className="text-sm text-gray-500 italic">Sin integrantes</p>
         ) : (

@@ -14,18 +14,18 @@ interface UsuarioCardProps {
 
 export default function UsuarioCard({ usuario, tieneCargos, onEdit, onDelete }: UsuarioCardProps) {
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-2 flex items-center justify-between">
-      <div className="flex items-center gap-3">
+    <div className="bg-gray-50 border border-gray-200 rounded p-2 mb-2 flex items-center justify-between">
+      <div className="flex items-center gap-2">
         <UserIcon className="w-4 h-4 text-gray-400" />
         <div>
           <p className="text-sm font-semibold text-gray-800">Casa #{usuario.id}</p>
           <p className="text-xs text-gray-600">{usuario.responsable}</p>
         </div>
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <button
           onClick={() => onEdit(usuario.id)}
-          className="text-sm text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+          className="text-xs text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
           disabled={tieneCargos}
           title={tieneCargos ? 'Grupo con cargos, no se puede modificar' : 'Mover usuario'}
         >
@@ -33,7 +33,7 @@ export default function UsuarioCard({ usuario, tieneCargos, onEdit, onDelete }: 
         </button>
         <button
           onClick={() => onDelete(usuario.id)}
-          className="text-sm text-red-600 hover:text-red-900 disabled:opacity-50"
+          className="text-xs text-red-600 hover:text-red-900 disabled:opacity-50"
           disabled={tieneCargos}
           title={tieneCargos ? 'Grupo con cargos, no se puede modificar' : 'Eliminar del grupo'}
         >
@@ -43,3 +43,4 @@ export default function UsuarioCard({ usuario, tieneCargos, onEdit, onDelete }: 
     </div>
   );
 }
+
