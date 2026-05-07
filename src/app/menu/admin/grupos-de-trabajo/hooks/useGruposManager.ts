@@ -11,7 +11,8 @@ export function useGruposManager() {
    const [gruposPorContribucion, setGruposPorContribucion] = useState<Map<number, GrupoConDetalles[]>>(new Map());
    const [usuarios, setUsuarios] = useState<Pick<Usuario, 'id' | 'responsable'>[]>([]);
    const [contribuciones, setContribuciones] = useState<Contribuciones[]>([]);
-   const [gruposConCargos, setGruposConCargos] = useState<Set<number>>(new Set());
+   // Set de "id_contribucion-id_grupo" para identificar grupos con cargos de forma única
+   const [gruposConCargos, setGruposConCargos] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,14 +102,16 @@ export function useGruposManager() {
       });
       setGruposPorContribucion(porContribucion);
 
-      // 5. Obtener id_grupo que tienen al menos un cargo en contribucionesporcasa
-      const { data: cargosData, error: cargosError } = await supabase
-        .from('contribucionesporcasa')
-        .select('id_grupo')
-        .not('id_grupo', 'is', null);
-      if (cargosError) throw cargosError;
-      const idsConCargos = new Set<number>((cargosData || []).map(c => c.id_grupo as number));
-      setGruposConCargos(idsConCargos);
+       // 5. Obtener (id_contribucion, id_grupo) que tienen al menos un cargo en contribucionesporcasa
+       const { data: cargosData, error: cargosError } = await supabase
+         .from('contribucionesporcasa')
+         .select('id_contribucion, id_grupo')
+         .not('id_grupo', 'is', null);
+       if (cargosError) throw cargosError;
+       const idsConCargos = new Set<string>(
+         (cargosData || []).map(c => `${c.id_contribucion}-${c.id_grupo}`)
+       );
+       setGruposConCargos(idsConCargos);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       setError(`Error al cargar: ${message}`);
