@@ -5,7 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useI18n } from '@/app/i18n-provider';
 import { createClient } from '@/utils/supabase/client';
 import type { Contribuciones } from '@/types/database';
-import type { Usuario } from '@/types';
+import type { Usuario, GrupoConDetalles } from '@/types';
 
 interface CrearGrupoModalProps {
   isOpen: boolean;
@@ -13,12 +13,8 @@ interface CrearGrupoModalProps {
   onSuccess: () => void;
   contribucionesDisponibles: Contribuciones[];
   todosLosUsuarios: Pick<Usuario, 'id' | 'responsable'>[];
-  gruposExistentes: Array<{
-    id_grupo: number;
-    id_contribucion: number;
-    id_usuario: number;
-  }>;
-  gruposConCargos: Set<number>; // ids de grupos que tienen cargos
+  gruposExistentes: GrupoConDetalles[]; // Array de grupos con sus usuarios
+  gruposConCargos: Set<number>;
 }
 
 export default function CrearGrupoModal({
@@ -36,17 +32,28 @@ export default function CrearGrupoModal({
   const [usuariosSeleccionados, setUsuariosSeleccionados] = useState<Set<number>>(new Set());
   const [creando, setCreando] = useState(false);
 
+  // Aplanar grupos: cada fila (id_grupo, id_contribucion, id_usuario)
+  const gruposPlano = useMemo(() => {
+    return gruposExistentes.flatMap(g =>
+      g.usuarios.map(u => ({
+        id_grupo: g.id_grupo,
+        id_contribucion: g.id_contribucion,
+        id_usuario: u.id
+      }))
+    );
+  }, [gruposExistentes]);
+
   // Calcular contribuciones disponibles: tipo grupo y sin grupos con cargos
   const contribucionesFiltradas = useMemo(() => {
     return contribucionesDisponibles.filter(c => {
       if (c.tipo_cargo !== 'grupo') return false;
-      // Grupos de esta contribución
-      const gruposDeEsta = gruposExistentes.filter(g => g.id_contribucion === c.id_contribucion);
+      // Grupos de esta contribución (usando plano)
+      const gruposDeEsta = gruposPlano.filter(g => g.id_contribucion === c.id_contribucion);
       if (gruposDeEsta.length === 0) return true;
       // Si tiene grupos, verificar que NINGUNO tenga cargos
       return !gruposDeEsta.some(g => gruposConCargos.has(g.id_grupo));
     });
-  }, [contribucionesDisponibles, gruposExistentes, gruposConCargos]);
+  }, [contribucionesDisponibles, gruposPlano, gruposConCargos]);
 
   // Vecinos disponibles para la contribución seleccionada:
   // - Que no estén ya en un grupo de esta contribución
@@ -54,13 +61,13 @@ export default function CrearGrupoModal({
     if (contribucionSeleccionada === null) return [];
 
     const usuariosEnEstaContribucion = new Set<number>(
-      gruposExistentes
+      gruposPlano
         .filter(g => g.id_contribucion === contribucionSeleccionada)
         .map(g => g.id_usuario)
     );
 
     return todosLosUsuarios.filter(u => !usuariosEnEstaContribucion.has(u.id));
-  }, [contribucionSeleccionada, todosLosUsuarios, gruposExistentes]);
+  }, [contribucionSeleccionada, todosLosUsuarios, gruposPlano]);
 
   // Reset al cerrar o cambiar contribución
   useEffect(() => {
