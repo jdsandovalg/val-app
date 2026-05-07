@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import { useI18n } from '@/app/i18n-provider';
-import { useRouter } from 'next/navigation';
 import { Download, X } from 'lucide-react';
 import GrupoContributionReport from './components/GrupoContributionReport';
 import type { GrupoConDetalles, Contribuciones } from '@/types';
@@ -38,7 +37,6 @@ const styles = {
 
 export default function GrupoReportPage() {
   const { t } = useI18n();
-  const router = useRouter();
   const [contribucion, setContribucion] = useState<Contribuciones | null>(null);
   const [grupos, setGrupos] = useState<GrupoConDetalles[]>([]);
   const [gruposConCargos, setGruposConCargos] = useState<Set<string>>(new Set());
@@ -110,7 +108,7 @@ export default function GrupoReportPage() {
         </PDFDownloadLink>
 
         <button
-          onClick={() => router.back()}
+          onClick={() => window.close()}
           className="bg-red-500 hover:bg-red-600 text-white p-4 rounded-full shadow-2xl transition-all active:scale-95 flex items-center justify-center border-2 border-white/20"
           title="Cerrar"
         >

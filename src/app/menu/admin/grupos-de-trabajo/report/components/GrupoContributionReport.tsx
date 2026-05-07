@@ -3,113 +3,113 @@ import type { Contribuciones, GrupoConDetalles } from '@/types';
 
 const styles = StyleSheet.create({
   page: {
-    padding: 20,
-    fontSize: 9,
-    lineHeight: 1.3,
+    padding: 40,
+    fontSize: 12,
+    lineHeight: 1.6,
     fontFamily: 'Helvetica',
     backgroundColor: '#ffffff',
   },
   header: {
-    marginBottom: 12,
-    borderBottomWidth: 2,
+    marginBottom: 20,
+    borderBottomWidth: 3,
     borderBottomColor: '#3B82F6',
-    paddingBottom: 6,
+    paddingBottom: 10,
   },
   title: {
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#1e3a8a',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 8,
+    fontSize: 11,
     color: '#6b7280',
   },
   infoCard: {
     backgroundColor: '#f9fafb',
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    borderRadius: 6,
-    padding: 8,
-    marginBottom: 14,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
   },
   infoRow: {
     flexDirection: 'row',
-    marginBottom: 2,
+    marginBottom: 6,
     alignItems: 'flex-start',
   },
   infoLabel: {
     fontWeight: 'bold',
-    width: 90,
+    width: 110,
     color: '#374151',
-    fontSize: 8,
+    fontSize: 11,
   },
   infoValue: {
     flex: 1,
     color: '#111827',
-    fontSize: 8,
+    fontSize: 11,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#1e40af',
-    marginTop: 10,
-    marginBottom: 6,
-    borderLeftWidth: 3,
+    marginTop: 18,
+    marginBottom: 10,
+    borderLeftWidth: 4,
     borderLeftColor: '#3B82F6',
-    paddingLeft: 6,
+    paddingLeft: 10,
   },
   groupCard: {
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#d1d5db',
-    borderRadius: 4,
-    padding: 6,
-    marginBottom: 6,
-    borderLeftWidth: 3,
+    borderRadius: 6,
+    padding: 12,
+    marginBottom: 12,
+    borderLeftWidth: 4,
   },
   groupHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 3,
+    marginBottom: 6,
   },
   groupTitle: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#111827',
   },
   groupBadge: {
     backgroundColor: '#dc2626',
     color: '#ffffff',
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: 'bold',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   userList: {
-    marginTop: 2,
+    marginTop: 4,
   },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 1,
+    marginBottom: 3,
   },
   userIcon: {
-    marginRight: 4,
+    marginRight: 6,
     color: '#6b7280',
-    fontSize: 7,
+    fontSize: 10,
   },
   userId: {
     fontWeight: 'bold',
     color: '#374151',
-    width: 45,
-    fontSize: 8,
+    width: 55,
+    fontSize: 11,
   },
   userName: {
     color: '#111827',
-    fontSize: 8,
+    fontSize: 11,
   },
 });
 
@@ -140,14 +140,20 @@ export default function GrupoContributionReport({
             <Text style={styles.infoValue}>{contribucion.descripcion || 'N/A'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Config:</Text>
-            <Text style={styles.infoValue}>
-              {contribucion.tipo_cargo || 'N/A'} • {contribucion.periodicidad_dias ? `${contribucion.periodicidad_dias} días` : 'N/A'} • Día {contribucion.dia_cargo || 'N/A'}
-            </Text>
+            <Text style={styles.infoLabel}>Tipo de cargo:</Text>
+            <Text style={styles.infoValue}>{contribucion.tipo_cargo || 'N/A'}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Periodicidad:</Text>
+            <Text style={styles.infoValue}>{contribucion.periodicidad_dias ? `${contribucion.periodicidad_dias} días` : 'N/A'}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Día de cargo:</Text>
+            <Text style={styles.infoValue}>{contribucion.dia_cargo ? `Día ${contribucion.dia_cargo}` : 'N/A'}</Text>
           </View>
           {contribucion.comentarios_contribucion && (
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Notas:</Text>
+              <Text style={styles.infoLabel}>Comentarios:</Text>
               <Text style={styles.infoValue}>{contribucion.comentarios_contribucion}</Text>
             </View>
           )}
