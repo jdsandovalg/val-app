@@ -112,41 +112,47 @@ export function useGruposManager() {
     fetchData();
   }, [fetchData]);
 
-  const saveGrupo = useCallback(async (
-    id_grupoExistente: number | null,
-    id_contribucion: number,
-    userIds: number[]
-  ) => {
-    try {
-      // Si es edición (id_grupoExistente existe), eliminar ese grupo primero
-      if (id_grupoExistente) {
-        const { error: deleteError } = await supabase
-          .from('grupos')
-          .delete()
-          .eq('id_grupo', id_grupoExistente);
-        if (deleteError) throw deleteError;
-      }
+   const saveGrupo = useCallback(async (
+     id_grupoExistente: number | null,
+     id_contribucion: number,
+     userIds: number[]
+   ) => {
+     try {
+       // Si es edición, eliminar ese grupo primero
+       if (id_grupoExistente) {
+         const { error: deleteError } = await supabase
+           .from('grupos')
+           .delete()
+           .eq('id_grupo', id_grupoExistente);
+         if (deleteError) throw deleteError;
+       }
 
-      // Determinar id_grupo nuevo: si es edición, usar el mismo; si es nuevo, calcular siguiente
-      const id_grupo = id_grupoExistente ?? (Math.max(...grupos.map(g => g.id_grupo), 0) + 1);
+       // Determinar id_grupo nuevo: si es edición, usar el mismo; si es nuevo, calcular siguiente por contribución
+       const id_grupo = id_grupoExistente ?? (() => {
+         const gruposDeEstaContribucion = grupos.filter(g => g.id_contribucion === id_contribucion);
+         const maxId = gruposDeEstaContribucion.length > 0
+           ? Math.max(...gruposDeEstaContribucion.map(g => g.id_grupo))
+           : 0;
+         return maxId + 1;
+       })();
 
-      // Insertar nuevas filas
-      const rows = userIds.map(uid => ({
-        id_grupo,
-        id_usuario: uid,
-        id_contribucion
-      }));
+       // Insertar nuevas filas
+       const rows = userIds.map(uid => ({
+         id_grupo,
+         id_usuario: uid,
+         id_contribucion
+       }));
 
-      const { error: insertError } = await supabase
-        .from('grupos')
-        .insert(rows);
-      if (insertError) throw insertError;
+       const { error: insertError } = await supabase
+         .from('grupos')
+         .insert(rows);
+       if (insertError) throw insertError;
 
-      await fetchData();
-    } catch (err: any) {
-      throw err;
-    }
-  }, [supabase, grupos, fetchData]);
+       await fetchData();
+     } catch (err: any) {
+       throw err;
+     }
+   }, [supabase, grupos, fetchData]);
 
    const deleteGrupo = useCallback(async (id_grupo: number) => {
      try {

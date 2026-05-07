@@ -92,8 +92,13 @@ export default function CrearGrupoModal({
 
     setCreando(true);
     try {
-      // Calcular siguiente id_grupo
-      const maxId = Math.max(...gruposExistentes.map(g => g.id_grupo), 0);
+      // Calcular siguiente id_grupo para esta contribución específica
+      const gruposDeEstaContribucion = gruposExistentes.filter(
+        g => g.id_contribucion === contribucionSeleccionada
+      );
+      const maxId = gruposDeEstaContribucion.length > 0
+        ? Math.max(...gruposDeEstaContribucion.map(g => g.id_grupo))
+        : 0;
       const nuevoIdGrupo = maxId + 1;
 
       const rows = Array.from(usuariosSeleccionados).map(id_usuario => ({
