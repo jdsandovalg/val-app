@@ -35,57 +35,62 @@ export function useGruposManager() {
       if (contribucionesError) throw contribucionesError;
       setContribuciones(contribucionesData || []);
 
-      // 3. Traer grupos con join a contribuciones (usuarios se trae aparte)
-      const { data: gruposData, error: gruposError } = await supabase
-        .from('grupos')
-        .select(`
-          id_grupo,
-          id_usuario,
-          id_contribucion,
-          created_at,
-          contribuciones (
-            id_contribucion,
-            nombre,
-            descripcion,
-            tipo_cargo,
-            color_del_borde,
-            dia_cargo,
-            periodicidad_dias,
-            comentarios_contribucion
-          )
-        `)
-        .order('id_grupo', { ascending: true });
-      if (gruposError) throw gruposError;
+       // 3. Traer grupos con joins completos (misma estructura que tu SQL)
+       const { data: gruposData, error: gruposError } = await supabase
+         .from('grupos')
+         .select(`
+           id_grupo,
+           id_usuario,
+           id_contribucion,
+           created_at,
+           usuarios ( id, responsable ),
+           contribuciones (
+             id_contribucion,
+             nombre,
+             descripcion,
+             tipo_cargo,
+             color_del_borde,
+             dia_cargo,
+             periodicidad_dias,
+             comentarios_contribucion
+           )
+         `)
+         .order('id_grupo', { ascending: true });
+       if (gruposError) throw gruposError;
 
-      // 4. Agrupar por id_grupo y asignar usuarios desde usuariosData
-      const map = new Map<number, GrupoConDetalles>();
-      (gruposData || []).forEach(row => {
-        if (!map.has(row.id_grupo)) {
-          map.set(row.id_grupo, {
-            id_grupo: row.id_grupo,
-            id_usuario: row.id_usuario,
-            id_contribucion: row.id_contribucion,
-            created_at: row.created_at,
-            contribucion: (Array.isArray(row.contribuciones) ? row.contribuciones[0] : row.contribuciones) as any,
-            usuarios: []
-          });
-        }
-        // Buscar el usuario completo en usuariosData
-        const usuario = usuariosData.find(u => u.id === row.id_usuario);
-        if (usuario) {
-          const grupo = map.get(row.id_grupo)!;
-          // Evitar duplicados: solo agregar si el usuario no está ya en la lista
-          if (!grupo.usuarios.some(u => u.id === usuario.id)) {
-            grupo.usuarios.push({
-              id: usuario.id,
-              responsable: usuario.responsable
-            });
-          }
-        }
-      });
+       // 4. Agrupar por (id_contribucion, id_grupo) para evitar colisiones
+       const map = new Map<string, GrupoConDetalles>();
+       (gruposData || []).forEach(row => {
+         const clave = `${row.id_contribucion}-${row.id_grupo}`;
+         if (!map.has(clave)) {
+           map.set(clave, {
+             id_grupo: row.id_grupo,
+             id_usuario: row.id_usuario,
+             id_contribucion: row.id_contribucion,
+             created_at: row.created_at,
+             contribucion: Array.isArray(row.contribuciones) ? row.contribuciones[0] : row.contribuciones as any,
+             usuarios: []
+           });
+         }
+         // row.usuarios puede ser objeto único o array — normalizar a array
+         const usuariosArray = Array.isArray(row.usuarios)
+           ? row.usuarios
+           : row.usuarios
+             ? [row.usuarios]
+             : [];
+         usuariosArray.forEach((u: any) => {
+           const grupo = map.get(clave)!;
+           if (!grupo.usuarios.some((ui: any) => ui.id === u.id)) {
+             grupo.usuarios.push({
+               id: u.id,
+               responsable: u.responsable
+             });
+           }
+         });
+       });
 
-      const gruposLista = Array.from(map.values());
-      setGrupos(gruposLista);
+       const gruposLista = Array.from(map.values());
+       setGrupos(gruposLista);
 
       // 5. Agrupar grupos por contribución
       const porContribucion = new Map<number, GrupoConDetalles[]>();
