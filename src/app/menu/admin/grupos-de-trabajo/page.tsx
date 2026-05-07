@@ -1,19 +1,23 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 import { useGruposManager } from './hooks/useGruposManager';
 import GrupoPrincipalCard from './components/GrupoPrincipalCard';
+import CrearGrupoModal from './components/CrearGrupoModal';
 import type { GrupoConDetalles } from '@/types';
 import type { Contribuciones } from '@/types/database';
 
 export default function GruposDeTrabajoPage() {
+  const supabase = createClient();
   const { t } = useI18n();
 
   const {
     grupos,
     gruposPorContribucion,
+    usuarios,
     contribuciones,
     gruposConCargos,
     loading,
@@ -23,10 +27,13 @@ export default function GruposDeTrabajoPage() {
     refetch
   } = useGruposManager();
 
-  // Modal state
-  const [modalAbierto, setModalAbierto] = useState(false);
+  // Modal state (mover usuario)
+  const [modalMoverAbierto, setModalMoverAbierto] = useState(false);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<number | null>(null);
   const [grupoOrigenSeleccionado, setGrupoOrigenSeleccionado] = useState<GrupoConDetalles | null>(null);
+
+  // Modal state (crear grupo)
+  const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
 
   // Disponibles para mover: grupos sin cargos y de contribución diferente a la del usuario actual
   const gruposDisponibles = grupos.filter(g =>
@@ -37,11 +44,11 @@ export default function GruposDeTrabajoPage() {
   const abrirModalMover = useCallback((id_usuario: number, grupo: GrupoConDetalles) => {
     setUsuarioSeleccionado(id_usuario);
     setGrupoOrigenSeleccionado(grupo);
-    setModalAbierto(true);
+    setModalMoverAbierto(true);
   }, []);
 
-  const cerrarModal = useCallback(() => {
-    setModalAbierto(false);
+  const cerrarModalMover = useCallback(() => {
+    setModalMoverAbierto(false);
     setUsuarioSeleccionado(null);
     setGrupoOrigenSeleccionado(null);
   }, []);
@@ -51,11 +58,11 @@ export default function GruposDeTrabajoPage() {
     try {
       await moverUsuario(usuarioSeleccionado, grupoOrigenSeleccionado.id_grupo, id_grupoDestino);
       toast.success(t('manageGroups.modal.moveSuccess') || 'Usuario movido exitosamente');
-      cerrarModal();
+      cerrarModalMover();
     } catch (err: any) {
       toast.error(err.message || 'Error al mover usuario');
     }
-  }, [usuarioSeleccionado, grupoOrigenSeleccionado, moverUsuario, t, cerrarModal]);
+  }, [usuarioSeleccionado, grupoOrigenSeleccionado, moverUsuario, t, cerrarModalMover]);
 
   const confirmarEliminar = useCallback((id_usuario: number, grupo: GrupoConDetalles) => {
     if (!confirm(t('manageGroups.modal.deleteUserConfirm'))) return;
@@ -63,6 +70,15 @@ export default function GruposDeTrabajoPage() {
       .then(() => toast.success(t('manageGroups.modal.deleteUserSuccess') || 'Usuario eliminado del grupo'))
       .catch((err: any) => toast.error(err.message || 'Error al eliminar usuario'));
   }, [eliminarUsuarioDeGrupo, t]);
+
+  const abrirModalCrear = useCallback(() => {
+    setModalCrearAbierto(true);
+  }, []);
+
+  const handleCrearGrupoSuccess = useCallback(() => {
+    refetch();
+    setModalCrearAbierto(false);
+  }, [refetch]);
 
   // Helper para obtener contribución por id
   const getContribucion = (id_contribucion: number): Contribuciones | undefined =>
@@ -75,7 +91,7 @@ export default function GruposDeTrabajoPage() {
           {t('manageGroups.title')}
         </h1>
         <button
-          onClick={() => {}} // TODO: crear grupo (próxima hilada)
+          onClick={abrirModalCrear}
           className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
           aria-label="Agregar grupo"
         >
@@ -136,7 +152,7 @@ export default function GruposDeTrabajoPage() {
       )}
 
       {/* Modal para mover usuario */}
-      {modalAbierto && usuarioSeleccionado !== null && grupoOrigenSeleccionado && (
+      {modalMoverAbierto && usuarioSeleccionado !== null && grupoOrigenSeleccionado && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-96 shadow-xl">
             <h3 className="text-lg font-bold text-gray-800 mb-4">
@@ -166,7 +182,7 @@ export default function GruposDeTrabajoPage() {
             )}
             <div className="flex justify-end gap-3">
               <button
-                onClick={cerrarModal}
+                onClick={cerrarModalMover}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800"
               >
                 Cancelar
@@ -190,6 +206,17 @@ export default function GruposDeTrabajoPage() {
           </div>
         </div>
       )}
+
+      {/* Modal para crear grupo */}
+      <CrearGrupoModal
+        isOpen={modalCrearAbierto}
+        onClose={() => setModalCrearAbierto(false)}
+        onSuccess={handleCrearGrupoSuccess}
+        contribucionesDisponibles={contribuciones}
+        todosLosUsuarios={usuarios}
+        gruposExistentes={grupos}
+        gruposConCargos={gruposConCargos}
+      />
     </div>
   );
 }
