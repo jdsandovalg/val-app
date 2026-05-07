@@ -45,35 +45,58 @@ export interface Database {
           comentarios_contribucion?: string
         }
       }
-      contribucionesporcasa: {
-        Row: {
-          id_casa: number
-          id_contribucion: string
-          fecha: string
-          pagado: number | null
-          realizado: string // 'S' or 'N'
-          fechapago: string | null
-          url_comprobante: string | null
-        }
-        Insert: {
-          id_casa: number
-          id_contribucion: string
-          fecha: string
-          pagado?: number | null
-          realizado?: string
-          fechapago?: string | null
-          url_comprobante?: string | null
-        }
-        Update: {
-          id_casa?: number
-          id_contribucion?: string
-          fecha?: string
-          pagado?: number | null
-          realizado?: string
-          fechapago?: string | null
-          url_comprobante?: string | null
-        }
-      }
+       contribucionesporcasa: {
+         Row: {
+           id_casa: number
+           id_contribucion: string
+           fecha: string
+           pagado: number | null
+           realizado: string // 'S' or 'N'
+           fechapago: string | null
+           url_comprobante: string | null
+           id_grupo: number | null
+         }
+         Insert: {
+           id_casa: number
+           id_contribucion: string
+           fecha: string
+           pagado?: number | null
+           realizado?: string
+           fechapago?: string | null
+           url_comprobante?: string | null
+           id_grupo?: number | null
+         }
+         Update: {
+           id_casa?: number
+           id_contribucion?: string
+           fecha?: string
+           pagado?: number | null
+           realizado?: string
+           fechapago?: string | null
+           url_comprobante?: string | null
+           id_grupo?: number | null
+         }
+       }
+       grupos: {
+         Row: {
+           id_grupo: number
+           id_usuario: number
+           id_contribucion: number
+           created_at: string
+         }
+         Insert: {
+           id_grupo?: number
+           id_usuario: number
+           id_contribucion: number
+           created_at?: string
+         }
+         Update: {
+           id_grupo?: number
+           id_usuario?: number
+           id_contribucion?: number
+           created_at?: string
+         }
+       }
       usuarios: {
         Row: {
           id: number
@@ -123,6 +146,7 @@ export type TipoUsuario = 'ADM' | 'PRE' | 'OPE';
 export type Usuario = Database['public']['Tables']['usuarios']['Row'];
 export type ContribucionPorCasa = Database['public']['Tables']['contribucionesporcasa']['Row'];
 export type Contribuciones = Database['public']['Tables']['contribuciones']['Row'];
+export type Grupo = Database['public']['Tables']['grupos']['Row'];
 
 // Tipo para los registros del calendario del usuario
 export type CalendarRecord = {

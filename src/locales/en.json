@@ -36,6 +36,7 @@
        "title": "Administration",
        "contributions": "Contributions",
        "users": "Manage Users",
+       "work_groups": "Work Groups",
        "catalog_management": "Catalog Management",
        "project_classification_management": "Project Classification",
        "houseContributions": "Manage Contribution Charges",
@@ -153,7 +154,19 @@
       "daysRemaining_other": "Due in {count} days",
       "noNoticesInCategory": "No notices in this category."
     }
-  },
+   },
+   "manageGroups": {
+     "title": "Work Groups",
+     "noGroups": "No work groups.",
+     "createHint": "Add a new group using the '+' button.",
+     "modal": {
+       "deleteConfirm": "Delete this group? This action cannot be undone.",
+       "deleteSuccess": "Group deleted successfully.",
+       "deleteUserConfirm": "Remove this user from the group?",
+       "deleteUserSuccess": "User removed from group successfully.",
+       "moveSuccess": "User moved successfully."
+     }
+   },
   "manageUsers": {
     "title": "Manage Users",
     "loading": "Loading users...",

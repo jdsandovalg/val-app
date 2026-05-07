@@ -36,6 +36,7 @@
        "title": "Administración",
        "contributions": "Aportaciones",
        "users": "Gestionar Usuarios",
+       "work_groups": "Grupos de Trabajo",
        "catalog_management": "Gestión de Catálogos",
        "project_classification_management": "Clasificación de Proyectos",
        "houseContributions": "Gestion de Cargos por Contribuciones",
@@ -153,7 +154,19 @@
       "daysRemaining_other": "Vence en {count} días",
       "noNoticesInCategory": "No hay avisos en esta categoría."
     }
-  },
+   },
+   "manageGroups": {
+     "title": "Grupos de Trabajo",
+     "noGroups": "No hay grupos de trabajo.",
+     "createHint": "Agrega un nuevo grupo usando el botón '+'.",
+     "modal": {
+       "deleteConfirm": "¿Eliminar este grupo? Esta acción no se puede deshacer.",
+       "deleteSuccess": "Grupo eliminado exitosamente.",
+       "deleteUserConfirm": "¿Eliminar este usuario del grupo?",
+       "deleteUserSuccess": "Usuario eliminado del grupo exitosamente.",
+       "moveSuccess": "Usuario movido exitosamente."
+     }
+   },
   "manageUsers": {
     "title": "Gestionar Usuarios",
     "loading": "Cargando usuarios...",

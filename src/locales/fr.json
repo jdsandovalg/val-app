@@ -36,6 +36,7 @@
        "title": "Administration",
        "contributions": "Contributions",
        "users": "Gérer les Utilisateurs",
+       "work_groups": "Groupes de Travail",
        "catalog_management": "Gestion des Catalogues",
        "project_classification_management": "Classification de Projets",
        "houseContributions": "Gestion des Frais de Contribution",
@@ -153,7 +154,19 @@
       "daysRemaining_other": "Échéance dans {count} jours",
       "noNoticesInCategory": "Aucun avis dans cette catégorie."
     }
-  },
+   },
+   "manageGroups": {
+     "title": "Groupes de Travail",
+     "noGroups": "Aucun groupe de travail.",
+     "createHint": "Ajoutez un nouveau groupe en utilisant le boution '+'.",
+     "modal": {
+       "deleteConfirm": "Supprimer ce groupe ? Cette action est irréversible.",
+       "deleteSuccess": "Groupe supprimé avec succès.",
+       "deleteUserConfirm": "Supprimer cet utilisateur du groupe ?",
+       "deleteUserSuccess": "Utilisateur supprimé du groupe avec succès.",
+       "moveSuccess": "Utilisateur déplacé avec succès."
+     }
+   },
   "manageUsers": {
     "title": "Gérer les Utilisateurs",
     "loading": "Chargement des utilisateurs...",
