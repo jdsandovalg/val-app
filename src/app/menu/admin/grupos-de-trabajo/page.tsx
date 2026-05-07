@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useGruposManager } from './hooks/useGruposManager';
 import GrupoPrincipalCard from './components/GrupoPrincipalCard';
@@ -14,6 +15,7 @@ import type { Contribuciones } from '@/types/database';
 export default function GruposDeTrabajoPage() {
   const supabase = createClient();
   const { t } = useI18n();
+  const router = useRouter();
 
   const {
     grupos,
@@ -103,10 +105,10 @@ export default function GruposDeTrabajoPage() {
     }));
     localStorage.setItem('grupoReportCargos', JSON.stringify(Array.from(gruposConCargos)));
 
-    // Abrir reporte en nueva ventana
+    // Navegar a la página de reporte (misma pestaña)
     const reportUrl = `/menu/admin/grupos-de-trabajo/report?contribucion_id=${idContribucion}`;
-    window.open(reportUrl, '_blank', 'width=1200,height=900');
-  }, [contribuciones, grupos, gruposConCargos]);
+    router.push(reportUrl);
+  }, [contribuciones, grupos, gruposConCargos, router]);
 
   const cerrarModalCrear = useCallback(() => {
     setModalCrearAbierto(false);
