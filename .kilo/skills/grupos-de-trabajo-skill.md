@@ -1,5 +1,8 @@
 # Kilo Skill: Gestión de Grupos de Trabajo (val-app)
 
+⭐ **Logro desbloqueado**: Implementación rápida y robusta (8 May 2026).  
+De error de runtime (`fechas null`) a badge UX claro en un solo ciclo KISS.
+
 ## Descripción
 Guía especializada para trabajar con el módulo de grupos de trabajo en val-app. Cubre la arquitectura completa, lecciones aprendidas, y el flujo de trabajo KISS validado.
 
@@ -84,6 +87,14 @@ src/app/menu/admin/grupos-de-trabajo/
 - **Problema**: `window.close()` falla si no es popup.
 - **Fix**: Detectar `window.opener` → si existe, cerrar; si no, `router.push()` a lista.
 
+### Error 8: `fechas` null en vista operativa
+- **Problema**: RPC `get_grupos_de_trabajo_agrupados` devuelve `fechas: null` cuando un grupo no tiene registros en `contribucionesporcasa` (sin fechas de cargo asignadas). Causa `Cannot read properties of null (reading 'map')`.
+- **Fix**: 
+  1. Tipo TypeScript: `fechas: {...}[] | null`.
+  2. Render: `(grupo.fechas || []).map(...)` o condicional `grupo.fechas && grupo.fechas.length > 0 ? ... : <Badge />`.
+  3. Sorting: usar optional chaining `grupo.fechas?.[0]?.fecha`.
+- **UX**: Mostrar badge amigable cuando no hay fechas: *"No hay fechas programadas. La contribución está en etapa de planeación."*
+
 ## Convenciones de nombres BD
 
 ### Vista `v_usuarios_contribuciones` (referencia)
@@ -164,13 +175,23 @@ git log --oneline -10
 - Reporte PDF single-page LETTER, sin menú
 - Botón Cerrar X: cierra popup o navega a lista
 
-### Commits en main
+### Commits en main (última sesión)
+- `14b4061` → feat(grupos): actualizar mensaje de grupo sin fechas
+- `d900606` → fix(grupos): manejar fechas null en vista operativa
+- `f7f4e7a` → fix(report): reducir padding y espacios en PDF; agregar tarjeta con borde coloreado para info de contribución
+- `22a6703` → feat(grupos): reporte se abre en misma pestaña; botón X regresa a lista
+- `6962b1f` → docs: agregar agente guía de método de trabajo KISS (grupos-workflow.md)
+- `5c28742` → docs: agregar PORTABILITY_CHECKLIST.md para migrar módulo de grupos a otros stacks
 - `8327696` → feat(grupos): agregar botón Cerrar X que navega de vuelta a lista de grupos
-- ( commits anteriores ya existían antes de esta sesión )
+  (commits anteriores existían antes)
 
 ### Archivos modificados en esta sesión
-- `src/app/menu/admin/grupos-de-trabajo/report/page.tsx`
-- `src/app/menu/admin/grupos-de-trabajo/report/layout.tsx` (nuevo)
+- `src/app/menu/admin/grupos-de-trabajo/report/page.tsx` → botón Cerrar X (popup vs navigate)
+- `src/app/menu/admin/grupos-de-trabajo/report/layout.tsx` (nuevo) → layout sin menú para PDF
+- `src/app/menu/admin/grupos-de-trabajo/report/components/GrupoContributionReport.tsx` → ajustes padding, info en tarjeta borde coloreado
+- `src/app/menu/grupos-de-trabajo/page.tsx` → manejo de `fechas null`, badge descriptivo
+- `.kilo/skills/grupos-de-trabajo-skill.md` → skill documentado
+- `.kilo/agents/grupos-workflow.md` → agente guía KISS
 
 ## Cómo trabajaré contigo (mi protocolo)
 
@@ -193,4 +214,4 @@ git log --oneline -10
 
 ---
 
-**Skill creada**: Viernes 07 Mayo 2026 — Sesión de implementación de grupos de trabajo (KISS validated).
+**Skill actualizada**: Jueves 08 Mayo 2026 — Sesión continua (fix vista operativa, badge descriptivo, reporte single-tab).
