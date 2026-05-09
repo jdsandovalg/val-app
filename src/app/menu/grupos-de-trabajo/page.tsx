@@ -178,7 +178,7 @@ export default function GruposDeTrabajoPage() {
                         ))
                       ) : (
                         <div className="text-center py-4 text-gray-500 italic bg-gray-50 rounded-lg border border-gray-200">
-                          No hay fechas asignadas
+                          No hay fechas programadas. La contribución está en etapa de planeación.
                         </div>
                       )}
                     </div>
