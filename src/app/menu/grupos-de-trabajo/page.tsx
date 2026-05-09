@@ -34,7 +34,7 @@ type ContribucionAgrupada = {
     fechas: {
       fecha: string;
       estado: 'PENDIENTE' | 'PAGADO' | string;
-    }[];
+    }[] | null;
   }[];
 };
 
@@ -100,8 +100,8 @@ export default function GruposDeTrabajoPage() {
     // Primero, ordena los grupos internos de cada contribución
     const gruposConSubgruposOrdenados = grupos.map(contribucion => {
       const sortedInnerGrupos = [...contribucion.grupos].sort((a, b) => {
-        const aValue = sortConfig.key === 'id_grupo' ? a.id_grupo : a.fechas[0]?.fecha;
-        const bValue = sortConfig.key === 'id_grupo' ? b.id_grupo : b.fechas[0]?.fecha;
+        const aValue = sortConfig.key === 'id_grupo' ? a.id_grupo : a.fechas?.[0]?.fecha;
+        const bValue = sortConfig.key === 'id_grupo' ? b.id_grupo : b.fechas?.[0]?.fecha;
         
         const valA = aValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
         const valB = bValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
@@ -115,8 +115,8 @@ export default function GruposDeTrabajoPage() {
 
     // Ahora, ordena las contribuciones principales
     return gruposConSubgruposOrdenados.sort((a, b) => {
-      const aValue = sortConfig.key === 'id_grupo' ? a.grupos[0]?.id_grupo : a.grupos[0]?.fechas[0]?.fecha;
-      const bValue = sortConfig.key === 'id_grupo' ? b.grupos[0]?.id_grupo : b.grupos[0]?.fechas[0]?.fecha;
+      const aValue = sortConfig.key === 'id_grupo' ? a.grupos[0]?.id_grupo : a.grupos[0]?.fechas?.[0]?.fecha;
+      const bValue = sortConfig.key === 'id_grupo' ? b.grupos[0]?.id_grupo : b.grupos[0]?.fechas?.[0]?.fecha;
 
       const valA = aValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
       const valB = bValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
@@ -168,14 +168,14 @@ export default function GruposDeTrabajoPage() {
                   {/* Contenedor Flex para centrar el Grid */}
                   <div className="flex flex-col items-center">
                     <div className="w-full max-w-md space-y-4">
-                    {grupo.fechas.map((fechaInfo) => (
-                      <TaskCard
-                        key={fechaInfo.fecha}
-                        fechaInfo={fechaInfo}
-                        casas={grupo.casas} // Pasamos las casas del grupo padre
-                      />
-                    ))}
-                  </div>
+                      {(grupo.fechas || []).map((fechaInfo) => (
+                        <TaskCard
+                          key={fechaInfo.fecha}
+                          fechaInfo={fechaInfo}
+                          casas={grupo.casas} // Pasamos las casas del grupo padre
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
