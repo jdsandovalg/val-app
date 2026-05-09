@@ -168,13 +168,19 @@ export default function GruposDeTrabajoPage() {
                   {/* Contenedor Flex para centrar el Grid */}
                   <div className="flex flex-col items-center">
                     <div className="w-full max-w-md space-y-4">
-                      {(grupo.fechas || []).map((fechaInfo) => (
-                        <TaskCard
-                          key={fechaInfo.fecha}
-                          fechaInfo={fechaInfo}
-                          casas={grupo.casas} // Pasamos las casas del grupo padre
-                        />
-                      ))}
+                      {grupo.fechas && grupo.fechas.length > 0 ? (
+                        grupo.fechas.map((fechaInfo) => (
+                          <TaskCard
+                            key={fechaInfo.fecha}
+                            fechaInfo={fechaInfo}
+                            casas={grupo.casas} // Pasamos las casas del grupo padre
+                          />
+                        ))
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 italic bg-gray-50 rounded-lg border border-gray-200">
+                          No hay fechas asignadas
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
