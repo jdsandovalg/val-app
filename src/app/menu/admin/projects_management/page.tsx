@@ -318,7 +318,7 @@ export default function ProjectClassificationManagementPage() {
               {selectedProject?.estado === 'abierto' ? <EvidenceManagement projectId={selectedProjectId} /> : <ProjectContributions projectId={selectedProjectId} />}
             </Tab.Panel>
             <Tab.Panel>
-              {selectedProject?.estado === 'abierto' ? (selectedProject && <ProposalDetail project={selectedProject} rubrosCatalogo={rubrosCatalogo} onAddNewRubro={handleOpenRubroModal} />) : <ProjectExpenses projectId={selectedProjectId} />}
+              {selectedProject?.estado === 'abierto' ? (selectedProject && <ProposalDetail project={selectedProject} rubrosCatalogo={rubrosCatalogo} onAddNewRubro={handleOpenRubroModal} />) : <ProjectExpenses projectId={selectedProjectId} projectDescription={selectedProject?.descripcion_tarea} projectDetail={selectedProject?.detalle_tarea} />}
             </Tab.Panel>
             <Tab.Panel>
               <FinancialDetail projectId={selectedProjectId} />

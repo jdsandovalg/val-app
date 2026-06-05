@@ -14,12 +14,12 @@ Sistema para aprobar proyectos con contribuciones personalizadas (no prorrateada
 ### 1. Votación con Consenso
 - Proyecto debe estar en estado `en_votacion`
 - Todas las casas deben haber votado
-- Debe haber 100% consenso en una cotización
+- Debe haber mayoría calificada (2/3 partes + 1) en una cotización (Ej: 8 de 10 casas)
 - La cotización ganadora debe tener un monto válido
 
 ### 2. Opciones del Administrador
 
-Cuando se alcanza consenso, el admin ve dos botones:
+Cuando se alcanza la mayoría calificada, el administrador visualiza las opciones:
 
 **Opción A: Distribución Igual (por defecto)**
 - Click en "Aprobar y Generar Contribuciones"

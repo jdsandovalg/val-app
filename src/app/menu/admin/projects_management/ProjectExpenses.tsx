@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useI18n } from '@/app/i18n-provider';
 import { toast } from 'react-hot-toast';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { Receipt } from 'lucide-react';
 import ExpenseModal from './ExpenseModal';
 import ImageViewerModal from '@/components/modals/ImageViewerModal';
 
@@ -23,9 +24,11 @@ type GastoDetalle = {
 
 type ProjectExpensesProps = {
   projectId: number | null;
+  projectDescription?: string | null;
+  projectDetail?: string | null;
 };
 
-export default function ProjectExpenses({ projectId }: ProjectExpensesProps) {
+export default function ProjectExpenses({ projectId, projectDescription, projectDetail }: ProjectExpensesProps) {
   const supabase = createClient();
   const { t, locale, currency } = useI18n();
   const [expenses, setExpenses] = useState<GastoDetalle[]>([]);
@@ -86,6 +89,15 @@ export default function ProjectExpenses({ projectId }: ProjectExpensesProps) {
   const handleCloseImageViewer = () => {
     setIsImageViewerOpen(false);
     setViewingImageUrl(null);
+  };
+
+  const handleGenerateReceipt = (expense: GastoDetalle) => {
+    localStorage.setItem('expenseReceiptData', JSON.stringify({
+      expense,
+      projectDescription: projectDescription || t('projects.fields.description'),
+      projectDetail: projectDetail || ''
+    }));
+    window.open('/menu/admin/projects_management/receipt', '_blank');
   };
 
   const handleSaveExpense = async (expenseData: Partial<GastoDetalle> & { file?: File | null }, isEditing: boolean) => {
@@ -183,6 +195,14 @@ export default function ProjectExpenses({ projectId }: ProjectExpensesProps) {
               </div>
               {expense.descripcion_gasto && <p className="text-sm text-gray-600 mt-2">{expense.descripcion_gasto}</p>}
               <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end gap-2">
+                <button 
+                  onClick={() => handleGenerateReceipt(expense)} 
+                  className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 flex items-center gap-1"
+                  title="Ver Recibo"
+                >
+                  <Receipt size={16} />
+                  Ver Recibo
+                </button>
                 {expense.url_documento && (
                   <button onClick={() => handleOpenImageViewer(expense.url_documento)} className="p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400" title={t('calendar.payment.viewProofButton')}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-600"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639l4.43-7.108a1.012 1.012 0 011.628 0l4.43 7.108a1.012 1.012 0 010 .639l-4.43 7.108a1.012 1.012 0 01-1.628 0l-4.43-7.108z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>

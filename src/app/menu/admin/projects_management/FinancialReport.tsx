@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   projectInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'stretch', // Cambiado a stretch para que el contenedor crezca dinámicamente con la descripción
     backgroundColor: '#F7FAFC',
     border: '1px solid #E2E8F0',
     borderRadius: 5,
@@ -172,6 +172,7 @@ const styles = StyleSheet.create({
   },
   projectInfoDetails: {
     width: '70%',
+    paddingRight: 10, // Evita que el texto largo toque la tarjeta de estado
   },
   statusCard: {
     width: '28%',
@@ -179,7 +180,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
   },
   projectInfoText: {
     fontSize: 9,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   surplusContainer: {
-    marginTop: -10,
+    marginTop: 0, // Eliminado margen negativo que causaba que este bloque se montara sobre los de arriba
     marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   tableContainer: {
     width: '48%',
   },
-  footer: {
+  pageNumber: {
     // Estilos para el contenedor del pie de página
     position: 'absolute',
     bottom: 20,
@@ -342,6 +342,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#666',
     fontSize: 8,
+  },
+  notesContainer: {
+    marginTop: 20,
+    padding: 10,
+    color: '#666',
+    fontSize: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
   },
   // NUEVO: Estilos para el anexo de documentación general
   // NUEVO: Estilos para las recomendaciones a ancho completo
@@ -369,14 +377,11 @@ const ReportHeader = ({ logoBase64, reportTitle, locale }: { logoBase64: string 
   </View>
 );
 
-const ReportFooter = ({ projectInfo, t }: Pick<ReportDocumentProps, 'projectInfo' | 't'>) => (
-  <View style={styles.footer} fixed>
-    {projectInfo.notas_clave && (
-      <Text>{`${t('projects.fields.keyNotes')}: ${projectInfo.notas_clave}`}</Text>
-    )}
+const ReportFooter = () => (
+  /* Solo el número de página permanece fijo en el pie de cada página */
+  <View style={styles.pageNumber} fixed>
     <Text
       render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-      fixed
     />
   </View>
 );
@@ -499,11 +504,18 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
               </View>
             </View>
           </View>
+
+          {/* Las notas ahora siguen el flujo del documento al final de la sección financiera */}
+          {projectInfo.notas_clave && (
+            <View style={styles.notesContainer}>
+              <Text>{`${t('projects.fields.keyNotes')}: ${projectInfo.notas_clave}`}</Text>
+            </View>
+          )}
       </>
-      <ReportFooter projectInfo={projectInfo} t={t} />
+      <ReportFooter />
     </Page>
     {gastosConEvidencia.length > 0 && (
-      <Page size="LETTER" style={styles.page} wrap={false}>
+      <Page size="LETTER" style={styles.page} wrap>
         <ReportHeader logoBase64={logoBase64} reportTitle={t('projects.summary.reportTitle')} locale={locale} />
         {/* Este View es el contenedor principal del contenido de la página */}
         <View> 
@@ -526,12 +538,12 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
             ))}
           </View>
         </View>
-        <ReportFooter projectInfo={projectInfo} t={t} />
+        <ReportFooter />
       </Page>
     )}
     {/* --- INICIO: NUEVO ANEXO DE DOCUMENTACIÓN GENERAL --- */}
     {generalEvidence.length > 0 && (
-      <Page size="LETTER" style={styles.page} wrap={false}>
+      <Page size="LETTER" style={styles.page} wrap>
         <ReportHeader logoBase64={logoBase64} reportTitle={t('projects.summary.reportTitle')} locale={locale} />
         {/* Este View es el contenedor principal del contenido de la página */}
         <View> 
@@ -574,7 +586,7 @@ export const ReportDocument = ({ summary, details, projectInfo, t, locale, curre
             </View>
           ))}
         </View>
-        <ReportFooter projectInfo={projectInfo} t={t} />
+        <ReportFooter />
       </Page>
     )}
     {/* --- FIN: NUEVO ANEXO --- */}
