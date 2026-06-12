@@ -40,6 +40,7 @@ export default function ReceiptViewerPage() {
             t={t}
             locale={locale}
             currency={currency}
+            votingHouses={data.votingHouses || []}
           />
         );
         const blob = await pdf(doc).toBlob();

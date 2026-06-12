@@ -56,6 +56,20 @@ export default function ProjectExpenses({ projectId, projectDescription, project
     }
   }, [projectId, supabase, t]);
 
+  const fetchVotedHouses = useCallback(async (idProyecto: number): Promise<number[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('proyecto_votos')
+        .select('id_usuario')
+        .eq('id_proyecto', idProyecto);
+      if (error) throw error;
+      return data?.map(v => v.id_usuario) || [];
+    } catch (error) {
+      console.error('Error fetching voted houses:', error);
+      return [];
+    }
+  }, [supabase]);
+
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
@@ -91,11 +105,13 @@ export default function ProjectExpenses({ projectId, projectDescription, project
     setViewingImageUrl(null);
   };
 
-  const handleGenerateReceipt = (expense: GastoDetalle) => {
+  const handleGenerateReceipt = async (expense: GastoDetalle) => {
+    const votingHouses = await fetchVotedHouses(expense.id_proyecto);
     localStorage.setItem('expenseReceiptData', JSON.stringify({
       expense,
       projectDescription: projectDescription || t('projects.fields.description'),
-      projectDetail: projectDetail || ''
+      projectDetail: projectDetail || '',
+      votingHouses
     }));
     window.open('/menu/admin/projects_management/receipt', '_blank');
   };

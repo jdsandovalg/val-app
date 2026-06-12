@@ -48,21 +48,26 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  amountLeft: {
+    flex: 1,
+    paddingRight: 10,
   },
   amountLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#2C5282',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
     marginBottom: 5,
   },
   amountValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#2B6CB0',
   },
   amountWords: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#4A5568',
     fontStyle: 'italic',
   },
@@ -168,13 +173,17 @@ type ExpenseReceiptProps = {
   t: any;
   locale: string;
   currency: string;
+  votingHouses: number[];
 };
 
-export const ExpenseReceipt = ({ expense, projectDescription, projectDetail, logoBase64, t, locale, currency }: ExpenseReceiptProps) => {
+export const ExpenseReceipt = ({ expense, projectDescription, projectDetail, logoBase64, t, locale, currency, votingHouses }: ExpenseReceiptProps) => {
   const receiptNumber = `REC-${expense.id_gasto.toString().padStart(6, '0')}`;
+  const housesText = votingHouses.length > 0 
+    ? `Recibí de parte de las casas ${votingHouses.join(', ')} del condominio Villas de Alcalá, la cantidad de:`
+    : 'Recibí de parte del condominio Villas de Alcalá, la cantidad de:';
   return (
     <Document title={`Recibo ${receiptNumber} - ${expense.no_documento || expense.nombre_proveedor}`}>
-<Page size="LETTER" style={styles.page}>
+      <Page size="LETTER" style={styles.page}>
         <View style={styles.contentContainer}>
           {/* Header */}
           <View style={styles.header}>
@@ -187,7 +196,9 @@ export const ExpenseReceipt = ({ expense, projectDescription, projectDetail, log
 
           {/* Sección de Monto */}
           <View style={styles.amountSection}>
-            <Text style={styles.amountLabel}>Valor del Pago</Text>
+            <View style={styles.amountLeft}>
+              <Text style={styles.amountLabel}>{housesText}</Text>
+            </View>
             <Text style={styles.amountValue}>{formatCurrency(expense.monto_gasto, locale, currency)} <Text style={styles.amountWords}>({numberToWordsGT(expense.monto_gasto, currency)})</Text></Text>
           </View>
 
