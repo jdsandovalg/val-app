@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#EBF8FF',
     border: '2px solid #3182CE',
     borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
+    padding: 6,
+    marginBottom: 2,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -59,37 +59,36 @@ const styles = StyleSheet.create({
   amountLabel: {
     fontSize: 9,
     color: '#2C5282',
-    marginBottom: 5,
+    marginBottom: 2,
   },
   amountValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#2B6CB0',
   },
   amountWords: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#4A5568',
     fontStyle: 'italic',
   },
   rowContainer: {
     flexDirection: 'row',
-    gap: 2,
-    marginBottom: 2,
+    gap: 1,
+    marginBottom: 1,
   },
   card: {
     backgroundColor: '#F7FAFC',
     border: '1px solid #E2E8F0',
     borderRadius: 8,
-    padding: 8,
+    padding: 6,
     flex: 1,
-    marginBottom: 2,
   },
   fullCard: {
     backgroundColor: '#F7FAFC',
     border: '1px solid #E2E8F0',
     borderRadius: 8,
-    padding: 2,
-    marginBottom: 2,
+    padding: 6,
+    marginBottom: 1,
   },
   fullCardContent: {
     flexDirection: 'column',
@@ -98,19 +97,19 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 'bold',
     color: '#4A5568',
-    marginBottom: 2,
+    marginBottom: 1,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 3,
+    marginBottom: 1,
   },
   label: {
-    width: 90,
+    width: 80,
     fontWeight: 'bold',
     color: '#718096',
-    fontSize: 9,
+    fontSize: 8,
   },
   value: {
     flex: 1,
@@ -118,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
   },
   conceptText: {
-    fontSize: 10,
+    fontSize: 8,
     lineHeight: 1.3,
     width: '100%',
   },
@@ -131,7 +130,7 @@ const styles = StyleSheet.create({
   signatureContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: 10,
   },
   signatureBox: {
     width: '40%',
@@ -141,18 +140,18 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopWidth: 1,
     borderTopColor: '#2D3748',
-    marginBottom: 5,
+    marginBottom: 3,
   },
   signatureText: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#718096',
     textAlign: 'center',
   },
   footerNote: {
-    fontSize: 8,
+    fontSize: 7,
     color: '#A0AEC0',
     textAlign: 'center',
-    marginTop: 15,
+    marginTop: 10,
   },
 });
 
@@ -265,9 +264,9 @@ export const ExpenseReceipt = ({ expense, projectDescription, projectDetail, log
 
         {/* Nota footer */}
         <Text style={styles.footerNote}>
-        Este recibo se genera automáticamente por el sistema de gestión de proyectos.
-      </Text>
-    </Page>
-  </Document>
+          Este recibo se genera automáticamente por el sistema de gestión de proyectos.
+        </Text>
+      </Page>
+    </Document>
   );
 };
