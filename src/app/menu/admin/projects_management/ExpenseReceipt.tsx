@@ -12,8 +12,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     height: '50%',
-    justifyContent: 'space-between',
-    paddingBottom: 2,
+    flexDirection: 'column',
   },
   header: {
     flexDirection: 'row',
@@ -22,7 +21,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: '#2D3748',
     paddingBottom: 2,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   logo: {
     width: 50,
@@ -47,7 +46,7 @@ const styles = StyleSheet.create({
     border: '2px solid #3182CE',
     borderRadius: 8,
     padding: 6,
-    marginBottom: 2,
+    marginBottom: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
   signatureContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 8,
   },
   signatureBox: {
     width: '40%',
@@ -151,7 +150,7 @@ const styles = StyleSheet.create({
     fontSize: 7,
     color: '#A0AEC0',
     textAlign: 'center',
-    marginTop: 10,
+    marginTop: 8,
   },
 });
 
@@ -187,78 +186,76 @@ export const ExpenseReceipt = ({ expense, projectDescription, projectDetail, log
   return (
     <Document title={`Recibo ${receiptNumber} - ${expense.no_documento || expense.nombre_proveedor}`}>
       <Page size="LETTER" style={styles.page}>
-        <View style={styles.contentContainer}>
-          {/* Header */}
-          <View style={styles.header}>
-            {logoBase64 && <Image style={styles.logo} src={logoBase64} />}
-            <View style={styles.headerTitle}>
-              <Text style={styles.receiptTitle}>RECIBO DE PAGO</Text>
-              <Text style={styles.receiptSubtitle}>No. {receiptNumber}</Text>
-            </View>
+        {/* Header */}
+        <View style={styles.header}>
+          {logoBase64 && <Image style={styles.logo} src={logoBase64} />}
+          <View style={styles.headerTitle}>
+            <Text style={styles.receiptTitle}>RECIBO DE PAGO</Text>
+            <Text style={styles.receiptSubtitle}>No. {receiptNumber}</Text>
           </View>
+        </View>
 
-          {/* Sección de Monto */}
-          <View style={styles.amountSection}>
-            <View style={styles.amountLeft}>
-              <Text style={styles.amountLabel}>{housesLine1}</Text>
-              <Text style={styles.amountLabel}>{housesLine2}</Text>
-            </View>
-            <Text style={styles.amountValue}>{formatCurrency(expense.monto_gasto, locale, currency)} <Text style={styles.amountWords}>({numberToWordsGT(expense.monto_gasto, currency)})</Text></Text>
+        {/* Sección de Monto */}
+        <View style={styles.amountSection}>
+          <View style={styles.amountLeft}>
+            <Text style={styles.amountLabel}>{housesLine1}</Text>
+            <Text style={styles.amountLabel}>{housesLine2}</Text>
           </View>
+          <Text style={styles.amountValue}>{formatCurrency(expense.monto_gasto, locale, currency)} <Text style={styles.amountWords}>({numberToWordsGT(expense.monto_gasto, currency)})</Text></Text>
+        </View>
 
-          {/* Tarjetas paralelas: Proveedor y Documento */}
-          <View style={styles.rowContainer}>
-            {/* Información del Proveedor */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Proveedor</Text>
+        {/* Tarjetas paralelas: Proveedor y Documento */}
+        <View style={styles.rowContainer}>
+          {/* Información del Proveedor */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Proveedor</Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Nombre:</Text>
+              <Text style={styles.value}>{expense.nombre_proveedor}</Text>
+            </View>
+            {expense.nit_proveedor && (
               <View style={styles.row}>
-                <Text style={styles.label}>Nombre:</Text>
-                <Text style={styles.value}>{expense.nombre_proveedor}</Text>
+                <Text style={styles.label}>NIT:</Text>
+                <Text style={styles.value}>{expense.nit_proveedor}</Text>
               </View>
-              {expense.nit_proveedor && (
-                <View style={styles.row}>
-                  <Text style={styles.label}>NIT:</Text>
-                  <Text style={styles.value}>{expense.nit_proveedor}</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Información del Documento */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Documento</Text>
-              <View style={styles.row}>
-                <Text style={styles.label}>Recibo de Gastos:</Text>
-                <Text style={styles.value}>{expense.no_documento || 'S/N'}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Fecha:</Text>
-                <Text style={styles.value}>{formatDate(expense.fecha_documento, locale)}</Text>
-              </View>
-            </View>
+            )}
           </View>
 
-          {/* Concepto - Full width */}
-          <View style={styles.fullCard}>
-            <View style={styles.fullCardContent}>
-              <Text style={styles.cardTitle}>Concepto</Text>
-              <Text style={styles.conceptText}>
-                {projectDetail}
-                {projectDescription ? ` - ${projectDescription}` : ''}
-                {expense.descripcion_gasto ? ` - ${expense.descripcion_gasto}` : ''}
-              </Text>
+          {/* Información del Documento */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Documento</Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Recibo de Gastos:</Text>
+              <Text style={styles.value}>{expense.no_documento || 'S/N'}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Fecha:</Text>
+              <Text style={styles.value}>{formatDate(expense.fecha_documento, locale)}</Text>
             </View>
           </View>
+        </View>
 
-          {/* Firmas */}
-          <View style={styles.signatureContainer}>
-            <View style={styles.signatureBox}>
-              <View style={styles.signatureLine} />
-              <Text style={styles.signatureText}>Firma del Proveedor</Text>
-            </View>
-            <View style={styles.signatureBox}>
-              <View style={styles.signatureLine} />
-              <Text style={styles.signatureText}>Autorizado por Admin</Text>
-            </View>
+        {/* Concepto - Full width */}
+        <View style={styles.fullCard}>
+          <View style={styles.fullCardContent}>
+            <Text style={styles.cardTitle}>Concepto</Text>
+            <Text style={styles.conceptText}>
+              {projectDetail}
+              {projectDescription ? ` - ${projectDescription}` : ''}
+              {expense.descripcion_gasto ? ` - ${expense.descripcion_gasto}` : ''}
+            </Text>
+          </View>
+        </View>
+
+        {/* Firmas */}
+        <View style={styles.signatureContainer}>
+          <View style={styles.signatureBox}>
+            <View style={styles.signatureLine} />
+            <Text style={styles.signatureText}>Firma del Proveedor</Text>
+          </View>
+          <View style={styles.signatureBox}>
+            <View style={styles.signatureLine} />
+            <Text style={styles.signatureText}>Autorizado por Admin</Text>
           </View>
         </View>
 
