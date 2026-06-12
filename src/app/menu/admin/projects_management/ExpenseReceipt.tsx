@@ -4,6 +4,7 @@ import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/render
 import { formatCurrency, formatDate, numberToWordsGT } from '@/utils/format';
 
 // Spacing guide for receipt sections ( marginBottom values control vertical spacing ):
+// Line ~23-25: marginBottom in amountSection (space between amount and provider/document cards)
 // Line ~49: marginBottom in amountSection (space between amount and provider/document cards)
 // Line ~76: marginBottom in rowContainer (space between provider/document cards and concept)
 // Line ~90: marginBottom in fullCard (space between concept and signatures)
@@ -27,8 +28,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: '#2D3748',
-    paddingBottom: 2,
-    marginBottom: 1,
+    paddingBottom: 6,
+    marginBottom: 6,
   },
   logo: {
     width: 50,
@@ -46,14 +47,14 @@ const styles = StyleSheet.create({
   receiptSubtitle: {
     fontSize: 9,
     color: '#718096',
-    marginTop: 2,
+    marginTop: 8,
   },
   amountSection: {
     backgroundColor: '#EBF8FF',
     border: '2px solid #3182CE',
     borderRadius: 8,
     padding: 6,
-    marginBottom: 1,
+    marginBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   rowContainer: {
     flexDirection: 'row',
     gap: 1,
-    marginBottom: 1,
+    marginBottom: 8,
   },
   card: {
     backgroundColor: '#F7FAFC',
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     border: '1px solid #E2E8F0',
     borderRadius: 8,
     padding: 6,
-    marginBottom: 1,
+    marginBottom: 8,
   },
   fullCardContent: {
     flexDirection: 'column',
@@ -128,15 +129,15 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   footer: {
-    marginTop: 30,
+    marginTop: 50,
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
-    paddingTop: 20,
+    paddingTop: 5,
   },
   signatureContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: 50,
   },
   signatureBox: {
     width: '40%',
