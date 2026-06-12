@@ -178,9 +178,13 @@ type ExpenseReceiptProps = {
 
 export const ExpenseReceipt = ({ expense, projectDescription, projectDetail, logoBase64, t, locale, currency, votingHouses }: ExpenseReceiptProps) => {
   const receiptNumber = `REC-${expense.id_gasto.toString().padStart(6, '0')}`;
-  const housesText = votingHouses.length > 0 
-    ? `Recibí de parte de las casas ${votingHouses.join(', ')} del condominio Villas de Alcalá, la cantidad de:`
-    : 'Recibí de parte del condominio Villas de Alcalá, la cantidad de:';
+  const sortedHouses = [...votingHouses].sort((a, b) => a - b);
+  const housesLine1 = sortedHouses.length > 0 
+    ? `Recibí de parte de las casas ${sortedHouses.join(', ')}`
+    : 'Recibí de parte del condominio Villas de Alcalá';
+  const housesLine2 = sortedHouses.length > 0 
+    ? 'del condominio Villas de Alcalá, la cantidad de:'
+    : 'la cantidad de:';
   return (
     <Document title={`Recibo ${receiptNumber} - ${expense.no_documento || expense.nombre_proveedor}`}>
       <Page size="LETTER" style={styles.page}>
@@ -197,7 +201,8 @@ export const ExpenseReceipt = ({ expense, projectDescription, projectDetail, log
           {/* Sección de Monto */}
           <View style={styles.amountSection}>
             <View style={styles.amountLeft}>
-              <Text style={styles.amountLabel}>{housesText}</Text>
+              <Text style={styles.amountLabel}>{housesLine1}</Text>
+              <Text style={styles.amountLabel}>{housesLine2}</Text>
             </View>
             <Text style={styles.amountValue}>{formatCurrency(expense.monto_gasto, locale, currency)} <Text style={styles.amountWords}>({numberToWordsGT(expense.monto_gasto, currency)})</Text></Text>
           </View>
