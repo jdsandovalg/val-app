@@ -487,7 +487,8 @@
       "title": "Expenses",
       "listTitle": "List of Expenses",
       "buttons": {
-        "add": "Add Expense"
+        "add": "Add Expense",
+        "viewReceipt": "View Receipt"
       },
       "modals": {
         "add": "Register New Expense",

@@ -487,7 +487,8 @@
       "title": "Dépenses",
       "listTitle": "Liste des Dépenses",
       "buttons": {
-        "add": "Ajouter une Dépense"
+        "add": "Ajouter une Dépense",
+        "viewReceipt": "Voir le Reçu"
       },
       "modals": {
         "add": "Enregistrer une Nouvelle Dépense",

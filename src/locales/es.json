@@ -487,7 +487,8 @@
       "title": "Gastos",
       "listTitle": "Listado de Gastos",
       "buttons": {
-        "add": "Agregar Gasto"
+        "add": "Agregar Gasto",
+        "viewReceipt": "Ver Recibo"
       },
       "modals": {
         "add": "Registrar Nuevo Gasto",

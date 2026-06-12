@@ -211,14 +211,14 @@ export default function ProjectExpenses({ projectId, projectDescription, project
               </div>
               {expense.descripcion_gasto && <p className="text-sm text-gray-600 mt-2">{expense.descripcion_gasto}</p>}
               <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end gap-2">
-                <button 
-                  onClick={() => handleGenerateReceipt(expense)} 
-                  className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 flex items-center gap-1"
-                  title="Ver Recibo"
-                >
-                  <Receipt size={16} />
-                  Ver Recibo
-                </button>
+<button 
+                   onClick={() => handleGenerateReceipt(expense)} 
+                   className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 flex items-center gap-1"
+                   title={t('projects.expenses.buttons.viewReceipt')}
+                 >
+                   <Receipt size={16} />
+                   {t('projects.expenses.buttons.viewReceipt')}
+                 </button>
                 {expense.url_documento && (
                   <button onClick={() => handleOpenImageViewer(expense.url_documento)} className="p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400" title={t('calendar.payment.viewProofButton')}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-600"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639l4.43-7.108a1.012 1.012 0 011.628 0l4.43 7.108a1.012 1.012 0 010 .639l-4.43 7.108a1.012 1.012 0 01-1.628 0l-4.43-7.108z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
