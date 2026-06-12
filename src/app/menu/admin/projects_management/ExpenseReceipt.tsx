@@ -3,6 +3,13 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { formatCurrency, formatDate, numberToWordsGT } from '@/utils/format';
 
+// Spacing guide for receipt sections ( marginBottom values control vertical spacing ):
+// Line ~49: marginBottom in amountSection (space between amount and provider/document cards)
+// Line ~76: marginBottom in rowContainer (space between provider/document cards and concept)
+// Line ~90: marginBottom in fullCard (space between concept and signatures)
+// Line ~132: marginTop in signatureContainer (spacing before signatures)
+// Also adjust gap in rowContainer for horizontal spacing between the two side-by-side cards
+
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
