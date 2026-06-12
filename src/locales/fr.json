@@ -507,6 +507,12 @@
         "fetchSuppliersError": "Erreur lors du chargement des fournisseurs : {message}",
         "fetchError": "Erreur lors du chargement des dépenses : {message}",
         "emptyState": "Aucune dépense n'a été enregistrée pour ce projet."
+      },
+      "receipt": {
+        "receivedFromHouses": "Reçu de la part des maisons {houses}",
+        "fromVillasAlcala": "du condominium Villas de Alcalá, le montant de :",
+        "receivedFrom": "Reçu de la part du condominium Villas de Alcalá",
+        "amountOf": "le montant de :"
       }
     },
     "summary": {

@@ -507,6 +507,12 @@
         "fetchSuppliersError": "Error loading suppliers: {message}",
         "fetchError": "Error loading expenses: {message}",
         "emptyState": "No expenses have been recorded for this project."
+      },
+      "receipt": {
+        "receivedFromHouses": "Received from houses {houses}",
+        "fromVillasAlcala": "of Villas de Alcalá condominium, the amount of:",
+        "receivedFrom": "Received from Villas de Alcalá condominium",
+        "amountOf": "the amount of:"
       }
     },
     "summary": {
